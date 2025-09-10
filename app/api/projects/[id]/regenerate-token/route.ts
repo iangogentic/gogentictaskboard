@@ -3,8 +3,10 @@ import { prisma } from '@/lib/db'
 
 export async function POST(
   request: Request,
-  { params }: { params: { id: string } }
+  props: { params: Promise<{ id: string }> }
 ) {
+  const params = await props.params
+  
   try {
     // Generate a new token
     const newToken = crypto.randomUUID()
