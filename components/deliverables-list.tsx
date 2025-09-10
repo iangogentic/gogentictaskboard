@@ -20,26 +20,22 @@ export default function DeliverablesList({ projectId, deliverables: initialDeliv
   // Form state for new deliverable
   const [newDeliverable, setNewDeliverable] = useState({
     title: '',
-    description: '',
     url: '',
-    type: 'DOCUMENT',
+    status: 'Draft',
   })
   
   // Form state for editing
   const [editForm, setEditForm] = useState({
     title: '',
-    description: '',
     url: '',
-    type: 'DOCUMENT',
+    status: 'Draft',
   })
 
-  const deliverableTypes = [
-    { value: 'DOCUMENT', label: 'Document', icon: '📄' },
-    { value: 'DESIGN', label: 'Design', icon: '🎨' },
-    { value: 'CODE', label: 'Code', icon: '💻' },
-    { value: 'VIDEO', label: 'Video', icon: '🎥' },
-    { value: 'PRESENTATION', label: 'Presentation', icon: '📊' },
-    { value: 'OTHER', label: 'Other', icon: '📦' },
+  const statusOptions = [
+    { value: 'Draft', label: 'Draft' },
+    { value: 'Submitted', label: 'Submitted' },
+    { value: 'Approved', label: 'Approved' },
+    { value: 'Delivered', label: 'Delivered' },
   ]
 
   const handleAddDeliverable = async () => {
@@ -58,9 +54,8 @@ export default function DeliverablesList({ projectId, deliverables: initialDeliv
       if (response.ok) {
         setNewDeliverable({
           title: '',
-          description: '',
           url: '',
-          type: 'DOCUMENT',
+          status: 'Draft',
         })
         setAddingDeliverable(false)
         router.refresh()
@@ -109,14 +104,19 @@ export default function DeliverablesList({ projectId, deliverables: initialDeliv
     setEditingId(deliverable.id)
     setEditForm({
       title: deliverable.title,
-      description: deliverable.description || '',
-      url: deliverable.url || '',
-      type: deliverable.type,
+      url: deliverable.fileUrl || '',
+      status: deliverable.status,
     })
   }
 
-  const getTypeIcon = (type: string) => {
-    return deliverableTypes.find(t => t.value === type)?.icon || '📦'
+  const getStatusColor = (status: string) => {
+    const colors: Record<string, string> = {
+      'Draft': 'bg-gray-100 text-gray-800',
+      'Submitted': 'bg-blue-100 text-blue-800',
+      'Approved': 'bg-green-100 text-green-800',
+      'Delivered': 'bg-indigo-100 text-indigo-800',
+    }
+    return colors[status] || 'bg-gray-100 text-gray-800'
   }
 
   return (
@@ -142,13 +142,6 @@ export default function DeliverablesList({ projectId, deliverables: initialDeliv
             className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
             autoFocus
           />
-          <textarea
-            placeholder="Description (optional)"
-            value={newDeliverable.description}
-            onChange={(e) => setNewDeliverable({ ...newDeliverable, description: e.target.value })}
-            className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            rows={2}
-          />
           <input
             type="url"
             placeholder="URL or link (optional)"
@@ -157,13 +150,13 @@ export default function DeliverablesList({ projectId, deliverables: initialDeliv
             className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
           <select
-            value={newDeliverable.type}
-            onChange={(e) => setNewDeliverable({ ...newDeliverable, type: e.target.value })}
+            value={newDeliverable.status}
+            onChange={(e) => setNewDeliverable({ ...newDeliverable, status: e.target.value })}
             className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
           >
-            {deliverableTypes.map(type => (
-              <option key={type.value} value={type.value}>
-                {type.icon} {type.label}
+            {statusOptions.map(option => (
+              <option key={option.value} value={option.value}>
+                {option.label}
               </option>
             ))}
           </select>
@@ -173,9 +166,8 @@ export default function DeliverablesList({ projectId, deliverables: initialDeliv
                 setAddingDeliverable(false)
                 setNewDeliverable({
                   title: '',
-                  description: '',
                   url: '',
-                  type: 'DOCUMENT',
+                  status: 'Draft',
                 })
               }}
               className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-800"
@@ -212,12 +204,6 @@ export default function DeliverablesList({ projectId, deliverables: initialDeliv
                   className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   autoFocus
                 />
-                <textarea
-                  value={editForm.description}
-                  onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
-                  className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  rows={2}
-                />
                 <input
                   type="url"
                   value={editForm.url}
@@ -225,13 +211,13 @@ export default function DeliverablesList({ projectId, deliverables: initialDeliv
                   className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 />
                 <select
-                  value={editForm.type}
-                  onChange={(e) => setEditForm({ ...editForm, type: e.target.value })}
+                  value={editForm.status}
+                  onChange={(e) => setEditForm({ ...editForm, status: e.target.value })}
                   className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 >
-                  {deliverableTypes.map(type => (
-                    <option key={type.value} value={type.value}>
-                      {type.icon} {type.label}
+                  {statusOptions.map(option => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
                     </option>
                   ))}
                 </select>
@@ -254,18 +240,17 @@ export default function DeliverablesList({ projectId, deliverables: initialDeliv
               <div className="bg-white rounded-lg border p-4 hover:shadow-sm transition-shadow group">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
-                    <div className="flex items-center space-x-2">
-                      <span className="text-lg">{getTypeIcon(deliverable.type)}</span>
+                    <div className="flex items-center space-x-3">
                       <h4 className="font-medium text-gray-900">{deliverable.title}</h4>
+                      <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(deliverable.status)}`}>
+                        {deliverable.status}
+                      </span>
                     </div>
-                    {deliverable.description && (
-                      <p className="text-sm text-gray-600 mt-1">{deliverable.description}</p>
-                    )}
                     <div className="flex items-center space-x-4 mt-2 text-xs text-gray-500">
                       <span>Updated {format(new Date(deliverable.updatedAt), 'MMM d, yyyy')}</span>
-                      {deliverable.url && (
+                      {deliverable.fileUrl && (
                         <a
-                          href={deliverable.url}
+                          href={deliverable.fileUrl}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="inline-flex items-center text-indigo-600 hover:text-indigo-800"
