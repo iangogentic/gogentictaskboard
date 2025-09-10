@@ -28,7 +28,7 @@ export default function NewProjectPage() {
     developerIds: [] as string[],
     clientName: '',
     clientEmail: '',
-    status: PROJECT_STATUS.NOT_STARTED,
+    status: PROJECT_STATUS.NOT_STARTED as typeof PROJECT_STATUS[keyof typeof PROJECT_STATUS],
     startDate: '',
     targetDelivery: '',
     notes: '',
