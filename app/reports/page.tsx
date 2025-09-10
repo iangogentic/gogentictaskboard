@@ -390,7 +390,7 @@ export default async function ReportsPage() {
                     <div className="w-24 bg-gray-200 rounded-full h-2 mr-2">
                       <div 
                         className="bg-indigo-500 h-2 rounded-full"
-                        style={{ width: `${Math.max(weeklyUpdates).count > 0 ? (week.count / Math.max(...weeklyUpdates.map(w => w.count))) * 100 : 0}%` }}
+                        style={{ width: `${Math.max(...weeklyUpdates.map(w => w.count)) > 0 ? (week.count / Math.max(...weeklyUpdates.map(w => w.count))) * 100 : 0}%` }}
                       />
                     </div>
                     <span className="text-sm font-medium w-8 text-right">{week.count}</span>
