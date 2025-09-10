@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Gogentic Portal",
-  description: "Internal project management portal",
+  title: "GOGENTIC Portal - Project Management",
+  description: "Internal project management system for Gogentic team collaboration",
 };
 
 export default function RootLayout({

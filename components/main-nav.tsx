@@ -60,11 +60,14 @@ export default function MainNav() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center">
-            <Link href="/" className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white font-bold text-sm">
-                G
+            <Link href="/" className="flex items-center space-x-3">
+              <div className="flex items-center">
+                <span className="text-2xl font-bold tracking-tight">
+                  <span className="text-indigo-600">GO</span>
+                  <span className="text-gray-900">GENTIC</span>
+                </span>
               </div>
-              <span className="text-xl font-bold text-gray-900">Gogentic Portal</span>
+              <span className="text-sm text-gray-500 border-l pl-3">Portal</span>
             </Link>
             
             <div className="hidden md:flex items-center space-x-1 ml-10">
