@@ -222,7 +222,7 @@ export default function NewProjectPage() {
               </label>
               <select
                 value={formData.status}
-                onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value }))}
+                onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value as typeof PROJECT_STATUS[keyof typeof PROJECT_STATUS] }))}
                 className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
               >
                 {Object.values(PROJECT_STATUS).map(status => (
