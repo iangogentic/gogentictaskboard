@@ -1,0 +1,97 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e5]:
+      - heading "Project Status" [level=1] [ref=e6]
+      - paragraph [ref=e7]: Read-only view for Eric
+    - generic [ref=e8]:
+      - generic [ref=e9]:
+        - generic [ref=e11]:
+          - heading "Z-School Course Build" [level=2] [ref=e12]
+          - generic [ref=e13]:
+            - generic [ref=e14]: CORTEX
+            - generic [ref=e15]: In Progress
+        - generic [ref=e16]:
+          - generic [ref=e17]:
+            - generic [ref=e18]:
+              - img [ref=e19]
+              - generic [ref=e24]: "Project Manager:"
+              - generic [ref=e25]: Aakansha
+            - generic [ref=e26]:
+              - img [ref=e27]
+              - generic [ref=e32]: "Development Team:"
+              - generic [ref=e34]: Sarah
+          - generic [ref=e35]:
+            - generic [ref=e36]:
+              - img [ref=e37]
+              - generic [ref=e39]: "Start Date:"
+              - generic [ref=e40]: Jan 4, 2025
+            - generic [ref=e41]:
+              - img [ref=e42]
+              - generic [ref=e45]: "Target Delivery:"
+              - generic [ref=e46]: Feb 14, 2025
+            - generic [ref=e47]:
+              - img [ref=e48]
+              - generic [ref=e51]: "Last Updated:"
+              - generic [ref=e52]: Sep 10, 2025 10:25 AM
+        - generic [ref=e53]:
+          - heading "Project Notes" [level=3] [ref=e54]
+          - paragraph [ref=e55]: Building comprehensive course materials for Z-School platform
+      - generic [ref=e56]:
+        - heading "Progress Overview" [level=3] [ref=e57]
+        - generic [ref=e59]:
+          - generic [ref=e60]: Overall Progress
+          - generic [ref=e61]: 33%
+        - generic [ref=e64]:
+          - generic [ref=e65]:
+            - generic [ref=e66]: "3"
+            - generic [ref=e67]: To Do
+          - generic [ref=e68]:
+            - generic [ref=e69]: "1"
+            - generic [ref=e70]: In Progress
+          - generic [ref=e71]:
+            - generic [ref=e72]: "0"
+            - generic [ref=e73]: In Review
+          - generic [ref=e74]:
+            - generic [ref=e75]: "2"
+            - generic [ref=e76]: Completed
+      - generic [ref=e77]:
+        - heading "Recent Updates" [level=3] [ref=e78]
+        - generic [ref=e79]:
+          - generic [ref=e80]:
+            - generic [ref=e82]: IA
+            - generic [ref=e83]:
+              - generic [ref=e84]:
+                - generic [ref=e85]: Ian
+                - generic [ref=e86]: Sep 10, 10:55 AM
+              - paragraph [ref=e87]: New task "Test new task from Playwright" added to Todo
+          - generic [ref=e88]:
+            - generic [ref=e90]: SA
+            - generic [ref=e91]:
+              - generic [ref=e92]:
+                - generic [ref=e93]: Sarah
+                - generic [ref=e94]: Jan 12, 4:00 PM
+              - paragraph [ref=e95]: Module 1 content draft completed
+          - generic [ref=e96]:
+            - generic [ref=e98]: SA
+            - generic [ref=e99]:
+              - generic [ref=e100]:
+                - generic [ref=e101]: Sarah
+                - generic [ref=e102]: Jan 8, 2:30 PM
+              - paragraph [ref=e103]: Course structure approved by client
+          - generic [ref=e104]:
+            - generic [ref=e106]: AA
+            - generic [ref=e107]:
+              - generic [ref=e108]:
+                - generic [ref=e109]: Aakansha
+                - generic [ref=e110]: Jan 5, 10:00 AM
+              - paragraph [ref=e111]: Project kickoff completed, requirements gathered from Eric
+      - generic [ref=e112]:
+        - paragraph [ref=e113]: This is a read-only view of the project status.
+        - paragraph [ref=e114]: For questions or updates, please contact your project manager.
+  - button "Open Next.js Dev Tools" [ref=e120] [cursor=pointer]:
+    - img [ref=e121] [cursor=pointer]
+  - alert [ref=e124]
+```

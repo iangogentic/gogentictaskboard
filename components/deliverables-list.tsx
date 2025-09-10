@@ -1,0 +1,301 @@
+'use client'
+
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { Plus, FileText, Download, Trash2, Edit2, Check, X, ExternalLink } from 'lucide-react'
+import { format } from 'date-fns'
+import type { Deliverable } from '@prisma/client'
+
+interface DeliverablesListProps {
+  projectId: string
+  deliverables: Deliverable[]
+}
+
+export default function DeliverablesList({ projectId, deliverables: initialDeliverables }: DeliverablesListProps) {
+  const router = useRouter()
+  const [deliverables, setDeliverables] = useState(initialDeliverables)
+  const [addingDeliverable, setAddingDeliverable] = useState(false)
+  const [editingId, setEditingId] = useState<string | null>(null)
+  
+  // Form state for new deliverable
+  const [newDeliverable, setNewDeliverable] = useState({
+    title: '',
+    description: '',
+    url: '',
+    type: 'DOCUMENT',
+  })
+  
+  // Form state for editing
+  const [editForm, setEditForm] = useState({
+    title: '',
+    description: '',
+    url: '',
+    type: 'DOCUMENT',
+  })
+
+  const deliverableTypes = [
+    { value: 'DOCUMENT', label: 'Document', icon: '📄' },
+    { value: 'DESIGN', label: 'Design', icon: '🎨' },
+    { value: 'CODE', label: 'Code', icon: '💻' },
+    { value: 'VIDEO', label: 'Video', icon: '🎥' },
+    { value: 'PRESENTATION', label: 'Presentation', icon: '📊' },
+    { value: 'OTHER', label: 'Other', icon: '📦' },
+  ]
+
+  const handleAddDeliverable = async () => {
+    if (!newDeliverable.title.trim()) return
+
+    try {
+      const response = await fetch('/api/deliverables', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          projectId,
+          ...newDeliverable,
+        }),
+      })
+
+      if (response.ok) {
+        setNewDeliverable({
+          title: '',
+          description: '',
+          url: '',
+          type: 'DOCUMENT',
+        })
+        setAddingDeliverable(false)
+        router.refresh()
+      }
+    } catch (error) {
+      console.error('Failed to add deliverable:', error)
+    }
+  }
+
+  const handleEditDeliverable = async (id: string) => {
+    if (!editForm.title.trim()) return
+
+    try {
+      const response = await fetch(`/api/deliverables/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(editForm),
+      })
+
+      if (response.ok) {
+        setEditingId(null)
+        router.refresh()
+      }
+    } catch (error) {
+      console.error('Failed to update deliverable:', error)
+    }
+  }
+
+  const handleDeleteDeliverable = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this deliverable?')) return
+
+    try {
+      const response = await fetch(`/api/deliverables/${id}`, {
+        method: 'DELETE',
+      })
+
+      if (response.ok) {
+        router.refresh()
+      }
+    } catch (error) {
+      console.error('Failed to delete deliverable:', error)
+    }
+  }
+
+  const startEdit = (deliverable: Deliverable) => {
+    setEditingId(deliverable.id)
+    setEditForm({
+      title: deliverable.title,
+      description: deliverable.description || '',
+      url: deliverable.url || '',
+      type: deliverable.type,
+    })
+  }
+
+  const getTypeIcon = (type: string) => {
+    return deliverableTypes.find(t => t.value === type)?.icon || '📦'
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <h3 className="text-lg font-medium">Deliverables</h3>
+        <button
+          onClick={() => setAddingDeliverable(true)}
+          className="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+        >
+          <Plus className="h-4 w-4 mr-1" />
+          Add Deliverable
+        </button>
+      </div>
+
+      {addingDeliverable && (
+        <div className="bg-gray-50 rounded-lg p-4 space-y-3">
+          <input
+            type="text"
+            placeholder="Deliverable title"
+            value={newDeliverable.title}
+            onChange={(e) => setNewDeliverable({ ...newDeliverable, title: e.target.value })}
+            className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            autoFocus
+          />
+          <textarea
+            placeholder="Description (optional)"
+            value={newDeliverable.description}
+            onChange={(e) => setNewDeliverable({ ...newDeliverable, description: e.target.value })}
+            className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            rows={2}
+          />
+          <input
+            type="url"
+            placeholder="URL or link (optional)"
+            value={newDeliverable.url}
+            onChange={(e) => setNewDeliverable({ ...newDeliverable, url: e.target.value })}
+            className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          />
+          <select
+            value={newDeliverable.type}
+            onChange={(e) => setNewDeliverable({ ...newDeliverable, type: e.target.value })}
+            className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          >
+            {deliverableTypes.map(type => (
+              <option key={type.value} value={type.value}>
+                {type.icon} {type.label}
+              </option>
+            ))}
+          </select>
+          <div className="flex justify-end space-x-2">
+            <button
+              onClick={() => {
+                setAddingDeliverable(false)
+                setNewDeliverable({
+                  title: '',
+                  description: '',
+                  url: '',
+                  type: 'DOCUMENT',
+                })
+              }}
+              className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-800"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleAddDeliverable}
+              className="px-3 py-1.5 text-sm bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
+            >
+              Add
+            </button>
+          </div>
+        </div>
+      )}
+
+      {deliverables.length === 0 && !addingDeliverable && (
+        <div className="text-center py-8 text-gray-500">
+          <FileText className="h-12 w-12 mx-auto mb-3 text-gray-300" />
+          <p>No deliverables yet</p>
+          <p className="text-sm mt-1">Add deliverables to track project outputs</p>
+        </div>
+      )}
+
+      <div className="space-y-3">
+        {deliverables.map((deliverable) => (
+          <div key={deliverable.id}>
+            {editingId === deliverable.id ? (
+              <div className="bg-gray-50 rounded-lg p-4 space-y-3">
+                <input
+                  type="text"
+                  value={editForm.title}
+                  onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
+                  className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  autoFocus
+                />
+                <textarea
+                  value={editForm.description}
+                  onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                  className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  rows={2}
+                />
+                <input
+                  type="url"
+                  value={editForm.url}
+                  onChange={(e) => setEditForm({ ...editForm, url: e.target.value })}
+                  className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+                <select
+                  value={editForm.type}
+                  onChange={(e) => setEditForm({ ...editForm, type: e.target.value })}
+                  className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                >
+                  {deliverableTypes.map(type => (
+                    <option key={type.value} value={type.value}>
+                      {type.icon} {type.label}
+                    </option>
+                  ))}
+                </select>
+                <div className="flex justify-end space-x-2">
+                  <button
+                    onClick={() => setEditingId(null)}
+                    className="p-1.5 text-gray-500 hover:text-gray-700"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                  <button
+                    onClick={() => handleEditDeliverable(deliverable.id)}
+                    className="p-1.5 text-green-600 hover:text-green-700"
+                  >
+                    <Check className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="bg-white rounded-lg border p-4 hover:shadow-sm transition-shadow group">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center space-x-2">
+                      <span className="text-lg">{getTypeIcon(deliverable.type)}</span>
+                      <h4 className="font-medium text-gray-900">{deliverable.title}</h4>
+                    </div>
+                    {deliverable.description && (
+                      <p className="text-sm text-gray-600 mt-1">{deliverable.description}</p>
+                    )}
+                    <div className="flex items-center space-x-4 mt-2 text-xs text-gray-500">
+                      <span>Updated {format(new Date(deliverable.updatedAt), 'MMM d, yyyy')}</span>
+                      {deliverable.url && (
+                        <a
+                          href={deliverable.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center text-indigo-600 hover:text-indigo-800"
+                        >
+                          <ExternalLink className="h-3 w-3 mr-1" />
+                          View
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button
+                      onClick={() => startEdit(deliverable)}
+                      className="p-1.5 text-gray-500 hover:text-indigo-600"
+                    >
+                      <Edit2 className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={() => handleDeleteDeliverable(deliverable.id)}
+                      className="p-1.5 text-gray-500 hover:text-red-600"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}

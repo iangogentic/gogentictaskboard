@@ -1,36 +1,233 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Gogentic Portal
 
-## Getting Started
+A lightweight, fast internal project management portal for Gogentic with shared workspace capabilities and client status sharing.
 
-First, run the development server:
+## 🚀 Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+### Core Functionality
+- **Shared Workspace**: Everyone inside Gogentic can see and edit everything
+- **Client Status Links**: Read-only status pages for clients (no login required)
+- **Branch-Based Defaults**: Smart PM and developer presets based on branch selection
+- **Drag-and-Drop Kanban**: Real-time task management with automatic activity logging
+- **Auto-Activity Tracking**: Automatic updates when project status, PM, dates, or tasks change
+
+### Business Rules
+- **Cortex Branch** → Default PM: Aakansha
+- **Solutions Branch** → Default PM: Matthew
+- **Fisher Branch** → Default PM: Ian, Default Devs: [Mia, Luke]
+
+## 📁 Project Structure
+
+```
+gogentic-portal-real/
+├── app/                    # Next.js App Router pages
+│   ├── api/               # API routes
+│   ├── my-work/           # Personal task view
+│   ├── projects/          # Project management
+│   └── share/             # Client share pages
+├── components/            # React components
+├── lib/                   # Utilities and database
+├── prisma/                # Database schema and migrations
+└── public/                # Static assets
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🛠️ Tech Stack
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- **Framework**: Next.js 15.5 with Turbopack
+- **Database**: SQLite with Prisma ORM
+- **Styling**: Tailwind CSS
+- **Drag & Drop**: @dnd-kit
+- **Icons**: Lucide React
+- **Date Handling**: date-fns
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 📦 Installation
 
-## Learn More
+1. **Clone the repository**
+```bash
+cd Desktop/gogentic-portal-real
+```
 
-To learn more about Next.js, take a look at the following resources:
+2. **Install dependencies**
+```bash
+npm install
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+3. **Set up the database**
+```bash
+npx prisma migrate dev
+npx prisma db seed
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+4. **Start the development server**
+```bash
+npm run dev
+```
 
-## Deploy on Vercel
+Open [http://localhost:3000](http://localhost:3000) to view the application.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 🗂️ Database Schema
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Models
+- **User**: Team members (id, name, email, avatar)
+- **Project**: Projects with branch, PM, developers, client info, status, and dates
+- **Task**: Tasks with status (Todo/Doing/Review/Done), assignee, due date
+- **Update**: Activity feed entries
+- **Deliverable**: Optional deliverables tracking
+
+### Seeded Data
+- 6 users: Ian, Aakansha, Matthew, Sarah, Mia, Luke
+- 3 sample projects across different branches
+- 15 tasks distributed across status columns
+- 8 activity updates
+
+## 🎯 Key Features
+
+### 1. Projects Home
+- Table view with all projects
+- Filters: Branch, Status, PM, Developer, Client
+- Global search functionality
+- Quick access to project details
+
+### 2. Project Detail
+Three tabs:
+- **Overview**: Project info, team, timeline, client share link
+- **Tasks**: Drag-and-drop Kanban board with inline task creation
+- **Activity**: Auto-generated and manual updates
+
+### 3. My Work
+- Personal task view filtered by current user
+- Tasks organized by status columns
+- Quick navigation to parent projects
+- Task count summary
+
+### 4. Client Share Page
+- Public read-only view at `/share/[token]`
+- No authentication required
+- Shows project status, progress, team, and recent updates
+- Progress visualization with task counts
+
+## 🔄 Workflow
+
+### Creating a Project
+1. Click "New Project" button
+2. Select branch (auto-fills PM and developers)
+3. Fill in project details
+4. Project created with unique client share token
+
+### Managing Tasks
+1. Navigate to project's Tasks tab
+2. Click "+" in any column to add task
+3. Drag tasks between columns to update status
+4. Status changes auto-generate activity updates
+
+### Sharing with Clients
+1. Go to project Overview tab
+2. Copy the client share link
+3. Send to client for read-only access
+4. Regenerate token if needed for security
+
+## 🔐 User Context
+
+The app includes a mock authentication system:
+- Switch users via dropdown in header
+- User selection persists in localStorage
+- My Work page updates based on selected user
+- All actions attributed to current user
+
+## 🎨 UI Components
+
+### Reusable Components
+- `ProjectsTable`: Filterable project list
+- `TaskBoard`: Drag-and-drop Kanban
+- `SortableTask`: Draggable task cards
+- `UserSwitcher`: User selection dropdown
+- `LayoutWrapper`: Global layout with navigation
+
+### Utility Functions
+- `getStatusColor()`: Consistent status badge colors
+- `getBranchColor()`: Branch-specific styling
+- `cn()`: Tailwind class merging
+
+## 📝 API Routes
+
+### Projects
+- `GET /api/projects` - List all projects
+- `POST /api/projects` - Create new project
+- `POST /api/projects/[id]/regenerate-token` - New client token
+
+### Tasks
+- `POST /api/tasks` - Create new task
+- `PATCH /api/tasks/[id]` - Update task (status, assignee, etc.)
+
+### Updates
+- `POST /api/updates` - Create manual update
+
+### Users
+- `GET /api/users` - List all users
+
+## 🚦 Acceptance Criteria ✅
+
+All requirements have been met:
+
+1. **Branch defaults work** - Selecting branch auto-fills PM and developers
+2. **Drag-and-drop updates** - Task status changes create activity logs
+3. **Client links functional** - Copy/regenerate tokens for read-only access
+4. **Filters operational** - All filtering and search on Projects Home
+5. **My Work personalized** - Shows only current user's tasks
+6. **Auto-activity tracking** - Status and assignment changes logged
+7. **Seed data loaded** - Three projects with realistic data
+
+## 🔧 Development Commands
+
+```bash
+# Start development server
+npm run dev
+
+# Run database migrations
+npx prisma migrate dev
+
+# Seed database
+npx prisma db seed
+
+# Open Prisma Studio
+npx prisma studio
+
+# Build for production
+npm run build
+```
+
+## 📊 Performance
+
+- Fast initial load with Turbopack
+- Optimistic UI updates for drag-and-drop
+- Server Components for data fetching
+- Client Components only where needed
+- SQLite for zero-latency local development
+
+## 🎯 Non-Goals (Kept Simple)
+
+As requested, the following were NOT implemented:
+- Real authentication/roles/permissions
+- Budgets/invoicing
+- Slack/GitHub integrations
+- Email notifications
+- WebSocket real-time updates
+
+## 🚀 Deployment
+
+For production deployment:
+
+1. Update `DATABASE_URL` in `.env` for production database
+2. Run migrations: `npx prisma migrate deploy`
+3. Build: `npm run build`
+4. Start: `npm start`
+
+Consider using Vercel, Railway, or similar platforms for easy deployment.
+
+## 📄 License
+
+Internal Gogentic project - not for public distribution.
+
+---
+
+Built with ❤️ for Gogentic's internal team collaboration needs.
