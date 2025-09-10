@@ -8,36 +8,34 @@ export async function DELETE(
   try {
     const { id } = await params
     
-    // First unassign from all projects and tasks
-    await prisma.$transaction([
-      // Remove from managed projects
-      prisma.project.updateMany({
-        where: { pmId: id },
-        data: { pmId: null }
-      }),
-      // Remove from developer projects
-      prisma.project.updateMany({
-        where: {
-          developers: {
-            some: { id }
-          }
-        },
-        data: {
-          developers: {
-            disconnect: { id }
-          }
-        }
-      }),
-      // Unassign from tasks
-      prisma.task.updateMany({
-        where: { assigneeId: id },
-        data: { assigneeId: null }
-      }),
-      // Delete the user
-      prisma.user.delete({
-        where: { id }
+    // Check if user is a PM on any projects
+    const managedProjects = await prisma.project.findMany({
+      where: { pmId: id }
+    })
+    
+    if (managedProjects.length > 0) {
+      // Find another user to reassign projects to
+      const otherUser = await prisma.user.findFirst({
+        where: { id: { not: id } }
       })
-    ])
+      
+      if (!otherUser) {
+        return NextResponse.json({ 
+          error: 'Cannot delete user - they manage projects and no other users exist to reassign' 
+        }, { status: 400 })
+      }
+      
+      // Reassign projects to another user
+      await prisma.project.updateMany({
+        where: { pmId: id },
+        data: { pmId: otherUser.id }
+      })
+    }
+    
+    // Now safe to delete user (cascade will handle related records)
+    await prisma.user.delete({
+      where: { id }
+    })
     
     return NextResponse.json({ success: true })
   } catch (error) {
