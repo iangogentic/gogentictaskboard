@@ -13,6 +13,8 @@ import {
   Activity
 } from 'lucide-react'
 
+export const dynamic = 'force-dynamic'
+
 async function getRecentActivity() {
   const [updates, tasks, projects] = await Promise.all([
     // Get recent updates

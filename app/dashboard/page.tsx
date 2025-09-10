@@ -7,6 +7,8 @@ import {
 } from 'lucide-react'
 import { getStatusColor, getBranchColor } from '@/lib/utils'
 
+export const dynamic = 'force-dynamic'
+
 export default async function DashboardPage() {
   // Fetch all data needed for dashboard
   const [projects, tasks, updates, users] = await Promise.all([

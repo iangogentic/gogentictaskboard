@@ -18,6 +18,8 @@ import {
   Filter
 } from 'lucide-react'
 
+export const dynamic = 'force-dynamic'
+
 async function getReportsData() {
   const now = new Date()
   const lastWeek = subWeeks(now, 1)

@@ -2,6 +2,8 @@ import { prisma } from '@/lib/db'
 import { notFound } from 'next/navigation'
 import ProjectDetail from '@/components/project-detail'
 
+export const dynamic = 'force-dynamic'
+
 export default async function ProjectPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const [project, users] = await Promise.all([

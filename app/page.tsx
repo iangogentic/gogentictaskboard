@@ -3,6 +3,8 @@ import ProjectsTable from '@/components/projects-table'
 import Link from 'next/link'
 import { Plus, BarChart3, Briefcase } from 'lucide-react'
 
+export const dynamic = 'force-dynamic'
+
 export default async function HomePage() {
   const [projects, users] = await Promise.all([
     prisma.project.findMany({
