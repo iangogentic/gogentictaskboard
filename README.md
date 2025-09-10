@@ -213,16 +213,54 @@ As requested, the following were NOT implemented:
 - Email notifications
 - WebSocket real-time updates
 
-## 🚀 Deployment
+## 🚀 Deployment to Vercel
 
-For production deployment:
+**IMPORTANT**: SQLite doesn't work on Vercel's serverless environment. You need to use a cloud PostgreSQL database.
 
-1. Update `DATABASE_URL` in `.env` for production database
-2. Run migrations: `npx prisma migrate deploy`
-3. Build: `npm run build`
-4. Start: `npm start`
+### Quick Setup with Supabase (Free)
 
-Consider using Vercel, Railway, or similar platforms for easy deployment.
+1. **Create a Supabase account** at https://supabase.com
+2. **Create a new project** (takes ~2 minutes to provision)
+3. **Get your database URL**:
+   - Go to Settings → Database
+   - Copy the "Transaction" connection string
+   - It looks like: `postgresql://postgres:[password]@[host]:6543/postgres?sslmode=require`
+
+4. **Update your local project**:
+   ```bash
+   # Update schema.prisma
+   # Change provider from "sqlite" to "postgresql"
+   ```
+
+5. **Add to Vercel Environment Variables**:
+   - Go to your Vercel project settings
+   - Navigate to Environment Variables
+   - Add `DATABASE_URL` with your Supabase connection string
+
+6. **Push schema to Supabase**:
+   ```bash
+   npx prisma db push
+   ```
+
+7. **Seed the database** (optional):
+   ```bash
+   npm run seed
+   ```
+
+8. **Redeploy to Vercel**:
+   ```bash
+   vercel --prod
+   ```
+
+### Alternative: Neon (Also Free)
+- Sign up at https://neon.tech
+- Create a project and copy the connection string
+- Follow the same steps as above
+
+### Alternative: Vercel Postgres
+- In Vercel dashboard, go to Storage tab
+- Create a Postgres database
+- It will automatically add the DATABASE_URL to your project
 
 ## 📄 License
 
