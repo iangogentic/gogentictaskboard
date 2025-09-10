@@ -60,14 +60,39 @@ export default function MainNav() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center">
-            <Link href="/" className="flex items-center space-x-3">
+            <Link href="/" className="flex items-center space-x-2">
               <div className="flex items-center">
-                <span className="text-2xl font-bold tracking-tight">
-                  <span className="text-indigo-600">GO</span>
-                  <span className="text-gray-900">GENTIC</span>
+                {/* Network graph representation */}
+                <svg width="40" height="40" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg" className="mr-2">
+                  <g fill="none" stroke="#4B5563" strokeWidth="1.5">
+                    <line x1="5" y1="20" x2="12" y2="10" />
+                    <line x1="5" y1="20" x2="12" y2="30" />
+                    <line x1="12" y1="10" x2="20" y2="8" />
+                    <line x1="12" y1="10" x2="20" y2="20" />
+                    <line x1="12" y1="30" x2="20" y2="20" />
+                    <line x1="20" y1="20" x2="28" y2="15" />
+                    <line x1="20" y1="20" x2="28" y2="25" />
+                    <line x1="28" y1="15" x2="35" y2="20" />
+                    <line x1="5" y1="20" x2="20" y2="32" />
+                    <line x1="20" y1="32" x2="35" y2="20" />
+                  </g>
+                  <g fill="#4B5563">
+                    <circle cx="5" cy="20" r="3" />
+                    <circle cx="12" cy="10" r="2" />
+                    <circle cx="12" cy="30" r="2" />
+                    <circle cx="20" cy="20" r="4" />
+                    <circle cx="20" cy="8" r="2" />
+                    <circle cx="28" cy="15" r="3" />
+                    <circle cx="28" cy="25" r="2" />
+                    <circle cx="35" cy="20" r="2" />
+                    <circle cx="20" cy="32" r="3" />
+                  </g>
+                </svg>
+                <span className="text-xl font-semibold">
+                  <span className="text-gray-800">Gogentic</span>
+                  <span className="text-gray-500">.ai</span>
                 </span>
               </div>
-              <span className="text-sm text-gray-500 border-l pl-3">Portal</span>
             </Link>
             
             <div className="hidden md:flex items-center space-x-1 ml-10">

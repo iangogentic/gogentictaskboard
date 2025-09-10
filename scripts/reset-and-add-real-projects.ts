@@ -55,27 +55,9 @@ async function main() {
         email: 'arjun@gogentic.com',
       }
     }),
-    prisma.user.create({
-      data: {
-        name: 'Charlie',
-        email: 'charlie@gogentic.com',
-      }
-    }),
-    prisma.user.create({
-      data: {
-        name: 'Eric',
-        email: 'eric@gogentic.com',
-      }
-    }),
-    prisma.user.create({
-      data: {
-        name: 'Brett',
-        email: 'brett@gogentic.com',
-      }
-    }),
   ])
   
-  const [ian, aakansha, matthew, mia, kelly, arjun, charlie, eric, brett] = users
+  const [ian, aakansha, matthew, mia, kelly, arjun] = users
   
   console.log('✅ Users created')
   
@@ -231,7 +213,7 @@ async function main() {
       branch: 'SOLUTIONS',
       pmId: matthew.id,
       developers: {
-        connect: [{ id: charlie.id }, { id: eric.id }]
+        connect: []
       },
       clientName: 'Internal',
       clientEmail: 'team@gogentic.com',
@@ -243,26 +225,22 @@ async function main() {
           {
             title: 'Initial requirements gathering',
             status: 'Done',
-            assigneeId: charlie.id,
             order: 0
           },
           {
             title: 'Design email automation workflow',
             status: 'Done',
-            assigneeId: charlie.id,
             order: 1
           },
           {
             title: 'Get secondary API key access',
             status: 'Review',
-            assigneeId: eric.id,
             order: 2,
-            notes: 'Sent to Brett for review'
+            notes: 'Sent for review'
           },
           {
             title: 'Implement automation logic',
             status: 'Todo',
-            assigneeId: charlie.id,
             order: 3,
             notes: 'Blocked - waiting for API access approval'
           },
@@ -276,13 +254,13 @@ async function main() {
       updates: {
         create: [
           {
-            authorId: eric.id,
-            body: 'Sent additional information to Charlie regarding getting us access to a secondary API key.',
+            authorId: matthew.id,
+            body: 'Sent additional information regarding getting us access to a secondary API key.',
             createdAt: new Date('2025-09-09T14:00:00')
           },
           {
             authorId: matthew.id,
-            body: 'Information was sent to Brett for review. We are waiting for approval to move forward.',
+            body: 'Information was sent for review. We are waiting for approval to move forward.',
             createdAt: new Date('2025-09-10T11:00:00')
           }
         ]
