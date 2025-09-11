@@ -140,8 +140,8 @@ export function MyWorkClient({
               <span 
                 className="text-xs px-2 py-0.5 rounded-full"
                 style={{ 
-                  backgroundColor: `${task.project.portfolio.color}20`,
-                  color: task.project.portfolio.color 
+                  backgroundColor: task.project.portfolio.color ? `${task.project.portfolio.color}20` : '#f3f4f6',
+                  color: task.project.portfolio.color || '#6b7280'
                 }}
               >
                 {task.project.portfolio.name}
@@ -275,7 +275,7 @@ export function MyWorkClient({
                   <div key={portfolioId} className="flex items-center gap-3">
                     <div 
                       className="w-3 h-3 rounded-full"
-                      style={{ backgroundColor: portfolio.color }}
+                      style={{ backgroundColor: portfolio.color || '#6b7280' }}
                     />
                     <div>
                       <p className="text-sm font-medium text-gray-900">{portfolio.name}</p>

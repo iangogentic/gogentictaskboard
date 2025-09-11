@@ -278,8 +278,8 @@ export default async function TeamPage() {
                           key={portfolioId}
                           className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs"
                           style={{ 
-                            backgroundColor: `${portfolio.color}20`,
-                            color: portfolio.color 
+                            backgroundColor: portfolio.color ? `${portfolio.color}20` : '#f3f4f6',
+                            color: portfolio.color || '#6b7280'
                           }}
                         >
                           {portfolio.name}
