@@ -327,9 +327,9 @@ export default async function ActivityPage() {
                           <p className="text-sm text-gray-900">
                             {getActivityDescription(activity)}
                           </p>
-                          {activity.type === 'update' && activity.data.content && (
+                          {activity.type === 'update' && activity.data.body && (
                             <p className="text-sm text-gray-600 mt-1 line-clamp-2">
-                              {activity.data.content}
+                              {activity.data.body}
                             </p>
                           )}
                           <p className="text-xs text-gray-500 mt-1">
