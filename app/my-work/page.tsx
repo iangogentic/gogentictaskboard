@@ -2,7 +2,7 @@ import { prisma } from '@/lib/prisma'
 import { MyWorkClient } from './my-work-client'
 import { cookies } from 'next/headers'
 
-export const dynamic = 'force-dynamic'
+export const revalidate = 60
 
 export default async function MyWorkPage() {
   const cookieStore = await cookies()

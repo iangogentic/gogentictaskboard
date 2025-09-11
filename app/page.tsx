@@ -3,7 +3,7 @@ import { ProjectsList } from '@/components/projects/projects-list'
 import { KPIGrid, KPITile } from '@/components/ui/kpi-tile'
 import { AlertCircle, TrendingUp, Clock, Users } from 'lucide-react'
 
-export const dynamic = 'force-dynamic'
+export const revalidate = 60
 
 export default async function HomePage() {
   const [projects, users, stats] = await Promise.all([

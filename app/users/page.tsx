@@ -4,7 +4,7 @@ import { ArrowLeft, Plus, Mail, Calendar, Briefcase, Clock } from 'lucide-react'
 import { format } from 'date-fns'
 import UserActions from '@/components/user-actions'
 
-export const dynamic = 'force-dynamic'
+export const revalidate = 60
 
 async function getUsers() {
   const users = await prisma.user.findMany({

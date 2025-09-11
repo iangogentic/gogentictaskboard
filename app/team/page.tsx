@@ -5,7 +5,7 @@ import {
   Mail, Shield, Code, Palette, AlertCircle
 } from 'lucide-react'
 
-export const dynamic = 'force-dynamic'
+export const revalidate = 60
 
 export default async function TeamPage() {
   const [users, projects, tasks, recentActivity] = await Promise.all([

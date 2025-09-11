@@ -9,7 +9,7 @@ import {
 import { KPIGrid, KPITile, AttentionCard } from '@/components/ui/kpi-tile'
 import { getStatusColor, getBranchColor } from '@/lib/utils'
 
-export const dynamic = 'force-dynamic'
+export const revalidate = 60
 
 export default async function DashboardPage() {
   // Fetch all data needed for dashboard

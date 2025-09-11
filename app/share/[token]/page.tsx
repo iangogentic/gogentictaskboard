@@ -4,7 +4,7 @@ import { format } from 'date-fns'
 import { Calendar, Clock, Users, CheckCircle, Circle, AlertCircle } from 'lucide-react'
 import { getStatusColor, getBranchColor } from '@/lib/utils'
 
-export const dynamic = 'force-dynamic'
+export const revalidate = 60
 
 export default async function ClientSharePage({ params }: { params: Promise<{ token: string }> }) {
   const { token } = await params

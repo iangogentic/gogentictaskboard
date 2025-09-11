@@ -8,7 +8,7 @@ import {
 } from 'lucide-react'
 import { KPIGrid, KPITile } from '@/components/ui/kpi-tile'
 
-export const dynamic = 'force-dynamic'
+export const revalidate = 60
 
 async function getRecentActivity() {
   const [updates, tasks, projects, timeEntries] = await Promise.all([

@@ -2,7 +2,7 @@ import { prisma } from '@/lib/db'
 import { notFound } from 'next/navigation'
 import ProjectDetail from '@/components/project-detail'
 
-export const dynamic = 'force-dynamic'
+export const revalidate = 60
 
 export default async function ProjectPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params

@@ -35,12 +35,15 @@ export function SlimNav({ projects, users, currentUser }: SlimNavProps) {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <div className="flex items-center">
-            <Link href="/" className="flex items-center gap-2">
+            <Link href="/" className="flex items-center gap-3">
               <img 
                 src="/Gogentic.ai.png" 
                 alt="Gogentic AI" 
-                className="h-10 w-auto"
+                className="h-14 w-auto"
               />
+              <span className="text-xl font-semibold text-gray-900">
+                Gogentic Portal
+              </span>
             </Link>
           </div>
 
