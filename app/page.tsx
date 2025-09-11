@@ -2,6 +2,7 @@ import { prisma } from '@/lib/prisma'
 import { ProjectsList } from '@/components/projects/projects-list'
 import { KPIGrid, KPITile } from '@/components/ui/kpi-tile'
 import { AlertCircle, TrendingUp, Clock, Users } from 'lucide-react'
+import { Suspense } from 'react'
 
 export const revalidate = 60
 
@@ -83,10 +84,12 @@ export default async function HomePage() {
         </KPIGrid>
 
         {/* Projects List */}
-        <ProjectsList 
-          projects={projects} 
-          users={users}
-        />
+        <Suspense fallback={<div>Loading projects...</div>}>
+          <ProjectsList 
+            projects={projects} 
+            users={users}
+          />
+        </Suspense>
       </div>
     </div>
   )
