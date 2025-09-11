@@ -331,7 +331,7 @@ export default async function DashboardPage() {
                         {update.project.title}
                       </Link>
                     </p>
-                    <p className="text-sm text-gray-600 mt-1">{update.content}</p>
+                    <p className="text-sm text-gray-600 mt-1">{update.body}</p>
                   </div>
                   <span className="text-xs text-gray-500 ml-4">
                     {format(new Date(update.createdAt), 'MMM d, h:mm a')}
