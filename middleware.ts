@@ -9,7 +9,9 @@ export default auth((req) => {
   const isAuthRoute = nextUrl.pathname.startsWith('/login') || 
                       nextUrl.pathname.startsWith('/register')
   const isPublicRoute = nextUrl.pathname === '/' || 
-                        nextUrl.pathname.startsWith('/api/auth')
+                        nextUrl.pathname.startsWith('/api/auth') ||
+                        nextUrl.pathname.startsWith('/share/') ||
+                        nextUrl.pathname.startsWith('/client-portal')
 
   // Redirect logged-in users away from auth pages
   if (isAuthRoute && isLoggedIn) {

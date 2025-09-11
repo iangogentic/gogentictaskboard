@@ -37,8 +37,8 @@ export default function ProjectsTable({ projects, users }: ProjectsTableProps) {
       const matchesSearch = searchQuery === '' || 
         project.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         project.clientName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        project.pm.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        project.developers.some(dev => dev.name.toLowerCase().includes(searchQuery.toLowerCase()))
+        project.pm.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        project.developers.some(dev => dev.name?.toLowerCase().includes(searchQuery.toLowerCase()))
 
       const matchesBranch = branchFilter === 'all' || project.branch === branchFilter
       const matchesStatus = statusFilter === 'all' || project.status === statusFilter
@@ -266,9 +266,9 @@ export default function ProjectsTable({ projects, users }: ProjectsTableProps) {
                         <div
                           key={dev.id}
                           className="h-8 w-8 rounded-full bg-border flex items-center justify-center text-xs font-medium text-fg-muted border-2 border-white"
-                          title={dev.name}
+                          title={dev.name || undefined}
                         >
-                          {dev.name.slice(0, 2).toUpperCase()}
+                          {dev.name?.slice(0, 2).toUpperCase() || 'NA'}
                         </div>
                       ))}
                       {project.developers.length > 3 && (

@@ -102,7 +102,7 @@ export default async function UsersPage() {
                         {user.email}
                       </div>
                     </div>
-                    <UserActions userId={user.id} userName={user.name} />
+                    <UserActions userId={user.id} userName={user.name || 'Unknown'} />
                   </div>
 
                   <div className="space-y-3">

@@ -1,0 +1,70 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - navigation [ref=e3]:
+      - generic [ref=e5]:
+        - link "Gogentic AI Gogentic Portal" [ref=e7] [cursor=pointer]:
+          - /url: /
+          - img "Gogentic AI" [ref=e8] [cursor=pointer]
+          - generic [ref=e9] [cursor=pointer]: Gogentic Portal
+        - generic [ref=e10]:
+          - link "Mission Control" [ref=e11] [cursor=pointer]:
+            - /url: /
+            - img [ref=e12] [cursor=pointer]
+            - text: Mission Control
+          - link "Projects" [ref=e17] [cursor=pointer]:
+            - /url: /projects
+            - img [ref=e18] [cursor=pointer]
+            - text: Projects
+          - link "My Work" [ref=e20] [cursor=pointer]:
+            - /url: /my-work
+            - img [ref=e21] [cursor=pointer]
+            - text: My Work
+          - link "Dashboard" [ref=e24] [cursor=pointer]:
+            - /url: /dashboard
+            - img [ref=e25] [cursor=pointer]
+            - text: Dashboard
+          - link "Reports" [ref=e27] [cursor=pointer]:
+            - /url: /reports
+            - img [ref=e28] [cursor=pointer]
+            - text: Reports
+          - link "Activity" [ref=e31] [cursor=pointer]:
+            - /url: /activity
+            - img [ref=e32] [cursor=pointer]
+            - text: Activity
+          - link "Team" [ref=e34] [cursor=pointer]:
+            - /url: /team
+            - img [ref=e35] [cursor=pointer]
+            - text: Team
+        - button "Search... ⌘K" [ref=e42]:
+          - img [ref=e43]
+          - generic [ref=e46]: Search...
+          - generic [ref=e47]: ⌘K
+    - main [ref=e48]:
+      - generic [ref=e51]:
+        - generic [ref=e52]:
+          - img [ref=e54]
+          - heading "Client Portal" [level=1] [ref=e58]
+          - paragraph [ref=e59]: View your projects and track progress
+        - generic [ref=e60]:
+          - generic [ref=e61]:
+            - generic [ref=e62]: Your Email Address
+            - generic [ref=e63]:
+              - generic:
+                - img
+              - textbox "Your Email Address" [ref=e64]: egreenberg@zschool.com
+            - paragraph [ref=e65]: Enter the email address associated with your projects
+          - button "Loading..." [disabled] [ref=e66]
+        - generic [ref=e68]:
+          - img [ref=e69]
+          - generic [ref=e71]:
+            - paragraph [ref=e72]: Secure Access
+            - paragraph [ref=e73]: You'll only see projects associated with your email address. This is a read-only view for tracking project progress.
+        - link "← Back to Main Portal" [ref=e75] [cursor=pointer]:
+          - /url: /
+  - button "Open Next.js Dev Tools" [ref=e81] [cursor=pointer]:
+    - img [ref=e82] [cursor=pointer]
+  - alert [ref=e85]
+```

@@ -203,7 +203,7 @@ export default function TaskBoard({ project, users }: TaskBoardProps) {
             {activeTask.assignee && (
               <div className="flex items-center mt-2">
                 <div className="h-6 w-6 rounded-full bg-border flex items-center justify-center text-xs font-medium text-fg">
-                  {activeTask.assignee.name.slice(0, 2).toUpperCase()}
+                  {activeTask.assignee.name?.slice(0, 2).toUpperCase() || 'NA'}
                 </div>
               </div>
             )}

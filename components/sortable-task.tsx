@@ -177,7 +177,7 @@ export default function SortableTask({ task, users }: SortableTaskProps) {
           {task.assignee && (
             <div className="flex items-center">
               <div className="h-6 w-6 rounded-full bg-border flex items-center justify-center text-xs font-medium text-fg-muted">
-                {task.assignee.name.slice(0, 2).toUpperCase()}
+                {task.assignee.name?.slice(0, 2).toUpperCase() || 'NA'}
               </div>
             </div>
           )}
