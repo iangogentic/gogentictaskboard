@@ -1,10 +1,28 @@
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
+import NextAuth from "next-auth"
+import authConfig from "@/auth.config"
 
-export function middleware(req: NextRequest) {
-  // Allow all requests - no authentication required
-  return NextResponse.next();
-}
+const { auth } = NextAuth(authConfig)
+
+export default auth((req) => {
+  const { nextUrl } = req
+  const isLoggedIn = !!req.auth
+  const isAuthRoute = nextUrl.pathname.startsWith('/login') || 
+                      nextUrl.pathname.startsWith('/register')
+  const isPublicRoute = nextUrl.pathname === '/' || 
+                        nextUrl.pathname.startsWith('/api/auth')
+
+  // Redirect logged-in users away from auth pages
+  if (isAuthRoute && isLoggedIn) {
+    return Response.redirect(new URL('/dashboard', nextUrl))
+  }
+
+  // Redirect non-logged-in users to login page
+  if (!isLoggedIn && !isAuthRoute && !isPublicRoute) {
+    return Response.redirect(new URL('/login', nextUrl))
+  }
+
+  return null
+})
 
 export const config = {
   matcher: [
