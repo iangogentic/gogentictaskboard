@@ -1,4 +1,4 @@
-import { prisma } from '@/lib/db'
+import { prisma } from '@/lib/prisma'
 import Link from 'next/link'
 import { format, formatDistanceToNow } from 'date-fns'
 import { 

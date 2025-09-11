@@ -1,5 +1,9 @@
 import { NextResponse } from 'next/server'
-import { prisma } from '@/lib/db'
+import { prisma } from '@/lib/prisma'
+import { revalidateTag } from 'next/cache'
+import { tags } from '@/lib/cache'
+
+export const runtime = 'nodejs'
 
 export async function GET() {
   try {
@@ -71,6 +75,10 @@ export async function POST(request: Request) {
         },
       })
     }
+
+    // Revalidate cache tags
+    revalidateTag(tags.projects())
+    revalidateTag(tags.dashboard)
 
     return NextResponse.json(project)
   } catch (error) {

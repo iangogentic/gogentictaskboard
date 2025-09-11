@@ -1,4 +1,4 @@
-import { prisma } from '@/lib/db'
+import { prisma } from '@/lib/prisma'
 import ProjectsTable from '@/components/projects-table'
 import Link from 'next/link'
 import { Plus, BarChart3, Briefcase } from 'lucide-react'

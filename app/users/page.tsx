@@ -1,4 +1,4 @@
-import { prisma } from '@/lib/db'
+import { prisma } from '@/lib/prisma'
 import Link from 'next/link'
 import { ArrowLeft, Plus, Mail, Calendar, Briefcase, Clock } from 'lucide-react'
 import { format } from 'date-fns'

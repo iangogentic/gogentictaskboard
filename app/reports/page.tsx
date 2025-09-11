@@ -1,4 +1,4 @@
-import { prisma } from '@/lib/db'
+import { prisma } from '@/lib/prisma'
 import Link from 'next/link'
 import { format, startOfWeek, startOfMonth, subDays, subWeeks, subMonths } from 'date-fns'
 import { 

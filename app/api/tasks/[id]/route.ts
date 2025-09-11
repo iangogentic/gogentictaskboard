@@ -1,5 +1,9 @@
 import { NextResponse } from 'next/server'
-import { prisma } from '@/lib/db'
+import { prisma } from '@/lib/prisma'
+import { revalidateTag } from 'next/cache'
+import { tags } from '@/lib/cache'
+
+export const runtime = 'nodejs'
 
 export async function PATCH(
   request: Request,
@@ -77,6 +81,11 @@ export async function PATCH(
       }
     }
 
+    // Revalidate cache
+    revalidateTag(tags.tasks(currentTask.projectId))
+    revalidateTag(tags.projects(currentTask.projectId))
+    revalidateTag(tags.myWork(assigneeId || currentTask.assigneeId!))
+    
     return NextResponse.json(updatedTask)
   } catch (error) {
     console.error('Error updating task:', error)
