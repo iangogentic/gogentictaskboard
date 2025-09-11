@@ -77,7 +77,7 @@ async function getRecentActivity() {
           }
         }
       },
-      orderBy: { startTime: 'desc' },
+      orderBy: { date: 'desc' },
       take: 30
     })
   ])
@@ -114,7 +114,7 @@ async function getRecentActivity() {
     })),
     ...timeEntries.filter(e => e.endTime).map(entry => ({
       type: 'time_logged' as const,
-      date: entry.startTime,
+      date: entry.date,
       data: entry,
       icon: Clock,
       color: 'amber'
@@ -209,9 +209,7 @@ export default async function ActivityPage() {
           </>
         )
       case 'time_logged':
-        const duration = activity.data.endTime 
-          ? Math.round((new Date(activity.data.endTime).getTime() - new Date(activity.data.startTime).getTime()) / 60000)
-          : 0
+        const duration = activity.data.minutes || 0
         return (
           <>
             <span className="font-medium">{activity.data.user.name}</span>
