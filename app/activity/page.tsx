@@ -142,7 +142,7 @@ export default async function ActivityPage() {
   const weekCompleted = tasks.filter(t => t.status === 'DONE').length
   const activeProjects = projects.filter(p => p.status === 'IN_PROGRESS').length
   const totalHours = timeEntries.reduce((sum, e) => {
-    return sum + (e.minutes || 0) / 60
+    return sum + (e.hours || 0)
   }, 0)
 
   // Activity trends (mock data - would calculate from historical data)
@@ -207,7 +207,7 @@ export default async function ActivityPage() {
           </>
         )
       case 'time_logged':
-        const duration = activity.data.minutes || 0
+        const duration = Math.round((activity.data.hours || 0) * 60)
         return (
           <>
             <span className="font-medium">{activity.data.user.name}</span>

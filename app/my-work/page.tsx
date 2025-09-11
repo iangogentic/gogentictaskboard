@@ -71,7 +71,7 @@ export default async function MyWorkPage() {
 
   // Calculate today's total time
   const todayMinutes = timeEntries.reduce((sum, entry) => {
-    return sum + (entry.minutes || 0)
+    return sum + Math.round((entry.hours || 0) * 60)
   }, 0)
 
   const activeTimer = null // Timer functionality would need separate implementation
