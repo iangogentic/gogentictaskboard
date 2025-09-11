@@ -234,27 +234,24 @@ export default async function ActivityPage() {
         {/* KPI Tiles */}
         <KPIGrid className="mb-8">
           <KPITile
-            title="Today's Activity"
+            label="Today's Activity"
             value={todayActivities}
-            trend={activityTrend}
             icon={<Activity className="w-5 h-5 text-purple-600" />}
           />
           <KPITile
-            title="Week Completed"
-            value={weekCompleted}
-            subtitle="tasks"
+            label="Week Completed"
+            value={`${weekCompleted} tasks`}
             icon={<CheckCircle className="w-5 h-5 text-green-600" />}
           />
           <KPITile
-            title="Active Projects"
+            label="Active Projects"
             value={activeProjects}
             icon={<GitBranch className="w-5 h-5 text-indigo-600" />}
             href="/?status=IN_PROGRESS"
           />
           <KPITile
-            title="Hours Logged"
-            value={Math.round(totalHours)}
-            subtitle="this week"
+            label="Hours Logged"
+            value={`${Math.round(totalHours)} this week`}
             icon={<Clock className="w-5 h-5 text-amber-600" />}
           />
         </KPIGrid>
