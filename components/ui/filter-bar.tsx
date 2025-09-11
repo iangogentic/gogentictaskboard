@@ -112,7 +112,7 @@ export function FilterBar({
   };
 
   // Apply saved view
-  const applySavedView = (view: typeof savedViews[0]) => {
+  const applySavedView = (view: { id: string; name: string; filters: Record<string, string[]> }) => {
     const params = new URLSearchParams();
     Object.entries(view.filters).forEach(([key, values]) => {
       if (values.length > 0) {
