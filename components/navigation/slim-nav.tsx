@@ -11,7 +11,7 @@ import { CommandPalette } from '@/components/ui/command-palette';
 import { useState } from 'react';
 
 const navItems = [
-  { href: '/projects', label: 'Projects', icon: FolderOpen },
+  { href: '/', label: 'Projects', icon: FolderOpen },
   { href: '/my-work', label: 'My Work', icon: User },
   { href: '/dashboard', label: 'Dashboard', icon: BarChart3 },
   { href: '/reports', label: 'Reports', icon: FileText },
@@ -36,15 +36,20 @@ export function SlimNav({ projects, users, currentUser }: SlimNavProps) {
           {/* Logo */}
           <div className="flex items-center">
             <Link href="/" className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg" />
-              <span className="text-xl font-semibold text-gray-900">Gogentic</span>
+              <img 
+                src="/Gogentic.ai.png" 
+                alt="Gogentic AI" 
+                className="h-10 w-auto"
+              />
             </Link>
           </div>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-1">
             {navItems.map((item) => {
-              const isActive = pathname.startsWith(item.href);
+              const isActive = item.href === '/' 
+                ? pathname === '/'
+                : pathname.startsWith(item.href);
               const Icon = item.icon;
               
               return (
@@ -104,7 +109,9 @@ export function SlimNav({ projects, users, currentUser }: SlimNavProps) {
         <div className="md:hidden border-t border-gray-200 bg-white">
           <div className="px-2 py-3 space-y-1">
             {navItems.map((item) => {
-              const isActive = pathname.startsWith(item.href);
+              const isActive = item.href === '/' 
+                ? pathname === '/'
+                : pathname.startsWith(item.href);
               const Icon = item.icon;
               
               return (

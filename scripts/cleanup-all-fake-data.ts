@@ -30,10 +30,9 @@ async function cleanupAllFakeData() {
     });
     
     if (sarahUser) {
-      // First remove Sarah from any project relationships
-      await prisma.project.updateMany({
-        where: { pmId: sarahUser.id },
-        data: { pmId: null }
+      // First delete any projects where Sarah is PM
+      await prisma.project.deleteMany({
+        where: { pmId: sarahUser.id }
       });
       
       // Delete the user
