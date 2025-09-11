@@ -129,15 +129,15 @@ export default function TaskBoard({ project, users }: TaskBoardProps) {
           const columnTasks = getTasksByStatus(column.id)
           
           return (
-            <div key={column.id} className="bg-gray-50 rounded-lg p-4">
+            <div key={column.id} className="bg-bg rounded-lg p-4">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="font-medium text-sm text-gray-900">
+                <h3 className="font-medium text-sm text-fg">
                   {column.title}
-                  <span className="ml-2 text-gray-500">({columnTasks.length})</span>
+                  <span className="ml-2 text-muted">({columnTasks.length})</span>
                 </h3>
                 <button 
                   onClick={() => setAddingTask(column.id)}
-                  className="text-gray-400 hover:text-gray-600"
+                  className="text-muted hover:text-muted"
                 >
                   <Plus className="h-4 w-4" />
                 </button>
@@ -150,7 +150,7 @@ export default function TaskBoard({ project, users }: TaskBoardProps) {
               >
                 <div className="space-y-2 min-h-[200px]">
                   {addingTask === column.id && (
-                    <div className="bg-white rounded-lg p-3 shadow-sm border">
+                    <div className="bg-bg rounded-lg p-3 shadow-sm border">
                       <input
                         type="text"
                         value={newTaskTitle}
@@ -164,7 +164,7 @@ export default function TaskBoard({ project, users }: TaskBoardProps) {
                           }
                         }}
                         placeholder="Task title..."
-                        className="w-full text-sm px-2 py-1 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        className="w-full text-sm px-2 py-1 border rounded focus:outline-none focus:ring-2 focus:ring-brand"
                         autoFocus
                       />
                       <div className="flex justify-end space-x-2 mt-2">
@@ -173,7 +173,7 @@ export default function TaskBoard({ project, users }: TaskBoardProps) {
                             setAddingTask(null)
                             setNewTaskTitle('')
                           }}
-                          className="text-xs text-gray-500 hover:text-gray-700"
+                          className="text-xs text-muted hover:text-fg"
                         >
                           Cancel
                         </button>
@@ -198,11 +198,11 @@ export default function TaskBoard({ project, users }: TaskBoardProps) {
 
       <DragOverlay>
         {activeTask && (
-          <div className="bg-white rounded-lg p-3 shadow-lg border cursor-grabbing">
-            <p className="text-sm font-medium text-gray-900">{activeTask.title}</p>
+          <div className="bg-bg rounded-lg p-3 shadow-lg border cursor-grabbing">
+            <p className="text-sm font-medium text-fg">{activeTask.title}</p>
             {activeTask.assignee && (
               <div className="flex items-center mt-2">
-                <div className="h-6 w-6 rounded-full bg-gray-300 flex items-center justify-center text-xs font-medium text-gray-700">
+                <div className="h-6 w-6 rounded-full bg-border flex items-center justify-center text-xs font-medium text-fg">
                   {activeTask.assignee.name.slice(0, 2).toUpperCase()}
                 </div>
               </div>

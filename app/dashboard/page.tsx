@@ -71,54 +71,54 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-gray-500">Loading dashboard...</div>
+      <div className="min-h-screen bg-surface flex items-center justify-center">
+        <div className="text-muted">Loading dashboard...</div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-surface">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Portfolio Dashboard</h1>
-          <p className="text-gray-600 mt-1">Real-time overview of all portfolios and projects</p>
+          <h1 className="text-3xl font-bold text-fg">Portfolio Dashboard</h1>
+          <p className="text-muted mt-1">Real-time overview of all portfolios and projects</p>
         </div>
 
         {/* Global Metrics */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
+          <div className="bg-white rounded-xl border border-border p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Total Projects</p>
-                <p className="text-2xl font-bold text-gray-900 mt-1">{totalProjects}</p>
+                <p className="text-sm text-muted">Total Projects</p>
+                <p className="text-2xl font-bold text-fg mt-1">{totalProjects}</p>
               </div>
               <Briefcase className="w-8 h-8 text-blue-500" />
             </div>
           </div>
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
+          <div className="bg-white rounded-xl border border-border p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">In Progress</p>
-                <p className="text-2xl font-bold text-gray-900 mt-1">{totalInProgress}</p>
+                <p className="text-sm text-muted">In Progress</p>
+                <p className="text-2xl font-bold text-fg mt-1">{totalInProgress}</p>
               </div>
               <Clock className="w-8 h-8 text-green-500" />
             </div>
           </div>
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
+          <div className="bg-white rounded-xl border border-border p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Blocked</p>
-                <p className="text-2xl font-bold text-gray-900 mt-1">{totalBlocked}</p>
+                <p className="text-sm text-muted">Blocked</p>
+                <p className="text-2xl font-bold text-fg mt-1">{totalBlocked}</p>
               </div>
               <AlertCircle className="w-8 h-8 text-red-500" />
             </div>
           </div>
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
+          <div className="bg-white rounded-xl border border-border p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Live</p>
-                <p className="text-2xl font-bold text-gray-900 mt-1">{totalLive}</p>
+                <p className="text-sm text-muted">Live</p>
+                <p className="text-2xl font-bold text-fg mt-1">{totalLive}</p>
               </div>
               <CheckCircle className="w-8 h-8 text-purple-500" />
             </div>
@@ -143,11 +143,11 @@ export default function DashboardPage() {
                     <div>
                       <Link 
                         href={`/projects/${item.id}`}
-                        className="font-medium text-gray-900 hover:text-blue-600"
+                        className="font-medium text-fg hover:text-blue-600"
                       >
                         {item.title}
                       </Link>
-                      <p className="text-sm text-gray-600">
+                      <p className="text-sm text-muted">
                         {item.portfolio} • {item.issue}
                       </p>
                     </div>
@@ -168,7 +168,7 @@ export default function DashboardPage() {
         {/* Portfolio Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           {portfolios.map(portfolio => (
-            <div key={portfolio.id} className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+            <div key={portfolio.id} className="bg-white rounded-xl border border-border overflow-hidden">
               <div 
                 className="h-2"
                 style={{ backgroundColor: portfolio.color }}
@@ -185,27 +185,27 @@ export default function DashboardPage() {
                       </div>
                     </div>
                     <div>
-                      <h3 className="text-lg font-semibold text-gray-900">{portfolio.name}</h3>
-                      <p className="text-sm text-gray-600">{portfolio.description}</p>
+                      <h3 className="text-lg font-semibold text-fg">{portfolio.name}</h3>
+                      <p className="text-sm text-muted">{portfolio.description}</p>
                     </div>
                   </div>
                   <Link
                     href={`/projects?portfolio=${portfolio.key}`}
-                    className="p-2 hover:bg-gray-50 rounded-lg transition-colors"
+                    className="p-2 hover:bg-surface rounded-lg transition-colors"
                   >
-                    <ArrowUpRight className="w-4 h-4 text-gray-500" />
+                    <ArrowUpRight className="w-4 h-4 text-muted" />
                   </Link>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4 mb-4">
                   <div>
-                    <p className="text-sm text-gray-600">Projects</p>
-                    <p className="text-2xl font-bold text-gray-900">{portfolio.projectCount}</p>
+                    <p className="text-sm text-muted">Projects</p>
+                    <p className="text-2xl font-bold text-fg">{portfolio.projectCount}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-600">Health</p>
+                    <p className="text-sm text-muted">Health</p>
                     <div className="flex items-center gap-2 mt-1">
-                      <div className="flex-1 bg-gray-200 rounded-full h-2">
+                      <div className="flex-1 bg-border rounded-full h-2">
                         <div 
                           className={`h-2 rounded-full transition-all ${
                             portfolio.avgHealth >= 80 ? 'bg-green-500' :
@@ -215,7 +215,7 @@ export default function DashboardPage() {
                           style={{ width: `${portfolio.avgHealth}%` }}
                         />
                       </div>
-                      <span className="text-sm font-medium text-gray-700">{portfolio.avgHealth}%</span>
+                      <span className="text-sm font-medium text-fg-muted">{portfolio.avgHealth}%</span>
                     </div>
                   </div>
                 </div>
@@ -223,20 +223,20 @@ export default function DashboardPage() {
                 <div className="flex items-center gap-4 text-sm">
                   <div className="flex items-center gap-1">
                     <Clock className="w-4 h-4 text-blue-500" />
-                    <span className="text-gray-600">In Progress:</span>
-                    <span className="font-medium text-gray-900">{portfolio.inProgressCount}</span>
+                    <span className="text-muted">In Progress:</span>
+                    <span className="font-medium text-fg">{portfolio.inProgressCount}</span>
                   </div>
                   {portfolio.blockedCount > 0 && (
                     <div className="flex items-center gap-1">
                       <AlertCircle className="w-4 h-4 text-red-500" />
-                      <span className="text-gray-600">Blocked:</span>
+                      <span className="text-muted">Blocked:</span>
                       <span className="font-medium text-red-600">{portfolio.blockedCount}</span>
                     </div>
                   )}
                   {portfolio.liveCount > 0 && (
                     <div className="flex items-center gap-1">
                       <CheckCircle className="w-4 h-4 text-green-500" />
-                      <span className="text-gray-600">Live:</span>
+                      <span className="text-muted">Live:</span>
                       <span className="font-medium text-green-600">{portfolio.liveCount}</span>
                     </div>
                   )}
@@ -250,38 +250,38 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Link
             href="/projects"
-            className="bg-white rounded-xl border border-gray-200 p-6 hover:border-blue-300 transition-colors"
+            className="bg-white rounded-xl border border-border p-6 hover:border-blue-300 transition-colors"
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="font-medium text-gray-900">View All Projects</p>
-                <p className="text-sm text-gray-600 mt-1">Browse all projects by portfolio</p>
+                <p className="font-medium text-fg">View All Projects</p>
+                <p className="text-sm text-muted mt-1">Browse all projects by portfolio</p>
               </div>
-              <FolderOpen className="w-8 h-8 text-gray-400" />
+              <FolderOpen className="w-8 h-8 text-muted" />
             </div>
           </Link>
           <Link
             href="/reports"
-            className="bg-white rounded-xl border border-gray-200 p-6 hover:border-blue-300 transition-colors"
+            className="bg-white rounded-xl border border-border p-6 hover:border-blue-300 transition-colors"
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="font-medium text-gray-900">Portfolio Reports</p>
-                <p className="text-sm text-gray-600 mt-1">Detailed analytics and metrics</p>
+                <p className="font-medium text-fg">Portfolio Reports</p>
+                <p className="text-sm text-muted mt-1">Detailed analytics and metrics</p>
               </div>
-              <BarChart3 className="w-8 h-8 text-gray-400" />
+              <BarChart3 className="w-8 h-8 text-muted" />
             </div>
           </Link>
           <Link
             href="/activity"
-            className="bg-white rounded-xl border border-gray-200 p-6 hover:border-blue-300 transition-colors"
+            className="bg-white rounded-xl border border-border p-6 hover:border-blue-300 transition-colors"
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="font-medium text-gray-900">Recent Activity</p>
-                <p className="text-sm text-gray-600 mt-1">Latest updates across portfolios</p>
+                <p className="font-medium text-fg">Recent Activity</p>
+                <p className="text-sm text-muted mt-1">Latest updates across portfolios</p>
               </div>
-              <Activity className="w-8 h-8 text-gray-400" />
+              <Activity className="w-8 h-8 text-muted" />
             </div>
           </Link>
         </div>

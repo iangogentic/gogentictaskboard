@@ -70,13 +70,13 @@ export function ShareBanner({
       <div className="flex items-center gap-3 flex-1 min-w-0">
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-sm font-medium text-gray-700">Client Share Link</span>
+            <span className="text-sm font-medium text-fg-muted">Client Share Link</span>
             {expiresAt && (
               <span className={cn(
                 'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium',
                 isExpiringSoon
                   ? 'bg-amber-100 text-amber-700'
-                  : 'bg-gray-100 text-gray-600'
+                  : 'bg-surface text-muted'
               )}>
                 <Clock className="w-3 h-3" />
                 Expires in {timeToExpiry}
@@ -84,7 +84,7 @@ export function ShareBanner({
             )}
           </div>
           <div className="flex items-center gap-2">
-            <code className="text-sm text-gray-600 bg-white px-2 py-1 rounded border border-gray-200 truncate max-w-md">
+            <code className="text-sm text-muted bg-white px-2 py-1 rounded border border-border truncate max-w-md">
               {shareUrl}
             </code>
             <a
@@ -108,7 +108,7 @@ export function ShareBanner({
             'transition-all duration-200',
             copied
               ? 'bg-green-500 text-white'
-              : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
+              : 'bg-white text-fg-muted hover:bg-surface border border-border'
           )}
         >
           <Copy className="w-4 h-4" />
@@ -124,7 +124,7 @@ export function ShareBanner({
               'transition-all duration-200',
               showRotateConfirm
                 ? 'bg-amber-500 text-white hover:bg-amber-600'
-                : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300',
+                : 'bg-white text-fg-muted hover:bg-surface border border-border',
               rotating && 'opacity-50 cursor-not-allowed'
             )}
           >
@@ -176,7 +176,7 @@ export function ShareModal({
         </div>
         <button
           onClick={onClose}
-          className="mt-4 w-full py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+          className="mt-4 w-full py-2 bg-surface text-fg-muted rounded-lg hover:bg-border transition-colors"
         >
           Close
         </button>

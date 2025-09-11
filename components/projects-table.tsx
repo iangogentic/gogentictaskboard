@@ -99,7 +99,7 @@ export default function ProjectsTable({ projects, users }: ProjectsTableProps) {
           {/* Search and primary filters */}
           <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
             <div className="md:col-span-2 relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted" />
               <input
                 type="text"
                 placeholder="Search projects, clients, PMs, or developers..."
@@ -180,13 +180,13 @@ export default function ProjectsTable({ projects, users }: ProjectsTableProps) {
             </select>
 
             <div className="md:col-span-2 flex items-center justify-between">
-              <span className="text-sm text-gray-600">
+              <span className="text-sm text-muted">
                 Showing {filteredAndSortedProjects.length} of {projects.length} projects
               </span>
               <div className="flex items-center space-x-2">
                 <button
                   onClick={handleExport}
-                  className="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                  className="inline-flex items-center px-3 py-2 border border-border text-sm font-medium rounded-md text-fg-muted bg-white hover:bg-surface"
                   title="Export to CSV"
                 >
                   <Download className="h-4 w-4 mr-1" />
@@ -205,31 +205,31 @@ export default function ProjectsTable({ projects, users }: ProjectsTableProps) {
       </div>
 
       <div className="bg-white shadow-sm rounded-lg overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
+        <table className="min-w-full divide-y divide-border">
+          <thead className="bg-surface">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">
                 Project
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">
                 Branch
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">
                 PM
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">
                 Developers
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">
                 Status
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">
                 Tasks
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">
                 Dates
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">
                 Last Update
               </th>
               <th className="relative px-6 py-3">
@@ -237,19 +237,19 @@ export default function ProjectsTable({ projects, users }: ProjectsTableProps) {
               </th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody className="bg-white divide-y divide-border">
             {filteredAndSortedProjects.map((project) => {
               const taskCounts = getTaskCounts(project.tasks)
               const lastUpdate = project.updates[0]
               
               return (
-                <tr key={project.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => router.push(`/projects/${project.id}`)}>
+                <tr key={project.id} className="hover:bg-surface cursor-pointer" onClick={() => router.push(`/projects/${project.id}`)}>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div>
                       <Link href={`/projects/${project.id}`} className="text-sm font-medium text-indigo-600 hover:text-indigo-900">
                         {project.title}
                       </Link>
-                      <div className="text-sm text-gray-500">{project.clientName}</div>
+                      <div className="text-sm text-muted">{project.clientName}</div>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -257,7 +257,7 @@ export default function ProjectsTable({ projects, users }: ProjectsTableProps) {
                       {project.branch}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-fg">
                     {project.pm.name}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -265,14 +265,14 @@ export default function ProjectsTable({ projects, users }: ProjectsTableProps) {
                       {project.developers.slice(0, 3).map((dev) => (
                         <div
                           key={dev.id}
-                          className="h-8 w-8 rounded-full bg-gray-300 flex items-center justify-center text-xs font-medium text-gray-700 border-2 border-white"
+                          className="h-8 w-8 rounded-full bg-border flex items-center justify-center text-xs font-medium text-fg-muted border-2 border-white"
                           title={dev.name}
                         >
                           {dev.name.slice(0, 2).toUpperCase()}
                         </div>
                       ))}
                       {project.developers.length > 3 && (
-                        <div className="h-8 w-8 rounded-full bg-gray-300 flex items-center justify-center text-xs font-medium text-gray-700 border-2 border-white">
+                        <div className="h-8 w-8 rounded-full bg-border flex items-center justify-center text-xs font-medium text-fg-muted border-2 border-white">
                           +{project.developers.length - 3}
                         </div>
                       )}
@@ -283,14 +283,14 @@ export default function ProjectsTable({ projects, users }: ProjectsTableProps) {
                       {project.status}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-muted">
                     <div className="flex space-x-2 text-xs">
                       <span>{taskCounts.todo} todo</span>
                       <span>{taskCounts.doing} doing</span>
                       <span>{taskCounts.done} done</span>
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-muted">
                     <div className="space-y-1">
                       {project.startDate && (
                         <div className="flex items-center text-xs">
@@ -306,15 +306,15 @@ export default function ProjectsTable({ projects, users }: ProjectsTableProps) {
                       )}
                     </div>
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-500">
+                  <td className="px-6 py-4 text-sm text-muted">
                     {lastUpdate ? (
                       <div className="max-w-xs">
-                        <div className="text-xs text-gray-400">
+                        <div className="text-xs text-muted">
                           {format(new Date(lastUpdate.createdAt), 'MMM d, h:mm a')}
                         </div>
                       </div>
                     ) : (
-                      <span className="text-gray-400">No updates</span>
+                      <span className="text-muted">No updates</span>
                     )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
@@ -334,7 +334,7 @@ export default function ProjectsTable({ projects, users }: ProjectsTableProps) {
         
         {filteredAndSortedProjects.length === 0 && (
           <div className="text-center py-12">
-            <p className="text-gray-500">No projects found matching your filters.</p>
+            <p className="text-muted">No projects found matching your filters.</p>
           </div>
         )}
       </div>

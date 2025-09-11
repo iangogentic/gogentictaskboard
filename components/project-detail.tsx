@@ -72,14 +72,14 @@ export default function ProjectDetail({ project, users }: ProjectDetailProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-white shadow-sm border-b">
+    <div className="min-h-screen bg-bg">
+      <div className="bg-bg shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-4">
               <Link
                 href="/"
-                className="flex items-center text-gray-600 hover:text-gray-900"
+                className="flex items-center text-muted hover:text-fg"
               >
                 <ArrowLeft className="h-4 w-4 mr-1" />
                 Back
@@ -91,7 +91,7 @@ export default function ProjectDetail({ project, users }: ProjectDetailProps) {
             <div className="flex items-center space-x-2">
               <Link
                 href={`/projects/${project.id}/edit`}
-                className="inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                className="inline-flex items-center px-3 py-1.5 border border-border shadow-sm text-sm font-medium rounded-md text-fg bg-bg hover:bg-bg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand"
               >
                 <Edit className="h-4 w-4 mr-1" />
                 Edit
@@ -108,7 +108,7 @@ export default function ProjectDetail({ project, users }: ProjectDetailProps) {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="bg-white rounded-lg shadow-sm border">
+        <div className="bg-bg rounded-lg shadow-sm border">
           <div className="border-b">
             <nav className="flex space-x-8 px-6" aria-label="Tabs">
               {(['overview', 'tasks', 'activity', 'deliverables'] as const).map((tab) => (
@@ -117,8 +117,8 @@ export default function ProjectDetail({ project, users }: ProjectDetailProps) {
                   onClick={() => setActiveTab(tab)}
                   className={`py-4 px-1 border-b-2 font-medium text-sm capitalize ${
                     activeTab === tab
-                      ? 'border-indigo-500 text-indigo-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                      ? 'border-indigo-500 text-brand'
+                      : 'border-transparent text-muted hover:text-fg hover:border-border'
                   }`}
                 >
                   {tab}
@@ -132,16 +132,16 @@ export default function ProjectDetail({ project, users }: ProjectDetailProps) {
               <div className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <h3 className="text-sm font-medium text-gray-500 mb-3">Project Details</h3>
+                    <h3 className="text-sm font-medium text-muted mb-3">Project Details</h3>
                     <div className="space-y-3">
                       <div className="flex items-center text-sm">
-                        <Users className="h-4 w-4 mr-2 text-gray-400" />
-                        <span className="text-gray-600">PM:</span>
+                        <Users className="h-4 w-4 mr-2 text-muted" />
+                        <span className="text-muted">PM:</span>
                         <span className="ml-2 font-medium">{project.pm.name}</span>
                       </div>
                       <div className="flex items-start text-sm">
-                        <Users className="h-4 w-4 mr-2 text-gray-400 mt-0.5" />
-                        <span className="text-gray-600">Developers:</span>
+                        <Users className="h-4 w-4 mr-2 text-muted mt-0.5" />
+                        <span className="text-muted">Developers:</span>
                         <div className="ml-2">
                           {project.developers.map(dev => (
                             <span key={dev.id} className="font-medium block">{dev.name}</span>
@@ -149,20 +149,20 @@ export default function ProjectDetail({ project, users }: ProjectDetailProps) {
                         </div>
                       </div>
                       <div className="flex items-center text-sm">
-                        <Mail className="h-4 w-4 mr-2 text-gray-400" />
-                        <span className="text-gray-600">Client:</span>
+                        <Mail className="h-4 w-4 mr-2 text-muted" />
+                        <span className="text-muted">Client:</span>
                         <span className="ml-2 font-medium">{project.clientName} ({project.clientEmail})</span>
                       </div>
                     </div>
                   </div>
 
                   <div>
-                    <h3 className="text-sm font-medium text-gray-500 mb-3">Timeline</h3>
+                    <h3 className="text-sm font-medium text-muted mb-3">Timeline</h3>
                     <div className="space-y-3">
                       {project.startDate && (
                         <div className="flex items-center text-sm">
-                          <Calendar className="h-4 w-4 mr-2 text-gray-400" />
-                          <span className="text-gray-600">Start:</span>
+                          <Calendar className="h-4 w-4 mr-2 text-muted" />
+                          <span className="text-muted">Start:</span>
                           <span className="ml-2 font-medium">
                             {format(new Date(project.startDate), 'MMM d, yyyy')}
                           </span>
@@ -170,16 +170,16 @@ export default function ProjectDetail({ project, users }: ProjectDetailProps) {
                       )}
                       {project.targetDelivery && (
                         <div className="flex items-center text-sm">
-                          <Clock className="h-4 w-4 mr-2 text-gray-400" />
-                          <span className="text-gray-600">Target:</span>
+                          <Clock className="h-4 w-4 mr-2 text-muted" />
+                          <span className="text-muted">Target:</span>
                           <span className="ml-2 font-medium">
                             {format(new Date(project.targetDelivery), 'MMM d, yyyy')}
                           </span>
                         </div>
                       )}
                       <div className="flex items-center text-sm">
-                        <Clock className="h-4 w-4 mr-2 text-gray-400" />
-                        <span className="text-gray-600">Last Updated:</span>
+                        <Clock className="h-4 w-4 mr-2 text-muted" />
+                        <span className="text-muted">Last Updated:</span>
                         <span className="ml-2 font-medium">
                           {format(new Date(project.lastUpdatedAt), 'MMM d, yyyy h:mm a')}
                         </span>
@@ -190,30 +190,30 @@ export default function ProjectDetail({ project, users }: ProjectDetailProps) {
 
                 {project.notes && (
                   <div>
-                    <h3 className="text-sm font-medium text-gray-500 mb-2">Notes</h3>
-                    <p className="text-sm text-gray-700 bg-gray-50 p-3 rounded">{project.notes}</p>
+                    <h3 className="text-sm font-medium text-muted mb-2">Notes</h3>
+                    <p className="text-sm text-fg bg-bg p-3 rounded">{project.notes}</p>
                   </div>
                 )}
 
                 <div>
-                  <h3 className="text-sm font-medium text-gray-500 mb-3">Client Share Link</h3>
+                  <h3 className="text-sm font-medium text-muted mb-3">Client Share Link</h3>
                   <div className="flex items-center space-x-2">
                     <input
                       type="text"
                       readOnly
                       value={`${typeof window !== 'undefined' ? window.location.origin : ''}/share/${project.clientShareToken}`}
-                      className="flex-1 px-3 py-2 text-sm bg-gray-50 border rounded-md"
+                      className="flex-1 px-3 py-2 text-sm bg-bg border rounded-md"
                     />
                     <button
                       onClick={copyClientLink}
-                      className="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                      className="inline-flex items-center px-3 py-2 border border-border text-sm font-medium rounded-md text-fg bg-bg hover:bg-bg"
                     >
                       <Copy className="h-4 w-4 mr-1" />
                       {showCopied ? 'Copied!' : 'Copy'}
                     </button>
                     <button
                       onClick={regenerateToken}
-                      className="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                      className="inline-flex items-center px-3 py-2 border border-border text-sm font-medium rounded-md text-fg bg-bg hover:bg-bg"
                     >
                       <RefreshCw className="h-4 w-4 mr-1" />
                       Regenerate
@@ -241,14 +241,14 @@ export default function ProjectDetail({ project, users }: ProjectDetailProps) {
                 </div>
 
                 {addingUpdate && (
-                  <div className="bg-white border rounded-lg p-4 mb-4">
+                  <div className="bg-bg border rounded-lg p-4 mb-4">
                     <div className="space-y-3">
                       <div className="flex items-center space-x-2">
-                        <label className="text-sm font-medium text-gray-700">Author:</label>
+                        <label className="text-sm font-medium text-fg">Author:</label>
                         <select
                           value={selectedAuthorId}
                           onChange={(e) => setSelectedAuthorId(e.target.value)}
-                          className="flex-1 text-sm px-2 py-1 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                          className="flex-1 text-sm px-2 py-1 border rounded focus:outline-none focus:ring-2 focus:ring-brand"
                         >
                           {users.map(user => (
                             <option key={user.id} value={user.id}>{user.name}</option>
@@ -260,7 +260,7 @@ export default function ProjectDetail({ project, users }: ProjectDetailProps) {
                         onChange={(e) => setUpdateText(e.target.value)}
                         placeholder="Write your update..."
                         rows={3}
-                        className="w-full text-sm px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        className="w-full text-sm px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-brand"
                         autoFocus
                       />
                       <div className="flex justify-end space-x-2">
@@ -269,7 +269,7 @@ export default function ProjectDetail({ project, users }: ProjectDetailProps) {
                             setAddingUpdate(false)
                             setUpdateText('')
                           }}
-                          className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-800"
+                          className="px-3 py-1.5 text-sm text-muted hover:text-fg"
                         >
                           Cancel
                         </button>
@@ -286,23 +286,23 @@ export default function ProjectDetail({ project, users }: ProjectDetailProps) {
                 
                 <div className="space-y-3">
                   {project.updates.length === 0 ? (
-                    <p className="text-gray-500 text-sm">No updates yet.</p>
+                    <p className="text-muted text-sm">No updates yet.</p>
                   ) : (
                     project.updates.map(update => (
-                      <div key={update.id} className="bg-gray-50 rounded-lg p-4">
+                      <div key={update.id} className="bg-bg rounded-lg p-4">
                         <div className="flex items-start justify-between">
                           <div className="flex items-start space-x-3">
-                            <div className="h-8 w-8 rounded-full bg-gray-300 flex items-center justify-center text-xs font-medium text-gray-700">
+                            <div className="h-8 w-8 rounded-full bg-border flex items-center justify-center text-xs font-medium text-fg">
                               {update.author.name.slice(0, 2).toUpperCase()}
                             </div>
                             <div>
                               <div className="flex items-center space-x-2">
                                 <span className="font-medium text-sm">{update.author.name}</span>
-                                <span className="text-xs text-gray-500">
+                                <span className="text-xs text-muted">
                                   {format(new Date(update.createdAt), 'MMM d, h:mm a')}
                                 </span>
                               </div>
-                              <p className="text-sm text-gray-700 mt-1">{update.body}</p>
+                              <p className="text-sm text-fg mt-1">{update.body}</p>
                             </div>
                           </div>
                         </div>

@@ -62,7 +62,7 @@ export default function MainNav() {
   const pathname = usePathname()
 
   return (
-    <nav className="bg-white border-b">
+    <nav className="bg-bg border-b border-border">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center">
@@ -85,10 +85,10 @@ export default function MainNav() {
                     key={item.href}
                     href={item.href}
                     className={`
-                      flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors
+                      flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200
                       ${isActive 
-                        ? 'bg-indigo-50 text-indigo-700' 
-                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                        ? 'bg-brand/10 text-brand' 
+                        : 'text-muted hover:text-fg hover:bg-surface'
                       }
                     `}
                   >
@@ -103,7 +103,7 @@ export default function MainNav() {
           <div className="flex items-center space-x-4">
             <Link
               href="/settings"
-              className="p-2 text-gray-500 hover:text-gray-700 rounded-md hover:bg-gray-50"
+              className="p-2 text-muted hover:text-fg rounded-md hover:bg-surface transition-all duration-200"
               title="Settings"
             >
               <Settings className="h-5 w-5" />
@@ -125,10 +125,10 @@ export default function MainNav() {
                 key={item.href}
                 href={item.href}
                 className={`
-                  flex flex-col items-center justify-center p-3 rounded-md text-xs transition-colors
+                  flex flex-col items-center justify-center p-3 rounded-md text-xs transition-all duration-200
                   ${isActive 
-                    ? 'bg-indigo-50 text-indigo-700' 
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                    ? 'bg-brand/10 text-brand' 
+                    : 'text-muted hover:text-fg hover:bg-surface'
                   }
                 `}
               >

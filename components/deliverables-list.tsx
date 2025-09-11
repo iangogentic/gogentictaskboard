@@ -111,12 +111,12 @@ export default function DeliverablesList({ projectId, deliverables: initialDeliv
 
   const getStatusColor = (status: string) => {
     const colors: Record<string, string> = {
-      'Draft': 'bg-gray-100 text-gray-800',
-      'Submitted': 'bg-blue-100 text-blue-800',
-      'Approved': 'bg-green-100 text-green-800',
+      'Draft': 'bg-surface text-fg',
+      'Submitted': 'bg-info-bg text-info',
+      'Approved': 'bg-success-bg text-success',
       'Delivered': 'bg-indigo-100 text-indigo-800',
     }
-    return colors[status] || 'bg-gray-100 text-gray-800'
+    return colors[status] || 'bg-surface text-fg'
   }
 
   return (
@@ -125,7 +125,7 @@ export default function DeliverablesList({ projectId, deliverables: initialDeliv
         <h3 className="text-lg font-medium">Deliverables</h3>
         <button
           onClick={() => setAddingDeliverable(true)}
-          className="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+          className="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand"
         >
           <Plus className="h-4 w-4 mr-1" />
           Add Deliverable
@@ -133,13 +133,13 @@ export default function DeliverablesList({ projectId, deliverables: initialDeliv
       </div>
 
       {addingDeliverable && (
-        <div className="bg-gray-50 rounded-lg p-4 space-y-3">
+        <div className="bg-bg rounded-lg p-4 space-y-3">
           <input
             type="text"
             placeholder="Deliverable title"
             value={newDeliverable.title}
             onChange={(e) => setNewDeliverable({ ...newDeliverable, title: e.target.value })}
-            className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-brand"
             autoFocus
           />
           <input
@@ -147,12 +147,12 @@ export default function DeliverablesList({ projectId, deliverables: initialDeliv
             placeholder="URL or link (optional)"
             value={newDeliverable.url}
             onChange={(e) => setNewDeliverable({ ...newDeliverable, url: e.target.value })}
-            className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-brand"
           />
           <select
             value={newDeliverable.status}
             onChange={(e) => setNewDeliverable({ ...newDeliverable, status: e.target.value })}
-            className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-brand"
           >
             {statusOptions.map(option => (
               <option key={option.value} value={option.value}>
@@ -170,7 +170,7 @@ export default function DeliverablesList({ projectId, deliverables: initialDeliv
                   status: 'Draft',
                 })
               }}
-              className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-800"
+              className="px-3 py-1.5 text-sm text-muted hover:text-fg"
             >
               Cancel
             </button>
@@ -185,8 +185,8 @@ export default function DeliverablesList({ projectId, deliverables: initialDeliv
       )}
 
       {deliverables.length === 0 && !addingDeliverable && (
-        <div className="text-center py-8 text-gray-500">
-          <FileText className="h-12 w-12 mx-auto mb-3 text-gray-300" />
+        <div className="text-center py-8 text-muted">
+          <FileText className="h-12 w-12 mx-auto mb-3 text-border" />
           <p>No deliverables yet</p>
           <p className="text-sm mt-1">Add deliverables to track project outputs</p>
         </div>
@@ -196,24 +196,24 @@ export default function DeliverablesList({ projectId, deliverables: initialDeliv
         {deliverables.map((deliverable) => (
           <div key={deliverable.id}>
             {editingId === deliverable.id ? (
-              <div className="bg-gray-50 rounded-lg p-4 space-y-3">
+              <div className="bg-bg rounded-lg p-4 space-y-3">
                 <input
                   type="text"
                   value={editForm.title}
                   onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
-                  className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-brand"
                   autoFocus
                 />
                 <input
                   type="url"
                   value={editForm.url}
                   onChange={(e) => setEditForm({ ...editForm, url: e.target.value })}
-                  className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-brand"
                 />
                 <select
                   value={editForm.status}
                   onChange={(e) => setEditForm({ ...editForm, status: e.target.value })}
-                  className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-brand"
                 >
                   {statusOptions.map(option => (
                     <option key={option.value} value={option.value}>
@@ -224,36 +224,36 @@ export default function DeliverablesList({ projectId, deliverables: initialDeliv
                 <div className="flex justify-end space-x-2">
                   <button
                     onClick={() => setEditingId(null)}
-                    className="p-1.5 text-gray-500 hover:text-gray-700"
+                    className="p-1.5 text-muted hover:text-fg"
                   >
                     <X className="h-4 w-4" />
                   </button>
                   <button
                     onClick={() => handleEditDeliverable(deliverable.id)}
-                    className="p-1.5 text-green-600 hover:text-green-700"
+                    className="p-1.5 text-success hover:text-green-700"
                   >
                     <Check className="h-4 w-4" />
                   </button>
                 </div>
               </div>
             ) : (
-              <div className="bg-white rounded-lg border p-4 hover:shadow-sm transition-shadow group">
+              <div className="bg-bg rounded-lg border p-4 hover:shadow-sm transition-shadow group">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center space-x-3">
-                      <h4 className="font-medium text-gray-900">{deliverable.title}</h4>
+                      <h4 className="font-medium text-fg">{deliverable.title}</h4>
                       <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(deliverable.status)}`}>
                         {deliverable.status}
                       </span>
                     </div>
-                    <div className="flex items-center space-x-4 mt-2 text-xs text-gray-500">
+                    <div className="flex items-center space-x-4 mt-2 text-xs text-muted">
                       <span>Updated {format(new Date(deliverable.updatedAt), 'MMM d, yyyy')}</span>
                       {deliverable.fileUrl && (
                         <a
                           href={deliverable.fileUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center text-indigo-600 hover:text-indigo-800"
+                          className="inline-flex items-center text-brand hover:text-indigo-800"
                         >
                           <ExternalLink className="h-3 w-3 mr-1" />
                           View
@@ -264,13 +264,13 @@ export default function DeliverablesList({ projectId, deliverables: initialDeliv
                   <div className="flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button
                       onClick={() => startEdit(deliverable)}
-                      className="p-1.5 text-gray-500 hover:text-indigo-600"
+                      className="p-1.5 text-muted hover:text-brand"
                     >
                       <Edit2 className="h-4 w-4" />
                     </button>
                     <button
                       onClick={() => handleDeleteDeliverable(deliverable.id)}
-                      className="p-1.5 text-gray-500 hover:text-red-600"
+                      className="p-1.5 text-muted hover:text-danger"
                     >
                       <Trash2 className="h-4 w-4" />
                     </button>

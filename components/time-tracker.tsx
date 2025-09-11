@@ -116,15 +116,15 @@ export default function TimeTracker({ task, currentUser }: TimeTrackerProps) {
   const remainingHours = task.estimatedHours ? Math.max(0, task.estimatedHours - totalHours) : null
 
   return (
-    <div className="bg-white rounded-lg shadow p-4">
+    <div className="bg-bg rounded-lg shadow p-4">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold flex items-center">
-          <Clock className="h-5 w-5 mr-2 text-gray-600" />
+          <Clock className="h-5 w-5 mr-2 text-muted" />
           Time Tracking
         </h3>
         <button
           onClick={() => setShowAddEntry(!showAddEntry)}
-          className="text-sm text-indigo-600 hover:text-indigo-700"
+          className="text-sm text-brand hover:text-brand-hover"
         >
           <Plus className="h-4 w-4 inline mr-1" />
           Manual Entry
@@ -132,13 +132,13 @@ export default function TimeTracker({ task, currentUser }: TimeTrackerProps) {
       </div>
 
       {/* Timer */}
-      <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+      <div className="mb-6 p-4 bg-bg rounded-lg">
         <div className="flex items-center justify-between">
           <div>
-            <div className="text-3xl font-mono font-bold text-gray-900">
+            <div className="text-3xl font-mono font-bold text-fg">
               {formatTime(currentTime)}
             </div>
-            <div className="text-sm text-gray-600 mt-1">
+            <div className="text-sm text-muted mt-1">
               {isTracking ? 'Tracking time...' : 'Click to start tracking'}
             </div>
           </div>
@@ -169,10 +169,10 @@ export default function TimeTracker({ task, currentUser }: TimeTrackerProps) {
 
       {/* Manual Entry Form */}
       {showAddEntry && (
-        <div className="mb-4 p-4 border rounded-lg bg-gray-50">
+        <div className="mb-4 p-4 border rounded-lg bg-bg">
           <div className="space-y-3">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-fg mb-1">
                 Hours
               </label>
               <input
@@ -185,7 +185,7 @@ export default function TimeTracker({ task, currentUser }: TimeTrackerProps) {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-fg mb-1">
                 Date
               </label>
               <input
@@ -196,7 +196,7 @@ export default function TimeTracker({ task, currentUser }: TimeTrackerProps) {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-fg mb-1">
                 Description
               </label>
               <input
@@ -214,7 +214,7 @@ export default function TimeTracker({ task, currentUser }: TimeTrackerProps) {
                   setManualHours('')
                   setDescription('')
                 }}
-                className="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-800"
+                className="px-3 py-1.5 text-sm text-muted hover:text-fg"
               >
                 Cancel
               </button>
@@ -232,21 +232,21 @@ export default function TimeTracker({ task, currentUser }: TimeTrackerProps) {
 
       {/* Summary */}
       <div className="grid grid-cols-3 gap-4 mb-4">
-        <div className="text-center p-3 bg-gray-50 rounded">
-          <div className="text-lg font-bold text-gray-900">{totalHours.toFixed(1)}</div>
-          <div className="text-xs text-gray-600">Hours Logged</div>
+        <div className="text-center p-3 bg-bg rounded">
+          <div className="text-lg font-bold text-fg">{totalHours.toFixed(1)}</div>
+          <div className="text-xs text-muted">Hours Logged</div>
         </div>
         {task.estimatedHours && (
           <>
-            <div className="text-center p-3 bg-gray-50 rounded">
-              <div className="text-lg font-bold text-gray-900">{task.estimatedHours}</div>
-              <div className="text-xs text-gray-600">Estimated</div>
+            <div className="text-center p-3 bg-bg rounded">
+              <div className="text-lg font-bold text-fg">{task.estimatedHours}</div>
+              <div className="text-xs text-muted">Estimated</div>
             </div>
-            <div className="text-center p-3 bg-gray-50 rounded">
-              <div className={`text-lg font-bold ${remainingHours! > 0 ? 'text-green-600' : 'text-red-600'}`}>
+            <div className="text-center p-3 bg-bg rounded">
+              <div className={`text-lg font-bold ${remainingHours! > 0 ? 'text-success' : 'text-danger'}`}>
                 {remainingHours!.toFixed(1)}
               </div>
-              <div className="text-xs text-gray-600">Remaining</div>
+              <div className="text-xs text-muted">Remaining</div>
             </div>
           </>
         )}
@@ -255,26 +255,26 @@ export default function TimeTracker({ task, currentUser }: TimeTrackerProps) {
       {/* Time Entries */}
       {task.timeEntries.length > 0 && (
         <div>
-          <h4 className="text-sm font-medium text-gray-700 mb-2">Recent Entries</h4>
+          <h4 className="text-sm font-medium text-fg mb-2">Recent Entries</h4>
           <div className="space-y-2 max-h-48 overflow-y-auto">
             {task.timeEntries.map(entry => (
-              <div key={entry.id} className="flex items-start justify-between p-2 bg-gray-50 rounded text-sm">
+              <div key={entry.id} className="flex items-start justify-between p-2 bg-bg rounded text-sm">
                 <div className="flex-1">
                   <div className="flex items-center space-x-2">
                     <span className="font-medium">{entry.user.name}</span>
-                    <span className="text-gray-500">•</span>
-                    <span className="text-gray-600">{entry.hours}h</span>
-                    <span className="text-gray-500">•</span>
-                    <span className="text-gray-600">{format(new Date(entry.date), 'MMM d')}</span>
+                    <span className="text-muted">•</span>
+                    <span className="text-muted">{entry.hours}h</span>
+                    <span className="text-muted">•</span>
+                    <span className="text-muted">{format(new Date(entry.date), 'MMM d')}</span>
                   </div>
                   {entry.description && (
-                    <div className="text-gray-600 text-xs mt-1">{entry.description}</div>
+                    <div className="text-muted text-xs mt-1">{entry.description}</div>
                   )}
                 </div>
                 {entry.userId === currentUser.id && (
                   <button
                     onClick={() => handleDeleteEntry(entry.id)}
-                    className="text-gray-400 hover:text-red-600 ml-2"
+                    className="text-muted hover:text-danger ml-2"
                   >
                     <X className="h-4 w-4" />
                   </button>

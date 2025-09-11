@@ -41,14 +41,14 @@ export default function NewUserPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-surface">
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-4">
               <Link
                 href="/users"
-                className="flex items-center text-gray-600 hover:text-gray-900"
+                className="flex items-center text-muted hover:text-fg"
               >
                 <ArrowLeft className="h-4 w-4 mr-1" />
                 Back
@@ -70,7 +70,7 @@ export default function NewUserPage() {
           )}
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-fg-muted mb-2">
               Name *
             </label>
             <input
@@ -84,7 +84,7 @@ export default function NewUserPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-fg-muted mb-2">
               Email *
             </label>
             <input
@@ -100,7 +100,7 @@ export default function NewUserPage() {
           <div className="flex justify-end space-x-3 pt-4 border-t">
             <Link
               href="/users"
-              className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
+              className="px-4 py-2 border border-border text-fg-muted rounded-md hover:bg-surface"
             >
               Cancel
             </Link>

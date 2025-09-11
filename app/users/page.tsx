@@ -50,14 +50,14 @@ export default async function UsersPage() {
   const users = await getUsers()
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-surface">
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-4">
               <Link
                 href="/"
-                className="flex items-center text-gray-600 hover:text-gray-900"
+                className="flex items-center text-muted hover:text-fg"
               >
                 <ArrowLeft className="h-4 w-4 mr-1" />
                 Back
@@ -96,8 +96,8 @@ export default async function UsersPage() {
                 <div className="p-6">
                   <div className="flex items-start justify-between mb-4">
                     <div>
-                      <h3 className="text-lg font-semibold text-gray-900">{user.name}</h3>
-                      <div className="flex items-center text-sm text-gray-500 mt-1">
+                      <h3 className="text-lg font-semibold text-fg">{user.name}</h3>
+                      <div className="flex items-center text-sm text-muted mt-1">
                         <Mail className="h-3 w-3 mr-1" />
                         {user.email}
                       </div>
@@ -107,26 +107,26 @@ export default async function UsersPage() {
 
                   <div className="space-y-3">
                     <div className="flex items-center justify-between text-sm">
-                      <span className="text-gray-500">Projects (PM)</span>
+                      <span className="text-muted">Projects (PM)</span>
                       <span className="font-medium">{user._count.projectsAsPM}</span>
                     </div>
                     <div className="flex items-center justify-between text-sm">
-                      <span className="text-gray-500">Projects (Dev)</span>
+                      <span className="text-muted">Projects (Dev)</span>
                       <span className="font-medium">{user._count.projectsAsDev}</span>
                     </div>
                     <div className="flex items-center justify-between text-sm">
-                      <span className="text-gray-500">Active Tasks</span>
+                      <span className="text-muted">Active Tasks</span>
                       <span className="font-medium">{activeTasks.length}</span>
                     </div>
                     <div className="flex items-center justify-between text-sm">
-                      <span className="text-gray-500">Updates</span>
+                      <span className="text-muted">Updates</span>
                       <span className="font-medium">{user._count.updates}</span>
                     </div>
                   </div>
 
                   {activeProjects.length > 0 && (
                     <div className="mt-4 pt-4 border-t">
-                      <p className="text-xs text-gray-500 mb-2">Active Projects</p>
+                      <p className="text-xs text-muted mb-2">Active Projects</p>
                       <div className="space-y-1">
                         {activeProjects.slice(0, 3).map(project => (
                           <Link
@@ -138,13 +138,13 @@ export default async function UsersPage() {
                           </Link>
                         ))}
                         {activeProjects.length > 3 && (
-                          <p className="text-xs text-gray-400">+{activeProjects.length - 3} more</p>
+                          <p className="text-xs text-muted">+{activeProjects.length - 3} more</p>
                         )}
                       </div>
                     </div>
                   )}
 
-                  <div className="mt-4 pt-4 border-t flex items-center justify-between text-xs text-gray-400">
+                  <div className="mt-4 pt-4 border-t flex items-center justify-between text-xs text-muted">
                     <div className="flex items-center">
                       <Calendar className="h-3 w-3 mr-1" />
                       Joined {format(new Date(user.createdAt), 'MMM yyyy')}
@@ -158,7 +158,7 @@ export default async function UsersPage() {
 
         {users.length === 0 && (
           <div className="text-center py-12 bg-white rounded-lg shadow-sm border">
-            <p className="text-gray-500">No users found</p>
+            <p className="text-muted">No users found</p>
           </div>
         )}
       </div>

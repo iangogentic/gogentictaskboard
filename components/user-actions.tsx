@@ -43,10 +43,10 @@ export default function UserActions({ userId, userName }: UserActionsProps) {
     <div className="relative">
       <button
         onClick={() => setShowMenu(!showMenu)}
-        className="p-1 rounded hover:bg-gray-100"
+        className="p-1 rounded hover:bg-surface"
         disabled={loading}
       >
-        <MoreVertical className="h-4 w-4 text-gray-500" />
+        <MoreVertical className="h-4 w-4 text-muted" />
       </button>
 
       {showMenu && (
@@ -55,20 +55,20 @@ export default function UserActions({ userId, userName }: UserActionsProps) {
             className="fixed inset-0 z-10"
             onClick={() => setShowMenu(false)}
           />
-          <div className="absolute right-0 mt-1 w-48 bg-white rounded-md shadow-lg border z-20">
+          <div className="absolute right-0 mt-1 w-48 bg-bg rounded-md shadow-lg border z-20">
             <button
               onClick={() => {
                 router.push(`/users/${userId}/edit`)
                 setShowMenu(false)
               }}
-              className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+              className="flex items-center w-full px-4 py-2 text-sm text-fg hover:bg-surface"
             >
               <Edit className="h-4 w-4 mr-2" />
               Edit User
             </button>
             <button
               onClick={handleDelete}
-              className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+              className="flex items-center w-full px-4 py-2 text-sm text-danger hover:bg-red-50"
             >
               <UserX className="h-4 w-4 mr-2" />
               Remove User

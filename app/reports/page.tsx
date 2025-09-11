@@ -168,7 +168,7 @@ async function getReportsData() {
 
   // Task status distribution
   const taskStatusDistribution = [
-    { status: 'Todo', count: todoTasks, color: 'bg-gray-500' },
+    { status: 'Todo', count: todoTasks, color: 'bg-muted' },
     { status: 'Doing', count: inProgressTasks, color: 'bg-blue-500' },
     { status: 'Review', count: reviewTasks, color: 'bg-yellow-500' },
     { status: 'Done', count: completedTasks, color: 'bg-green-500' }
@@ -176,7 +176,7 @@ async function getReportsData() {
 
   // Project status distribution
   const projectStatusDistribution = [
-    { status: 'Planning', count: projects.filter(p => p.status === 'PLANNING').length, color: 'bg-gray-500' },
+    { status: 'Planning', count: projects.filter(p => p.status === 'PLANNING').length, color: 'bg-muted' },
     { status: 'In Progress', count: activeProjects, color: 'bg-blue-500' },
     { status: 'Blocked', count: blockedProjects, color: 'bg-red-500' },
     { status: 'Completed', count: completedProjects, color: 'bg-green-500' }
@@ -260,14 +260,14 @@ export default async function ReportsPage() {
     : 0
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-surface">
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-4">
               <Link
                 href="/"
-                className="flex items-center text-gray-600 hover:text-gray-900"
+                className="flex items-center text-muted hover:text-fg"
               >
                 <ArrowLeft className="h-4 w-4 mr-1" />
                 Back
@@ -276,7 +276,7 @@ export default async function ReportsPage() {
                 <h1 className="text-xl font-semibold">Reports & Analytics</h1>
               </div>
             </div>
-            <button className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+            <button className="inline-flex items-center px-4 py-2 border border-border text-sm font-medium rounded-md text-fg-muted bg-white hover:bg-surface">
               <Download className="h-4 w-4 mr-2" />
               Export Report
             </button>
@@ -290,9 +290,9 @@ export default async function ReportsPage() {
           <div className="bg-white rounded-lg shadow-sm border p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500">Active Projects</p>
+                <p className="text-sm text-muted">Active Projects</p>
                 <p className="text-3xl font-bold">{metrics.activeProjects}</p>
-                <p className="text-xs text-gray-400 mt-1">of {metrics.totalProjects} total</p>
+                <p className="text-xs text-muted mt-1">of {metrics.totalProjects} total</p>
               </div>
               <FolderOpen className="h-8 w-8 text-indigo-500" />
             </div>
@@ -301,9 +301,9 @@ export default async function ReportsPage() {
           <div className="bg-white rounded-lg shadow-sm border p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500">Task Completion</p>
+                <p className="text-sm text-muted">Task Completion</p>
                 <p className="text-3xl font-bold">{metrics.taskCompletionRate}%</p>
-                <p className="text-xs text-gray-400 mt-1">{metrics.completedTasks} of {metrics.totalTasks}</p>
+                <p className="text-xs text-muted mt-1">{metrics.completedTasks} of {metrics.totalTasks}</p>
               </div>
               <CheckCircle className="h-8 w-8 text-green-500" />
             </div>
@@ -312,13 +312,13 @@ export default async function ReportsPage() {
           <div className="bg-white rounded-lg shadow-sm border p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500">Weekly Velocity</p>
+                <p className="text-sm text-muted">Weekly Velocity</p>
                 <p className="text-3xl font-bold flex items-center">
                   {Math.abs(velocity)}
                   {velocity > 0 && <TrendingUp className="h-5 w-5 text-green-500 ml-2" />}
                   {velocity < 0 && <TrendingDown className="h-5 w-5 text-red-500 ml-2" />}
                 </p>
-                <p className="text-xs text-gray-400 mt-1">updates vs last week</p>
+                <p className="text-xs text-muted mt-1">updates vs last week</p>
               </div>
               <Activity className="h-8 w-8 text-purple-500" />
             </div>
@@ -327,9 +327,9 @@ export default async function ReportsPage() {
           <div className="bg-white rounded-lg shadow-sm border p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500">Blocked Items</p>
+                <p className="text-sm text-muted">Blocked Items</p>
                 <p className="text-3xl font-bold">{metrics.blockedProjects}</p>
-                <p className="text-xs text-gray-400 mt-1">projects need attention</p>
+                <p className="text-xs text-muted mt-1">projects need attention</p>
               </div>
               <AlertCircle className="h-8 w-8 text-red-500" />
             </div>
@@ -345,9 +345,9 @@ export default async function ReportsPage() {
                 <div key={item.status}>
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-sm font-medium">{item.status}</span>
-                    <span className="text-sm text-gray-500">{item.count}</span>
+                    <span className="text-sm text-muted">{item.count}</span>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div className="w-full bg-border rounded-full h-2">
                     <div 
                       className={`${item.color} h-2 rounded-full`}
                       style={{ width: `${metrics.totalTasks > 0 ? (item.count / metrics.totalTasks) * 100 : 0}%` }}
@@ -366,9 +366,9 @@ export default async function ReportsPage() {
                 <div key={item.status}>
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-sm font-medium">{item.status}</span>
-                    <span className="text-sm text-gray-500">{item.count}</span>
+                    <span className="text-sm text-muted">{item.count}</span>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div className="w-full bg-border rounded-full h-2">
                     <div 
                       className={`${item.color} h-2 rounded-full`}
                       style={{ width: `${metrics.totalProjects > 0 ? (item.count / metrics.totalProjects) * 100 : 0}%` }}
@@ -387,9 +387,9 @@ export default async function ReportsPage() {
             <div className="space-y-2">
               {weeklyUpdates.map((week, idx) => (
                 <div key={idx} className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">{week.week}</span>
+                  <span className="text-sm text-muted">{week.week}</span>
                   <div className="flex items-center">
-                    <div className="w-24 bg-gray-200 rounded-full h-2 mr-2">
+                    <div className="w-24 bg-border rounded-full h-2 mr-2">
                       <div 
                         className="bg-indigo-500 h-2 rounded-full"
                         style={{ width: `${Math.max(...weeklyUpdates.map(w => w.count)) > 0 ? (week.count / Math.max(...weeklyUpdates.map(w => w.count))) * 100 : 0}%` }}
@@ -413,8 +413,8 @@ export default async function ReportsPage() {
                     <span className="text-sm">{contributor.user.name}</span>
                   </div>
                   <div className="flex items-center space-x-3 text-sm">
-                    <span className="text-gray-500">{contributor.updateCount} updates</span>
-                    <span className="text-gray-500">{contributor.taskCount} tasks</span>
+                    <span className="text-muted">{contributor.updateCount} updates</span>
+                    <span className="text-muted">{contributor.taskCount} tasks</span>
                   </div>
                 </div>
               ))}
@@ -428,7 +428,7 @@ export default async function ReportsPage() {
               {projectsByBranch.map(branch => (
                 <div key={branch.branch} className="flex items-center justify-between">
                   <span className="text-sm font-medium">{branch.branch}</span>
-                  <span className="px-2 py-1 text-xs font-medium bg-gray-100 rounded-full">
+                  <span className="px-2 py-1 text-xs font-medium bg-surface rounded-full">
                     {branch._count.id}
                   </span>
                 </div>
@@ -475,35 +475,35 @@ export default async function ReportsPage() {
             <h2 className="text-lg font-semibold">Project Performance</h2>
           </div>
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+            <table className="min-w-full divide-y divide-border">
+              <thead className="bg-surface">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">
                     Project
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">
                     Branch
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">
                     PM
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">
                     Status
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">
                     Tasks
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">
                     Updates
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">
                     Deliverables
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="bg-white divide-y divide-border">
                 {projects.map(project => (
-                  <tr key={project.id} className="hover:bg-gray-50">
+                  <tr key={project.id} className="hover:bg-surface">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <Link
                         href={`/projects/${project.id}`}
@@ -512,10 +512,10 @@ export default async function ReportsPage() {
                         {project.title}
                       </Link>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-muted">
                       {project.branch}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-muted">
                       {project.pm.name}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -523,18 +523,18 @@ export default async function ReportsPage() {
                         project.status === 'COMPLETED' ? 'bg-green-100 text-green-800' :
                         project.status === 'IN_PROGRESS' ? 'bg-blue-100 text-blue-800' :
                         project.status === 'BLOCKED' ? 'bg-red-100 text-red-800' :
-                        'bg-gray-100 text-gray-800'
+                        'bg-surface text-fg'
                       }`}>
                         {project.status.replace('_', ' ')}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-muted">
                       {project._count.tasks}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-muted">
                       {project._count.updates}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-muted">
                       {project._count.deliverables}
                     </td>
                   </tr>

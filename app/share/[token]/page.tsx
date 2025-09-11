@@ -41,12 +41,12 @@ export default async function ClientSharePage({ params }: { params: Promise<{ to
     : 0
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-surface">
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="py-6">
-            <h1 className="text-2xl font-bold text-gray-900">Project Status</h1>
-            <p className="mt-1 text-sm text-gray-600">Read-only view for {project.clientName}</p>
+            <h1 className="text-2xl font-bold text-fg">Project Status</h1>
+            <p className="mt-1 text-sm text-muted">Read-only view for {project.clientName}</p>
           </div>
         </div>
       </div>
@@ -56,7 +56,7 @@ export default async function ClientSharePage({ params }: { params: Promise<{ to
         <div className="bg-white rounded-lg shadow-sm border p-6">
           <div className="flex items-start justify-between mb-4">
             <div>
-              <h2 className="text-xl font-semibold text-gray-900">{project.title}</h2>
+              <h2 className="text-xl font-semibold text-fg">{project.title}</h2>
               <div className="flex items-center space-x-2 mt-2">
                 <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getBranchColor(project.branch)}`}>
                   {project.branch}
@@ -71,13 +71,13 @@ export default async function ClientSharePage({ params }: { params: Promise<{ to
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
             <div className="space-y-3">
               <div className="flex items-center text-sm">
-                <Users className="h-4 w-4 mr-2 text-gray-400" />
-                <span className="text-gray-600">Project Manager:</span>
+                <Users className="h-4 w-4 mr-2 text-muted" />
+                <span className="text-muted">Project Manager:</span>
                 <span className="ml-2 font-medium">{project.pm.name}</span>
               </div>
               <div className="flex items-start text-sm">
-                <Users className="h-4 w-4 mr-2 text-gray-400 mt-0.5" />
-                <span className="text-gray-600">Development Team:</span>
+                <Users className="h-4 w-4 mr-2 text-muted mt-0.5" />
+                <span className="text-muted">Development Team:</span>
                 <div className="ml-2">
                   {project.developers.map(dev => (
                     <span key={dev.id} className="font-medium block">{dev.name}</span>
@@ -89,8 +89,8 @@ export default async function ClientSharePage({ params }: { params: Promise<{ to
             <div className="space-y-3">
               {project.startDate && (
                 <div className="flex items-center text-sm">
-                  <Calendar className="h-4 w-4 mr-2 text-gray-400" />
-                  <span className="text-gray-600">Start Date:</span>
+                  <Calendar className="h-4 w-4 mr-2 text-muted" />
+                  <span className="text-muted">Start Date:</span>
                   <span className="ml-2 font-medium">
                     {format(new Date(project.startDate), 'MMM d, yyyy')}
                   </span>
@@ -98,16 +98,16 @@ export default async function ClientSharePage({ params }: { params: Promise<{ to
               )}
               {project.targetDelivery && (
                 <div className="flex items-center text-sm">
-                  <Clock className="h-4 w-4 mr-2 text-gray-400" />
-                  <span className="text-gray-600">Target Delivery:</span>
+                  <Clock className="h-4 w-4 mr-2 text-muted" />
+                  <span className="text-muted">Target Delivery:</span>
                   <span className="ml-2 font-medium">
                     {format(new Date(project.targetDelivery), 'MMM d, yyyy')}
                   </span>
                 </div>
               )}
               <div className="flex items-center text-sm">
-                <Clock className="h-4 w-4 mr-2 text-gray-400" />
-                <span className="text-gray-600">Last Updated:</span>
+                <Clock className="h-4 w-4 mr-2 text-muted" />
+                <span className="text-muted">Last Updated:</span>
                 <span className="ml-2 font-medium">
                   {format(new Date(project.lastUpdatedAt), 'MMM d, yyyy h:mm a')}
                 </span>
@@ -116,23 +116,23 @@ export default async function ClientSharePage({ params }: { params: Promise<{ to
           </div>
 
           {project.notes && (
-            <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-              <h3 className="text-sm font-medium text-gray-700 mb-2">Project Notes</h3>
-              <p className="text-sm text-gray-600">{project.notes}</p>
+            <div className="mt-6 p-4 bg-surface rounded-lg">
+              <h3 className="text-sm font-medium text-fg-muted mb-2">Project Notes</h3>
+              <p className="text-sm text-muted">{project.notes}</p>
             </div>
           )}
         </div>
 
         {/* Progress Overview */}
         <div className="bg-white rounded-lg shadow-sm border p-6">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">Progress Overview</h3>
+          <h3 className="text-lg font-medium text-fg mb-4">Progress Overview</h3>
           
           <div className="mb-4">
             <div className="flex justify-between text-sm mb-2">
-              <span className="text-gray-600">Overall Progress</span>
+              <span className="text-muted">Overall Progress</span>
               <span className="font-medium">{progress}%</span>
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-2">
+            <div className="w-full bg-border rounded-full h-2">
               <div 
                 className="bg-green-600 h-2 rounded-full transition-all duration-300"
                 style={{ width: `${progress}%` }}
@@ -141,48 +141,48 @@ export default async function ClientSharePage({ params }: { params: Promise<{ to
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
-            <div className="text-center p-3 bg-gray-50 rounded-lg">
-              <div className="text-2xl font-bold text-gray-700">{taskCounts.todo}</div>
-              <div className="text-xs text-gray-600 mt-1">To Do</div>
+            <div className="text-center p-3 bg-surface rounded-lg">
+              <div className="text-2xl font-bold text-fg-muted">{taskCounts.todo}</div>
+              <div className="text-xs text-muted mt-1">To Do</div>
             </div>
             <div className="text-center p-3 bg-blue-50 rounded-lg">
               <div className="text-2xl font-bold text-blue-700">{taskCounts.doing}</div>
-              <div className="text-xs text-gray-600 mt-1">In Progress</div>
+              <div className="text-xs text-muted mt-1">In Progress</div>
             </div>
             <div className="text-center p-3 bg-yellow-50 rounded-lg">
               <div className="text-2xl font-bold text-yellow-700">{taskCounts.review}</div>
-              <div className="text-xs text-gray-600 mt-1">In Review</div>
+              <div className="text-xs text-muted mt-1">In Review</div>
             </div>
             <div className="text-center p-3 bg-green-50 rounded-lg">
               <div className="text-2xl font-bold text-green-700">{taskCounts.done}</div>
-              <div className="text-xs text-gray-600 mt-1">Completed</div>
+              <div className="text-xs text-muted mt-1">Completed</div>
             </div>
           </div>
         </div>
 
         {/* Recent Updates */}
         <div className="bg-white rounded-lg shadow-sm border p-6">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">Recent Updates</h3>
+          <h3 className="text-lg font-medium text-fg mb-4">Recent Updates</h3>
           
           {project.updates.length === 0 ? (
-            <p className="text-sm text-gray-500">No updates yet.</p>
+            <p className="text-sm text-muted">No updates yet.</p>
           ) : (
             <div className="space-y-4">
               {project.updates.map(update => (
                 <div key={update.id} className="flex items-start space-x-3">
                   <div className="flex-shrink-0">
-                    <div className="h-8 w-8 rounded-full bg-gray-300 flex items-center justify-center text-xs font-medium text-gray-700">
+                    <div className="h-8 w-8 rounded-full bg-border flex items-center justify-center text-xs font-medium text-fg-muted">
                       {update.author.name.slice(0, 2).toUpperCase()}
                     </div>
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center space-x-2">
                       <span className="font-medium text-sm">{update.author.name}</span>
-                      <span className="text-xs text-gray-500">
+                      <span className="text-xs text-muted">
                         {format(new Date(update.createdAt), 'MMM d, h:mm a')}
                       </span>
                     </div>
-                    <p className="text-sm text-gray-700 mt-1">{update.body}</p>
+                    <p className="text-sm text-fg-muted mt-1">{update.body}</p>
                   </div>
                 </div>
               ))}
@@ -191,7 +191,7 @@ export default async function ClientSharePage({ params }: { params: Promise<{ to
         </div>
 
         {/* Footer */}
-        <div className="text-center py-8 text-sm text-gray-500">
+        <div className="text-center py-8 text-sm text-muted">
           <p>This is a read-only view of the project status.</p>
           <p>For questions or updates, please contact your project manager.</p>
         </div>

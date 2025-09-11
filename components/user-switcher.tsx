@@ -8,7 +8,7 @@ export default function UserSwitcher() {
 
   if (loading) {
     return (
-      <div className="flex items-center space-x-2 text-sm text-gray-600">
+      <div className="flex items-center space-x-2 text-sm text-muted">
         <User className="h-4 w-4" />
         <span>Loading...</span>
       </div>
@@ -17,7 +17,7 @@ export default function UserSwitcher() {
 
   return (
     <div className="flex items-center space-x-2">
-      <label className="text-sm text-gray-600">Logged in as:</label>
+      <label className="text-sm text-muted">Logged in as:</label>
       <select
         value={currentUser?.id || ''}
         onChange={(e) => {

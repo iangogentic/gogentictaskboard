@@ -18,7 +18,7 @@ export default function DroppableColumn({ id, children }: DroppableColumnProps) 
   return (
     <div
       ref={setNodeRef}
-      className={`bg-gray-100 rounded-lg p-4 min-h-[400px] transition-colors ${
+      className={`bg-surface rounded-lg p-4 min-h-[400px] transition-colors ${
         isOver ? 'bg-blue-50 ring-2 ring-blue-400' : ''
       }`}
     >

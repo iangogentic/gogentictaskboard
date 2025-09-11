@@ -90,40 +90,40 @@ export default function PortfolioDashboard({ params }: { params: Promise<{ key: 
 
   const getStageColor = (stage: string) => {
     switch (stage) {
-      case 'Discovery': return 'bg-blue-100 text-blue-800'
-      case 'Build': return 'bg-purple-100 text-purple-800'
-      case 'Launch': return 'bg-amber-100 text-amber-800'
-      case 'Live': return 'bg-green-100 text-green-800'
-      default: return 'bg-gray-100 text-gray-800'
+      case 'Discovery': return 'bg-info-bg text-info'
+      case 'Build': return 'bg-portfolio-fisher/10 text-portfolio-fisher'
+      case 'Launch': return 'bg-warn-bg text-warn'
+      case 'Live': return 'bg-success-bg text-success'
+      default: return 'bg-surface text-fg'
     }
   }
 
   const getHealthIcon = (health: string) => {
     switch (health) {
-      case 'Green': return <CheckCircle className="w-4 h-4 text-green-600" />
-      case 'Amber': return <AlertCircle className="w-4 h-4 text-amber-600" />
-      case 'Red': return <AlertCircle className="w-4 h-4 text-red-600" />
-      default: return <Activity className="w-4 h-4 text-gray-400" />
+      case 'Green': return <CheckCircle className="w-4 h-4 text-success" />
+      case 'Amber': return <AlertCircle className="w-4 h-4 text-warn" />
+      case 'Red': return <AlertCircle className="w-4 h-4 text-danger" />
+      default: return <Activity className="w-4 h-4 text-muted" />
     }
   }
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'Not Started': return 'text-gray-600'
-      case 'In Progress': return 'text-blue-600'
-      case 'Review': return 'text-purple-600'
-      case 'Blocked': return 'text-red-600'
-      case 'Done': return 'text-green-600'
-      default: return 'text-gray-600'
+      case 'Not Started': return 'text-muted'
+      case 'In Progress': return 'text-brand'
+      case 'Review': return 'text-portfolio-fisher'
+      case 'Blocked': return 'text-danger'
+      case 'Done': return 'text-success'
+      default: return 'text-muted'
     }
   }
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-bg flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading portfolio...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand mx-auto"></div>
+          <p className="mt-4 text-muted">Loading portfolio...</p>
         </div>
       </div>
     )
@@ -131,10 +131,10 @@ export default function PortfolioDashboard({ params }: { params: Promise<{ key: 
 
   if (!portfolio) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-bg flex items-center justify-center">
         <div className="text-center">
-          <p className="text-gray-600">Portfolio not found</p>
-          <Link href="/" className="mt-4 text-indigo-600 hover:text-indigo-700">
+          <p className="text-muted">Portfolio not found</p>
+          <Link href="/" className="mt-4 text-brand hover:text-brand-hover">
             Back to Mission Control
           </Link>
         </div>
@@ -154,7 +154,7 @@ export default function PortfolioDashboard({ params }: { params: Promise<{ key: 
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-bg">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
@@ -162,7 +162,7 @@ export default function PortfolioDashboard({ params }: { params: Promise<{ key: 
             <div className="flex items-center">
               <Link
                 href="/"
-                className="inline-flex items-center text-sm text-gray-500 hover:text-gray-700 mr-4"
+                className="inline-flex items-center text-sm text-muted hover:text-fg mr-4"
               >
                 <ArrowLeft className="h-4 w-4 mr-1" />
                 Mission Control
@@ -173,8 +173,8 @@ export default function PortfolioDashboard({ params }: { params: Promise<{ key: 
                   style={{ backgroundColor: portfolio.color }}
                 />
                 <div>
-                  <h1 className="text-2xl font-bold text-gray-900">{portfolio.name}</h1>
-                  <p className="text-sm text-gray-600 mt-1">{portfolio.description}</p>
+                  <h1 className="text-2xl font-bold text-fg">{portfolio.name}</h1>
+                  <p className="text-sm text-muted mt-1">{portfolio.description}</p>
                 </div>
               </div>
             </div>
@@ -191,49 +191,49 @@ export default function PortfolioDashboard({ params }: { params: Promise<{ key: 
 
         {/* Stats Cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4 mb-8">
-          <div className="bg-white rounded-lg shadow-sm p-4">
-            <div className="text-sm text-gray-500">Total</div>
-            <div className="text-2xl font-bold text-gray-900">{stats.total}</div>
+          <div className="bg-bg rounded-lg shadow-sm p-4">
+            <div className="text-sm text-muted">Total</div>
+            <div className="text-2xl font-bold text-fg">{stats.total}</div>
           </div>
-          <div className="bg-white rounded-lg shadow-sm p-4">
-            <div className="text-sm text-gray-500">Discovery</div>
-            <div className="text-2xl font-bold text-blue-600">{stats.discovery}</div>
+          <div className="bg-bg rounded-lg shadow-sm p-4">
+            <div className="text-sm text-muted">Discovery</div>
+            <div className="text-2xl font-bold text-brand">{stats.discovery}</div>
           </div>
-          <div className="bg-white rounded-lg shadow-sm p-4">
-            <div className="text-sm text-gray-500">Build</div>
-            <div className="text-2xl font-bold text-purple-600">{stats.build}</div>
+          <div className="bg-bg rounded-lg shadow-sm p-4">
+            <div className="text-sm text-muted">Build</div>
+            <div className="text-2xl font-bold text-portfolio-fisher">{stats.build}</div>
           </div>
-          <div className="bg-white rounded-lg shadow-sm p-4">
-            <div className="text-sm text-gray-500">Launch</div>
-            <div className="text-2xl font-bold text-amber-600">{stats.launch}</div>
+          <div className="bg-bg rounded-lg shadow-sm p-4">
+            <div className="text-sm text-muted">Launch</div>
+            <div className="text-2xl font-bold text-warn">{stats.launch}</div>
           </div>
-          <div className="bg-white rounded-lg shadow-sm p-4">
-            <div className="text-sm text-gray-500">Live</div>
-            <div className="text-2xl font-bold text-green-600">{stats.live}</div>
+          <div className="bg-bg rounded-lg shadow-sm p-4">
+            <div className="text-sm text-muted">Live</div>
+            <div className="text-2xl font-bold text-success">{stats.live}</div>
           </div>
-          <div className="bg-white rounded-lg shadow-sm p-4">
-            <div className="text-sm text-gray-500">Blocked</div>
-            <div className="text-2xl font-bold text-red-600">{stats.blocked}</div>
+          <div className="bg-bg rounded-lg shadow-sm p-4">
+            <div className="text-sm text-muted">Blocked</div>
+            <div className="text-2xl font-bold text-danger">{stats.blocked}</div>
           </div>
-          <div className="bg-white rounded-lg shadow-sm p-4">
-            <div className="text-sm text-gray-500">Tasks</div>
-            <div className="text-2xl font-bold text-gray-900">{stats.tasksTotal}</div>
+          <div className="bg-bg rounded-lg shadow-sm p-4">
+            <div className="text-sm text-muted">Tasks</div>
+            <div className="text-2xl font-bold text-fg">{stats.tasksTotal}</div>
           </div>
         </div>
 
         {/* Filters */}
-        <div className="bg-white rounded-lg shadow-sm mb-6">
+        <div className="bg-bg rounded-lg shadow-sm mb-6">
           <div className="px-6 py-4 border-b">
             <div className="flex flex-col sm:flex-row gap-4">
               <div className="flex-1">
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted" />
                   <input
                     type="text"
                     placeholder="Search projects..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+                    className="w-full pl-10 pr-4 py-2 border border-border rounded-md focus:ring-brand focus:border-brand"
                   />
                 </div>
               </div>
@@ -241,7 +241,7 @@ export default function PortfolioDashboard({ params }: { params: Promise<{ key: 
                 <select
                   value={stageFilter}
                   onChange={(e) => setStageFilter(e.target.value)}
-                  className="px-4 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+                  className="px-4 py-2 border border-border rounded-md focus:ring-brand focus:border-brand"
                 >
                   <option value="all">All Stages</option>
                   <option value="Discovery">Discovery</option>
@@ -252,7 +252,7 @@ export default function PortfolioDashboard({ params }: { params: Promise<{ key: 
                 <select
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
-                  className="px-4 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+                  className="px-4 py-2 border border-border rounded-md focus:ring-brand focus:border-brand"
                 >
                   <option value="all">All Status</option>
                   <option value="Not Started">Not Started</option>
@@ -272,11 +272,11 @@ export default function PortfolioDashboard({ params }: { params: Promise<{ key: 
             <Link
               key={project.id}
               href={`/projects/${project.id}`}
-              className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow"
+              className="bg-bg rounded-lg shadow-sm hover:shadow-md transition-shadow"
             >
               <div className="p-6">
                 <div className="flex items-start justify-between mb-3">
-                  <h3 className="font-semibold text-gray-900 hover:text-indigo-600">
+                  <h3 className="font-semibold text-fg hover:text-brand">
                     {project.title}
                   </h3>
                   <div className="flex items-center">
@@ -295,21 +295,21 @@ export default function PortfolioDashboard({ params }: { params: Promise<{ key: 
 
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-gray-500">Client</span>
-                    <span className="text-gray-900">{project.clientName}</span>
+                    <span className="text-muted">Client</span>
+                    <span className="text-fg">{project.clientName}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-500">PM</span>
-                    <span className="text-gray-900">{project.pm.name}</span>
+                    <span className="text-muted">PM</span>
+                    <span className="text-fg">{project.pm.name}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-500">Team</span>
-                    <span className="text-gray-900">{project.developers.length} devs</span>
+                    <span className="text-muted">Team</span>
+                    <span className="text-fg">{project.developers.length} devs</span>
                   </div>
                   {project.targetDelivery && (
                     <div className="flex justify-between">
-                      <span className="text-gray-500">Due</span>
-                      <span className="text-gray-900">
+                      <span className="text-muted">Due</span>
+                      <span className="text-fg">
                         {new Date(project.targetDelivery).toLocaleDateString()}
                       </span>
                     </div>
@@ -317,7 +317,7 @@ export default function PortfolioDashboard({ params }: { params: Promise<{ key: 
                 </div>
 
                 <div className="mt-4 pt-4 border-t flex justify-between items-center">
-                  <div className="flex items-center text-sm text-gray-500">
+                  <div className="flex items-center text-sm text-muted">
                     <Target className="w-4 h-4 mr-1" />
                     {project._count.tasks} tasks
                   </div>
@@ -326,9 +326,9 @@ export default function PortfolioDashboard({ params }: { params: Promise<{ key: 
                       e.preventDefault()
                       // Handle more actions
                     }}
-                    className="p-1 hover:bg-gray-100 rounded"
+                    className="p-1 hover:bg-surface rounded"
                   >
-                    <MoreVertical className="w-4 h-4 text-gray-400" />
+                    <MoreVertical className="w-4 h-4 text-muted" />
                   </button>
                 </div>
               </div>
@@ -337,8 +337,8 @@ export default function PortfolioDashboard({ params }: { params: Promise<{ key: 
         </div>
 
         {filteredProjects.length === 0 && (
-          <div className="bg-white rounded-lg shadow-sm p-12 text-center">
-            <p className="text-gray-500">No projects found matching your filters</p>
+          <div className="bg-bg rounded-lg shadow-sm p-12 text-center">
+            <p className="text-muted">No projects found matching your filters</p>
           </div>
         )}
       </div>
