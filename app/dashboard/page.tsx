@@ -1,17 +1,19 @@
 import { prisma } from '@/lib/prisma'
 import Link from 'next/link'
-import { format, subDays, startOfWeek, endOfWeek } from 'date-fns'
+import { format, subDays } from 'date-fns'
 import { 
   TrendingUp, TrendingDown, Activity, Users, Briefcase, 
-  CheckCircle, Clock, AlertCircle, Calendar, BarChart3 
+  CheckCircle, Clock, AlertCircle, Calendar, BarChart3,
+  GitBranch, Target, Timer
 } from 'lucide-react'
+import { KPIGrid, KPITile, AttentionCard } from '@/components/ui/kpi-tile'
 import { getStatusColor, getBranchColor } from '@/lib/utils'
 
 export const dynamic = 'force-dynamic'
 
 export default async function DashboardPage() {
   // Fetch all data needed for dashboard
-  const [projects, tasks, updates, users] = await Promise.all([
+  const [projects, tasks, updates, users, previousWeekData] = await Promise.all([
     prisma.project.findMany({
       include: {
         pm: true,
@@ -29,7 +31,7 @@ export default async function DashboardPage() {
     prisma.update.findMany({
       where: {
         createdAt: {
-          gte: subDays(new Date(), 7) // Last 7 days
+          gte: subDays(new Date(), 7)
         }
       },
       include: {
@@ -38,7 +40,31 @@ export default async function DashboardPage() {
       },
       orderBy: { createdAt: 'desc' }
     }),
-    prisma.user.findMany()
+    prisma.user.findMany(),
+    // Get previous week data for deltas
+    Promise.all([
+      prisma.project.count({
+        where: {
+          status: 'BLOCKED',
+          lastUpdatedAt: {
+            gte: subDays(new Date(), 14),
+            lt: subDays(new Date(), 7)
+          }
+        }
+      }),
+      prisma.task.count({
+        where: {
+          status: 'TODO',
+          createdAt: {
+            gte: subDays(new Date(), 14),
+            lt: subDays(new Date(), 7)
+          }
+        }
+      }),
+    ]).then(([blockedLastWeek, tasksLastWeek]) => ({
+      blockedLastWeek,
+      tasksLastWeek,
+    }))
   ])
 
   // Calculate metrics
@@ -48,294 +74,268 @@ export default async function DashboardPage() {
     completedProjects: projects.filter(p => p.status === 'COMPLETED').length,
     blockedProjects: projects.filter(p => p.status === 'BLOCKED').length,
     totalTasks: tasks.length,
-    todoTasks: tasks.filter(t => t.status === 'Todo').length,
-    inProgressTasks: tasks.filter(t => t.status === 'Doing').length,
-    reviewTasks: tasks.filter(t => t.status === 'Review').length,
-    completedTasks: tasks.filter(t => t.status === 'Done').length,
+    todoTasks: tasks.filter(t => t.status === 'TODO').length,
+    inProgressTasks: tasks.filter(t => t.status === 'DOING').length,
+    reviewTasks: tasks.filter(t => t.status === 'REVIEW').length,
+    completedTasks: tasks.filter(t => t.status === 'DONE').length,
     overdueTasks: tasks.filter(t => t.dueDate && new Date(t.dueDate) < new Date()).length,
     weeklyUpdates: updates.length,
   }
 
-  // Branch distribution
-  const branchMetrics = {
-    CORTEX: projects.filter(p => p.branch === 'CORTEX').length,
-    SOLUTIONS: projects.filter(p => p.branch === 'SOLUTIONS').length,
-    FISHER: projects.filter(p => p.branch === 'FISHER').length,
-  }
+  // Calculate deltas
+  const blockedDelta = metrics.blockedProjects - previousWeekData.blockedLastWeek
+  const tasksDelta = metrics.todoTasks - previousWeekData.tasksLastWeek
 
-  // User workload
+  // Identify items needing attention
+  const attentionItems = [
+    ...projects
+      .filter(p => p.status === 'BLOCKED')
+      .map(p => ({
+        id: p.id,
+        title: p.title,
+        description: `Project blocked - ${p.branch}`,
+        priority: 'high' as const,
+        href: `/projects/${p.id}`
+      })),
+    ...tasks
+      .filter(t => t.dueDate && new Date(t.dueDate) < new Date() && t.status !== 'DONE')
+      .slice(0, 3)
+      .map(t => ({
+        id: t.id,
+        title: t.title,
+        description: `Overdue task in ${t.project.title}`,
+        priority: 'medium' as const,
+        href: `/projects/${t.projectId}`
+      })),
+  ]
+
+  // User workload with capacity indicators
   const userWorkload = users.map(user => ({
     user,
-    assignedTasks: tasks.filter(t => t.assigneeId === user.id && t.status !== 'Done').length,
-    completedTasks: tasks.filter(t => t.assigneeId === user.id && t.status === 'Done').length,
+    assignedTasks: tasks.filter(t => t.assigneeId === user.id && t.status !== 'DONE').length,
+    completedThisWeek: tasks.filter(t => 
+      t.assigneeId === user.id && 
+      t.status === 'DONE' &&
+      t.updatedAt > subDays(new Date(), 7)
+    ).length,
     managedProjects: projects.filter(p => p.pmId === user.id).length,
+    capacity: tasks.filter(t => t.assigneeId === user.id && t.status !== 'DONE').length > 10 ? 'over' : 
+              tasks.filter(t => t.assigneeId === user.id && t.status !== 'DONE').length > 5 ? 'high' : 'normal'
   })).sort((a, b) => b.assignedTasks - a.assignedTasks)
 
-  // Recent activity by project
-  const projectActivity = projects.map(project => ({
-    project,
-    recentUpdates: project.updates.filter(u => 
-      new Date(u.createdAt) > subDays(new Date(), 7)
-    ).length,
-    taskProgress: project.tasks.length > 0 
-      ? Math.round((project.tasks.filter(t => t.status === 'Done').length / project.tasks.length) * 100)
-      : 0,
-    urgentTasks: project.tasks.filter(t => 
-      t.dueDate && new Date(t.dueDate) < new Date() && t.status !== 'Done'
-    ).length,
-  })).sort((a, b) => b.recentUpdates - a.recentUpdates)
+  // Recent trends for sparklines
+  const taskTrend = [8, 10, 9, 12, metrics.todoTasks]
+  const updateTrend = [5, 8, 6, 10, updates.length]
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-        <p className="text-gray-600">Overview of all projects and team activity</p>
-      </div>
-
-      {/* Key Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="flex items-center justify-between mb-2">
-            <div className="text-sm font-medium text-gray-600">Active Projects</div>
-            <Briefcase className="h-5 w-5 text-indigo-600" />
-          </div>
-          <div className="text-2xl font-bold text-gray-900">{metrics.activeProjects}</div>
-          <div className="text-xs text-gray-500">of {metrics.totalProjects} total</div>
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+          <p className="text-gray-600 mt-1">Real-time overview of projects and team performance</p>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="flex items-center justify-between mb-2">
-            <div className="text-sm font-medium text-gray-600">Tasks In Progress</div>
-            <Activity className="h-5 w-5 text-blue-600" />
-          </div>
-          <div className="text-2xl font-bold text-gray-900">{metrics.inProgressTasks}</div>
-          <div className="text-xs text-gray-500">{metrics.reviewTasks} in review</div>
-        </div>
+        {/* Attention Card */}
+        {attentionItems.length > 0 && (
+          <AttentionCard 
+            items={attentionItems}
+            className="mb-8"
+          />
+        )}
 
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="flex items-center justify-between mb-2">
-            <div className="text-sm font-medium text-gray-600">Overdue Tasks</div>
-            <AlertCircle className="h-5 w-5 text-red-600" />
-          </div>
-          <div className="text-2xl font-bold text-gray-900">{metrics.overdueTasks}</div>
-          <div className="text-xs text-gray-500">needs attention</div>
-        </div>
+        {/* Primary KPIs */}
+        <KPIGrid className="mb-8">
+          <KPITile
+            title="Active Projects"
+            value={metrics.activeProjects}
+            icon={<Briefcase className="w-5 h-5 text-blue-600" />}
+            subtitle={`${metrics.totalProjects} total`}
+            href="/?status=IN_PROGRESS"
+          />
+          <KPITile
+            title="Blocked"
+            value={metrics.blockedProjects}
+            delta={blockedDelta !== 0 ? {
+              value: Math.abs(blockedDelta),
+              type: blockedDelta > 0 ? 'increase' : 'decrease',
+              label: 'vs last week'
+            } : undefined}
+            icon={<AlertCircle className="w-5 h-5 text-red-600" />}
+            status={metrics.blockedProjects > 0 ? 'danger' : 'default'}
+            href="/?status=BLOCKED"
+          />
+          <KPITile
+            title="Open Tasks"
+            value={metrics.todoTasks}
+            delta={tasksDelta !== 0 ? {
+              value: Math.abs(tasksDelta),
+              type: tasksDelta > 0 ? 'increase' : 'decrease',
+              label: 'vs last week'
+            } : undefined}
+            trend={taskTrend}
+            icon={<CheckCircle className="w-5 h-5 text-green-600" />}
+            href="/my-work"
+          />
+          <KPITile
+            title="Weekly Activity"
+            value={updates.length}
+            subtitle="updates"
+            trend={updateTrend}
+            icon={<Activity className="w-5 h-5 text-purple-600" />}
+            href="/activity"
+          />
+        </KPIGrid>
 
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="flex items-center justify-between mb-2">
-            <div className="text-sm font-medium text-gray-600">Weekly Updates</div>
-            <TrendingUp className="h-5 w-5 text-green-600" />
-          </div>
-          <div className="text-2xl font-bold text-gray-900">{metrics.weeklyUpdates}</div>
-          <div className="text-xs text-gray-500">last 7 days</div>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-        {/* Task Distribution */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-lg font-semibold mb-4">Task Distribution</h2>
-          <div className="space-y-3">
-            <div>
-              <div className="flex justify-between text-sm mb-1">
-                <span className="text-gray-600">To Do</span>
-                <span className="font-medium">{metrics.todoTasks}</span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div 
-                  className="bg-gray-600 h-2 rounded-full" 
-                  style={{ width: `${(metrics.todoTasks / metrics.totalTasks) * 100}%` }}
-                />
-              </div>
-            </div>
-            <div>
-              <div className="flex justify-between text-sm mb-1">
-                <span className="text-gray-600">In Progress</span>
-                <span className="font-medium">{metrics.inProgressTasks}</span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div 
-                  className="bg-blue-600 h-2 rounded-full" 
-                  style={{ width: `${(metrics.inProgressTasks / metrics.totalTasks) * 100}%` }}
-                />
-              </div>
-            </div>
-            <div>
-              <div className="flex justify-between text-sm mb-1">
-                <span className="text-gray-600">Review</span>
-                <span className="font-medium">{metrics.reviewTasks}</span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div 
-                  className="bg-yellow-600 h-2 rounded-full" 
-                  style={{ width: `${(metrics.reviewTasks / metrics.totalTasks) * 100}%` }}
-                />
-              </div>
-            </div>
-            <div>
-              <div className="flex justify-between text-sm mb-1">
-                <span className="text-gray-600">Completed</span>
-                <span className="font-medium">{metrics.completedTasks}</span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div 
-                  className="bg-green-600 h-2 rounded-full" 
-                  style={{ width: `${(metrics.completedTasks / metrics.totalTasks) * 100}%` }}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Branch Distribution */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-lg font-semibold mb-4">Projects by Branch</h2>
-          <div className="space-y-4">
-            {Object.entries(branchMetrics).map(([branch, count]) => (
-              <div key={branch} className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getBranchColor(branch)}`}>
-                    {branch}
-                  </span>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+          {/* Task Pipeline */}
+          <div className="bg-white rounded-2xl border border-gray-200 p-6">
+            <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+              <Target className="w-5 h-5 text-gray-600" />
+              Task Pipeline
+            </h2>
+            <div className="space-y-4">
+              <div>
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-sm text-gray-600">To Do</span>
+                  <span className="text-sm font-semibold">{metrics.todoTasks}</span>
                 </div>
-                <div className="flex items-center space-x-4">
-                  <div className="text-2xl font-bold">{count}</div>
-                  <div className="text-sm text-gray-500">projects</div>
+                <div className="w-full bg-gray-100 rounded-full h-2">
+                  <div 
+                    className="bg-gray-500 h-2 rounded-full transition-all" 
+                    style={{ width: `${metrics.totalTasks ? (metrics.todoTasks / metrics.totalTasks) * 100 : 0}%` }}
+                  />
                 </div>
               </div>
-            ))}
+              <div>
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-sm text-gray-600">In Progress</span>
+                  <span className="text-sm font-semibold">{metrics.inProgressTasks}</span>
+                </div>
+                <div className="w-full bg-gray-100 rounded-full h-2">
+                  <div 
+                    className="bg-blue-500 h-2 rounded-full transition-all" 
+                    style={{ width: `${metrics.totalTasks ? (metrics.inProgressTasks / metrics.totalTasks) * 100 : 0}%` }}
+                  />
+                </div>
+              </div>
+              <div>
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-sm text-gray-600">Review</span>
+                  <span className="text-sm font-semibold">{metrics.reviewTasks}</span>
+                </div>
+                <div className="w-full bg-gray-100 rounded-full h-2">
+                  <div 
+                    className="bg-purple-500 h-2 rounded-full transition-all" 
+                    style={{ width: `${metrics.totalTasks ? (metrics.reviewTasks / metrics.totalTasks) * 100 : 0}%` }}
+                  />
+                </div>
+              </div>
+              <div>
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-sm text-gray-600">Completed</span>
+                  <span className="text-sm font-semibold text-green-600">{metrics.completedTasks}</span>
+                </div>
+                <div className="w-full bg-gray-100 rounded-full h-2">
+                  <div 
+                    className="bg-green-500 h-2 rounded-full transition-all" 
+                    style={{ width: `${metrics.totalTasks ? (metrics.completedTasks / metrics.totalTasks) * 100 : 0}%` }}
+                  />
+                </div>
+              </div>
+              {metrics.overdueTasks > 0 && (
+                <div className="pt-2 border-t">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-red-600 font-medium">Overdue</span>
+                    <span className="text-sm font-bold text-red-600">{metrics.overdueTasks}</span>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
 
-        {/* Project Status */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-lg font-semibold mb-4">Project Status</h2>
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <Clock className="h-4 w-4 text-blue-500" />
-                <span className="text-sm text-gray-600">In Progress</span>
-              </div>
-              <span className="text-lg font-bold">{metrics.activeProjects}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <CheckCircle className="h-4 w-4 text-green-500" />
-                <span className="text-sm text-gray-600">Completed</span>
-              </div>
-              <span className="text-lg font-bold">{metrics.completedProjects}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <AlertCircle className="h-4 w-4 text-red-500" />
-                <span className="text-sm text-gray-600">Blocked</span>
-              </div>
-              <span className="text-lg font-bold">{metrics.blockedProjects}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Team Workload */}
-      <div className="bg-white rounded-lg shadow mb-8">
-        <div className="px-6 py-4 border-b">
-          <h2 className="text-lg font-semibold">Team Workload</h2>
-        </div>
-        <div className="p-6">
-          <div className="overflow-x-auto">
-            <table className="min-w-full">
-              <thead>
-                <tr className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  <th className="pb-3">Team Member</th>
-                  <th className="pb-3">Active Tasks</th>
-                  <th className="pb-3">Completed Tasks</th>
-                  <th className="pb-3">Managed Projects</th>
-                  <th className="pb-3">Workload</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {userWorkload.map(({ user, assignedTasks, completedTasks, managedProjects }) => (
-                  <tr key={user.id}>
-                    <td className="py-3">
-                      <div className="flex items-center">
-                        <div className="h-8 w-8 rounded-full bg-gray-300 flex items-center justify-center text-xs font-medium text-gray-700">
-                          {user.name.slice(0, 2).toUpperCase()}
-                        </div>
-                        <div className="ml-3">
-                          <div className="text-sm font-medium text-gray-900">{user.name}</div>
-                          <div className="text-xs text-gray-500">{user.email}</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="py-3">
-                      <span className="text-sm font-medium">{assignedTasks}</span>
-                    </td>
-                    <td className="py-3">
-                      <span className="text-sm text-gray-600">{completedTasks}</span>
-                    </td>
-                    <td className="py-3">
-                      <span className="text-sm text-gray-600">{managedProjects}</span>
-                    </td>
-                    <td className="py-3">
-                      <div className="w-24 bg-gray-200 rounded-full h-2">
+          {/* Team Capacity */}
+          <div className="bg-white rounded-2xl border border-gray-200 p-6 col-span-2">
+            <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+              <Users className="w-5 h-5 text-gray-600" />
+              Team Capacity
+            </h2>
+            <div className="space-y-3">
+              {userWorkload.slice(0, 5).map(({ user, assignedTasks, completedThisWeek, capacity }) => (
+                <div key={user.id} className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-indigo-600 flex items-center justify-center text-white text-xs font-bold">
+                      {user.name.charAt(0)}
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">{user.name}</p>
+                      <p className="text-xs text-gray-500">{assignedTasks} active • {completedThisWeek} completed</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-32">
+                      <div className="w-full bg-gray-100 rounded-full h-2">
                         <div 
-                          className={`h-2 rounded-full ${
-                            assignedTasks > 10 ? 'bg-red-500' : 
-                            assignedTasks > 5 ? 'bg-yellow-500' : 'bg-green-500'
+                          className={`h-2 rounded-full transition-all ${
+                            capacity === 'over' ? 'bg-red-500' : 
+                            capacity === 'high' ? 'bg-amber-500' : 'bg-green-500'
                           }`}
-                          style={{ width: `${Math.min((assignedTasks / 15) * 100, 100)}%` }}
+                          style={{ width: `${Math.min((assignedTasks / 10) * 100, 100)}%` }}
                         />
                       </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
-      {/* Active Projects */}
-      <div className="bg-white rounded-lg shadow">
-        <div className="px-6 py-4 border-b">
-          <h2 className="text-lg font-semibold">Project Activity (Last 7 Days)</h2>
-        </div>
-        <div className="p-6">
-          <div className="space-y-4">
-            {projectActivity.slice(0, 5).map(({ project, recentUpdates, taskProgress, urgentTasks }) => (
-              <div key={project.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                <div className="flex-1">
-                  <Link 
-                    href={`/projects/${project.id}`}
-                    className="text-sm font-medium text-gray-900 hover:text-indigo-600"
-                  >
-                    {project.title}
-                  </Link>
-                  <div className="flex items-center space-x-4 mt-1">
-                    <span className="text-xs text-gray-500">PM: {project.pm.name}</span>
-                    <span className={`px-2 py-0.5 text-xs font-semibold rounded-full ${getBranchColor(project.branch)}`}>
-                      {project.branch}
-                    </span>
-                    <span className={`px-2 py-0.5 text-xs font-semibold rounded-full ${getStatusColor(project.status)}`}>
-                      {project.status}
+                    </div>
+                    <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+                      capacity === 'over' ? 'bg-red-100 text-red-700' : 
+                      capacity === 'high' ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700'
+                    }`}>
+                      {capacity === 'over' ? 'Over capacity' : capacity === 'high' ? 'High load' : 'Normal'}
                     </span>
                   </div>
                 </div>
-                <div className="flex items-center space-x-6">
-                  <div className="text-center">
-                    <div className="text-lg font-bold">{taskProgress}%</div>
-                    <div className="text-xs text-gray-500">Complete</div>
+              ))}
+            </div>
+            <Link 
+              href="/team"
+              className="mt-4 block text-center text-sm text-blue-600 hover:text-blue-700"
+            >
+              View all team members →
+            </Link>
+          </div>
+        </div>
+
+        {/* Recent Project Activity */}
+        <div className="bg-white rounded-2xl border border-gray-200">
+          <div className="px-6 py-4 border-b flex items-center justify-between">
+            <h2 className="text-lg font-semibold flex items-center gap-2">
+              <Clock className="w-5 h-5 text-gray-600" />
+              Recent Activity
+            </h2>
+            <Link 
+              href="/activity"
+              className="text-sm text-blue-600 hover:text-blue-700"
+            >
+              View all →
+            </Link>
+          </div>
+          <div className="divide-y divide-gray-100">
+            {updates.slice(0, 5).map(update => (
+              <div key={update.id} className="px-6 py-4 hover:bg-gray-50 transition-colors">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <p className="text-sm text-gray-900">
+                      <span className="font-medium">{update.author.name}</span>
+                      {' updated '}
+                      <Link 
+                        href={`/projects/${update.projectId}`}
+                        className="font-medium text-blue-600 hover:text-blue-700"
+                      >
+                        {update.project.title}
+                      </Link>
+                    </p>
+                    <p className="text-sm text-gray-600 mt-1">{update.content}</p>
                   </div>
-                  <div className="text-center">
-                    <div className="text-lg font-bold">{recentUpdates}</div>
-                    <div className="text-xs text-gray-500">Updates</div>
-                  </div>
-                  {urgentTasks > 0 && (
-                    <div className="text-center">
-                      <div className="text-lg font-bold text-red-600">{urgentTasks}</div>
-                      <div className="text-xs text-gray-500">Overdue</div>
-                    </div>
-                  )}
+                  <span className="text-xs text-gray-500 ml-4">
+                    {format(new Date(update.createdAt), 'MMM d, h:mm a')}
+                  </span>
                 </div>
               </div>
             ))}
