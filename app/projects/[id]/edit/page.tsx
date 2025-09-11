@@ -219,7 +219,7 @@ export default function EditProjectPage({ params }: { params: Promise<{ id: stri
         </div>
 
         <div>
-          <label htmlFor="pm" className="block text-sm font-medium text-gray-700">
+          <label htmlFor="pm" className="block text-sm font-medium text-gray-700 mb-1">
             Project Manager
           </label>
           <select
@@ -231,28 +231,66 @@ export default function EditProjectPage({ params }: { params: Promise<{ id: stri
           >
             <option value="">Select PM</option>
             {users.map(user => (
-              <option key={user.id} value={user.id}>{user.name}</option>
+              <option key={user.id} value={user.id}>
+                {user.name} ({user.email})
+              </option>
             ))}
           </select>
+          {formData.pmId && (
+            <p className="mt-1 text-xs text-gray-500">
+              Current: {users.find(u => u.id === formData.pmId)?.name}
+            </p>
+          )}
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Developers
-          </label>
-          <div className="space-y-2">
-            {users.map(user => (
-              <label key={user.id} className="flex items-center">
-                <input
-                  type="checkbox"
-                  checked={formData.developerIds.includes(user.id)}
-                  onChange={() => toggleDeveloper(user.id)}
-                  className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-                />
-                <span className="ml-2 text-sm text-gray-700">{user.name}</span>
-              </label>
-            ))}
+          <div className="flex items-center justify-between mb-2">
+            <label className="block text-sm font-medium text-gray-700">
+              Developers
+              <span className="ml-2 text-xs text-gray-500">
+                ({formData.developerIds.length} selected)
+              </span>
+            </label>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setFormData({ ...formData, developerIds: users.map(u => u.id) })}
+                className="text-xs text-indigo-600 hover:text-indigo-700"
+              >
+                Select all
+              </button>
+              <button
+                type="button"
+                onClick={() => setFormData({ ...formData, developerIds: [] })}
+                className="text-xs text-gray-600 hover:text-gray-700"
+              >
+                Clear all
+              </button>
+            </div>
           </div>
+          <div className="border border-gray-300 rounded-md p-3 max-h-48 overflow-y-auto">
+            <div className="space-y-2">
+              {users.map(user => (
+                <label key={user.id} className="flex items-center hover:bg-gray-50 p-1 rounded cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={formData.developerIds.includes(user.id)}
+                    onChange={() => toggleDeveloper(user.id)}
+                    className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                  />
+                  <span className="ml-2 text-sm text-gray-700">
+                    {user.name}
+                    <span className="text-gray-400 ml-1">({user.email})</span>
+                  </span>
+                </label>
+              ))}
+            </div>
+          </div>
+          {formData.developerIds.length > 0 && (
+            <p className="mt-1 text-xs text-gray-500">
+              Selected: {users.filter(u => formData.developerIds.includes(u.id)).map(u => u.name).join(', ')}
+            </p>
+          )}
         </div>
 
         <div className="grid grid-cols-2 gap-6">
