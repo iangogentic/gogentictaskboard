@@ -39,7 +39,7 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
   return (
     <UserProvider>
       <ToastProvider>
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-bg">
           <SlimNav 
             projects={projects}
             users={users}

@@ -132,14 +132,14 @@ export default function NewProjectPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-surface">
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-4">
               <Link
                 href="/"
-                className="flex items-center text-gray-600 hover:text-gray-900"
+                className="flex items-center text-muted hover:text-fg"
               >
                 <ArrowLeft className="h-4 w-4 mr-1" />
                 Back
@@ -162,7 +162,7 @@ export default function NewProjectPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-fg-muted mb-2">
                 Project Title *
               </label>
               <input
@@ -176,7 +176,7 @@ export default function NewProjectPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-fg-muted mb-2">
                 Branch *
               </label>
               <select
@@ -191,7 +191,7 @@ export default function NewProjectPage() {
                 ))}
               </select>
               {formData.branch && (
-                <p className="mt-1 text-xs text-gray-500">
+                <p className="mt-1 text-xs text-muted">
                   {formData.branch === BRANCHES.CORTEX && 'Default PM: Aakansha'}
                   {formData.branch === BRANCHES.SOLUTIONS && 'Default PM: Matthew'}
                   {formData.branch === BRANCHES.FISHER && 'Default PM: Ian, Devs: Mia & Luke'}
@@ -200,7 +200,7 @@ export default function NewProjectPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-fg-muted mb-2">
                 Project Manager *
               </label>
               <select
@@ -217,7 +217,7 @@ export default function NewProjectPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-fg-muted mb-2">
                 Status
               </label>
               <select
@@ -232,7 +232,7 @@ export default function NewProjectPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-fg-muted mb-2">
                 Client Name *
               </label>
               <input
@@ -246,7 +246,7 @@ export default function NewProjectPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-fg-muted mb-2">
                 Client Email *
               </label>
               <input
@@ -260,7 +260,7 @@ export default function NewProjectPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-fg-muted mb-2">
                 Start Date
               </label>
               <input
@@ -272,7 +272,7 @@ export default function NewProjectPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-fg-muted mb-2">
                 Target Delivery
               </label>
               <input
@@ -285,7 +285,7 @@ export default function NewProjectPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-fg-muted mb-2">
               Developers
             </label>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
@@ -304,7 +304,7 @@ export default function NewProjectPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-fg-muted mb-2">
               Notes
             </label>
             <textarea
@@ -319,7 +319,7 @@ export default function NewProjectPage() {
           <div className="flex justify-end space-x-3 pt-4 border-t">
             <Link
               href="/"
-              className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
+              className="px-4 py-2 border border-border text-fg-muted rounded-md hover:bg-surface"
             >
               Cancel
             </Link>

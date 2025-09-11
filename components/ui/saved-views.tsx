@@ -106,7 +106,7 @@ export function SavedViews({
     <div className={cn('relative', className)}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+        className="flex items-center gap-2 px-4 py-2 bg-bg border border-border rounded-lg hover:bg-bg transition-colors"
       >
         {currentView.icon}
         <span className="font-medium">{currentView.name}</span>
@@ -122,7 +122,7 @@ export function SavedViews({
             className="fixed inset-0 z-30"
             onClick={() => setIsOpen(false)}
           />
-          <div className="absolute top-full left-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 z-40">
+          <div className="absolute top-full left-0 mt-2 w-64 bg-bg rounded-lg shadow-lg border border-border z-40">
             <div className="p-2">
               {allViews.map((view) => (
                 <div
@@ -130,8 +130,8 @@ export function SavedViews({
                   className={cn(
                     'group flex items-center justify-between px-3 py-2 rounded-md cursor-pointer',
                     currentViewId === view.id
-                      ? 'bg-blue-50 text-blue-700'
-                      : 'hover:bg-gray-50'
+                      ? 'bg-brand/10 text-brand'
+                      : 'hover:bg-bg'
                   )}
                   onClick={() => handleViewChange(view)}
                 >
@@ -139,7 +139,7 @@ export function SavedViews({
                     {view.icon}
                     <span className="text-sm font-medium">{view.name}</span>
                     {view.isShared && (
-                      <Share2 className="w-3 h-3 text-gray-400" />
+                      <Share2 className="w-3 h-3 text-muted" />
                     )}
                   </div>
                   {!view.isDefault && (
@@ -150,7 +150,7 @@ export function SavedViews({
                             e.stopPropagation();
                             onShareView(view.id);
                           }}
-                          className="p-1 text-gray-400 hover:text-gray-600"
+                          className="p-1 text-muted hover:text-muted"
                         >
                           <Share2 className="w-3 h-3" />
                         </button>
@@ -161,7 +161,7 @@ export function SavedViews({
                             e.stopPropagation();
                             onDeleteView(view.id);
                           }}
-                          className="p-1 text-gray-400 hover:text-red-600"
+                          className="p-1 text-muted hover:text-danger"
                         >
                           <Trash2 className="w-3 h-3" />
                         </button>
@@ -173,10 +173,10 @@ export function SavedViews({
             </div>
             
             {onSaveView && (
-              <div className="border-t border-gray-200 p-2">
+              <div className="border-t border-border p-2">
                 <button
                   onClick={() => setShowSaveDialog(true)}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 rounded-md"
+                  className="w-full flex items-center gap-2 px-3 py-2 text-sm text-muted hover:bg-bg rounded-md"
                 >
                   <Plus className="w-4 h-4" />
                   Save current view
@@ -193,14 +193,14 @@ export function SavedViews({
             className="absolute inset-0 bg-black/50"
             onClick={() => setShowSaveDialog(false)}
           />
-          <div className="relative bg-white rounded-lg p-6 w-96 shadow-xl">
+          <div className="relative bg-bg rounded-lg p-6 w-96 shadow-xl">
             <h3 className="text-lg font-semibold mb-4">Save View</h3>
             <input
               type="text"
               value={newViewName}
               onChange={(e) => setNewViewName(e.target.value)}
               placeholder="View name..."
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               autoFocus
             />
             <div className="flex items-center gap-2 mt-4">
@@ -211,14 +211,14 @@ export function SavedViews({
                   'flex-1 py-2 rounded-lg font-medium transition-colors',
                   newViewName
                     ? 'bg-blue-600 text-white hover:bg-blue-700'
-                    : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                    : 'bg-surface text-muted cursor-not-allowed'
                 )}
               >
                 Save View
               </button>
               <button
                 onClick={() => setShowSaveDialog(false)}
-                className="flex-1 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                className="flex-1 py-2 bg-surface text-fg rounded-lg hover:bg-surface-strong transition-colors"
               >
                 Cancel
               </button>

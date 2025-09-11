@@ -125,7 +125,7 @@ export default function SortableTask({ task, users }: SortableTaskProps) {
                 setEditedNotes(task.notes || '')
                 setEditedAssigneeId(task.assigneeId || '')
               }}
-              className="p-1 text-gray-500 hover:text-gray-700"
+              className="p-1 text-muted hover:text-fg-muted"
             >
               <X className="h-4 w-4" />
             </button>
@@ -149,19 +149,19 @@ export default function SortableTask({ task, users }: SortableTaskProps) {
     >
       <div className="flex justify-between items-start">
         <div className="flex-1" {...attributes} {...listeners}>
-          <p className="text-sm font-medium text-gray-900 cursor-grab">{task.title}</p>
+          <p className="text-sm font-medium text-fg cursor-grab">{task.title}</p>
         </div>
         <div className="flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
           <button
             onClick={() => setIsEditing(true)}
-            className="p-1 text-gray-500 hover:text-indigo-600"
+            className="p-1 text-muted hover:text-indigo-600"
           >
             <Edit2 className="h-3 w-3" />
           </button>
           <button
             onClick={handleDelete}
             disabled={isDeleting}
-            className="p-1 text-gray-500 hover:text-red-600"
+            className="p-1 text-muted hover:text-red-600"
           >
             <Trash2 className="h-3 w-3" />
           </button>
@@ -169,21 +169,21 @@ export default function SortableTask({ task, users }: SortableTaskProps) {
       </div>
       
       {task.notes && (
-        <p className="text-xs text-gray-500 mt-1 line-clamp-2">{task.notes}</p>
+        <p className="text-xs text-muted mt-1 line-clamp-2">{task.notes}</p>
       )}
       
       <div className="flex items-center justify-between mt-3">
         <div className="flex items-center space-x-2">
           {task.assignee && (
             <div className="flex items-center">
-              <div className="h-6 w-6 rounded-full bg-gray-300 flex items-center justify-center text-xs font-medium text-gray-700">
+              <div className="h-6 w-6 rounded-full bg-border flex items-center justify-center text-xs font-medium text-fg-muted">
                 {task.assignee.name.slice(0, 2).toUpperCase()}
               </div>
             </div>
           )}
           
           {task.dueDate && (
-            <div className="flex items-center text-xs text-gray-500">
+            <div className="flex items-center text-xs text-muted">
               <Calendar className="h-3 w-3 mr-1" />
               {format(new Date(task.dueDate), 'MMM d')}
             </div>

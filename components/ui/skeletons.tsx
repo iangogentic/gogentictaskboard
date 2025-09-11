@@ -8,7 +8,7 @@ export function Skeleton({ className }: SkeletonProps) {
   return (
     <div
       className={cn(
-        'animate-pulse bg-gray-200 rounded-md',
+        'animate-pulse bg-surface-strong rounded-md',
         className
       )}
     />
@@ -17,7 +17,7 @@ export function Skeleton({ className }: SkeletonProps) {
 
 export function ProjectCardSkeleton() {
   return (
-    <div className="bg-white rounded-2xl border border-gray-200 p-6">
+    <div className="bg-bg rounded-2xl border border-border p-6">
       <div className="flex items-center justify-between">
         <div className="flex-1">
           <div className="flex items-center gap-3 mb-2">
@@ -45,7 +45,7 @@ export function ProjectCardSkeleton() {
 
 export function TaskCardSkeleton() {
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-4">
+    <div className="bg-bg rounded-lg border border-border p-4">
       <Skeleton className="h-5 w-3/4 mb-2" />
       <Skeleton className="h-4 w-1/2 mb-3" />
       <div className="flex items-center justify-between">
@@ -58,7 +58,7 @@ export function TaskCardSkeleton() {
 
 export function KPITileSkeleton() {
   return (
-    <div className="bg-white rounded-2xl border border-gray-200 p-6">
+    <div className="bg-bg rounded-2xl border border-border p-6">
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center gap-2">
           <Skeleton className="w-10 h-10 rounded-lg" />

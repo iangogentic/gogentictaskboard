@@ -2,133 +2,96 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { TrendingUp, TrendingDown, Minus, AlertTriangle, ArrowRight } from 'lucide-react';
+import { TrendingUp, TrendingDown, Minus, ArrowRight, AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface KPITileProps {
-  title: string;
+  label: string;
   value: number | string;
   delta?: {
     value: number;
-    type: 'increase' | 'decrease' | 'neutral';
+    trend: 'up' | 'down' | 'neutral';
     label?: string;
   };
-  trend?: number[];
-  icon?: React.ReactNode;
   href?: string;
-  status?: 'default' | 'warning' | 'danger' | 'success';
-  subtitle?: string;
+  icon?: React.ReactNode;
+  loading?: boolean;
   className?: string;
 }
 
-const statusColors = {
-  default: 'border-gray-200',
-  warning: 'border-amber-200 bg-amber-50',
-  danger: 'border-red-200 bg-red-50',
-  success: 'border-green-200 bg-green-50',
-};
-
 export function KPITile({
-  title,
+  label,
   value,
   delta,
-  trend,
-  icon,
   href,
-  status = 'default',
-  subtitle,
+  icon,
+  loading = false,
   className,
 }: KPITileProps) {
-  const TrendIcon = delta?.type === 'increase' ? TrendingUp : 
-                    delta?.type === 'decrease' ? TrendingDown : Minus;
-
-  const deltaColor = delta?.type === 'increase' ? 'text-red-600' : 
-                     delta?.type === 'decrease' ? 'text-green-600' : 
-                     'text-gray-600';
-
-  const needsAttention = status === 'warning' || status === 'danger';
-
   const content = (
     <>
-      <div className="flex items-start justify-between mb-4">
-        <div className="flex items-center gap-2">
-          {icon && (
-            <div className="p-2 bg-gray-100 rounded-lg">
-              {icon}
+      {loading ? (
+        <div className="space-y-2 animate-pulse">
+          <div className="h-8 w-24 bg-surface-strong rounded" />
+          <div className="h-4 w-16 bg-surface rounded" />
+        </div>
+      ) : (
+        <>
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-2xl md:text-3xl font-semibold text-fg">{value}</p>
+              <p className="text-sm text-muted mt-1">{label}</p>
             </div>
-          )}
-          <div>
-            <h3 className="text-sm font-medium text-gray-600">{title}</h3>
-            {subtitle && (
-              <p className="text-xs text-gray-500 mt-0.5">{subtitle}</p>
+            {icon && (
+              <div className="text-muted opacity-50">{icon}</div>
             )}
           </div>
-        </div>
-        {needsAttention && (
-          <AlertTriangle className="w-4 h-4 text-amber-500" />
-        )}
-      </div>
-
-      <div className="flex items-end justify-between">
-        <div>
-          <div className="text-3xl font-semibold text-gray-900">
-            {value}
-          </div>
           {delta && (
-            <div className={cn('flex items-center gap-1 mt-2', deltaColor)}>
-              <TrendIcon className="w-4 h-4" />
-              <span className="text-sm font-medium">
-                {delta.type === 'increase' ? '+' : delta.type === 'decrease' ? '-' : ''}
-                {delta.value}
-              </span>
-              {delta.label && (
-                <span className="text-xs text-gray-500">{delta.label}</span>
+            <div className="flex items-center gap-1 mt-3">
+              {delta.trend === 'up' && (
+                <TrendingUp className="w-4 h-4 text-success" />
               )}
+              {delta.trend === 'down' && (
+                <TrendingDown className="w-4 h-4 text-danger" />
+              )}
+              {delta.trend === 'neutral' && (
+                <Minus className="w-4 h-4 text-muted" />
+              )}
+              <span className={cn(
+                "text-xs font-medium",
+                delta.trend === 'up' && 'text-success',
+                delta.trend === 'down' && 'text-danger',
+                delta.trend === 'neutral' && 'text-muted'
+              )}>
+                {delta.value > 0 ? '+' : ''}{delta.value}%
+                {delta.label && (
+                  <span className="text-muted ml-1">{delta.label}</span>
+                )}
+              </span>
             </div>
           )}
-        </div>
-
-        {trend && trend.length > 0 && (
-          <div className="flex items-end gap-0.5 h-12">
-            {trend.map((val, i) => {
-              const height = `${(val / Math.max(...trend)) * 100}%`;
-              return (
-                <div
-                  key={i}
-                  className="w-1.5 bg-blue-200 rounded-t"
-                  style={{ height }}
-                />
-              );
-            })}
-          </div>
-        )}
-      </div>
-
-      {href && (
-        <div className="mt-4 pt-4 border-t flex items-center justify-between">
-          <span className="text-xs text-gray-500">View details</span>
-          <ArrowRight className="w-4 h-4 text-gray-400" />
-        </div>
+        </>
       )}
     </>
   );
 
-  const tileClasses = cn(
-    'relative p-6 bg-white rounded-2xl border transition-all duration-200',
-    statusColors[status],
-    href && 'hover:shadow-lg cursor-pointer',
+  const tileClassName = cn(
+    "relative bg-bg rounded-2xl border border-border p-4 sm:p-6",
+    "shadow-[var(--shadow-card)] transition-all duration-200",
+    href && "hover:shadow-[var(--shadow-card-hover)] hover:border-brand/20 cursor-pointer",
+    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2",
     className
   );
 
   if (href) {
     return (
-      <Link href={href} className={tileClasses}>
+      <Link href={href} className={tileClassName}>
         {content}
       </Link>
     );
   }
 
-  return <div className={tileClasses}>{content}</div>;
+  return <div className={tileClassName}>{content}</div>;
 }
 
 interface KPIGridProps {
@@ -171,8 +134,8 @@ export function AttentionCard({ items, className }: AttentionCardProps) {
     )}>
       <div className="flex items-center gap-2 mb-4">
         <AlertTriangle className="w-5 h-5 text-amber-600" />
-        <h3 className="text-lg font-semibold text-gray-900">Needs Attention</h3>
-        <span className="ml-auto text-sm text-gray-600">{items.length} items</span>
+        <h3 className="text-lg font-semibold text-fg">Needs Attention</h3>
+        <span className="ml-auto text-sm text-muted">{items.length} items</span>
       </div>
 
       <div className="space-y-3">
@@ -188,14 +151,14 @@ export function AttentionCard({ items, className }: AttentionCardProps) {
               {item.href ? (
                 <Link
                   href={item.href}
-                  className="font-medium text-gray-900 hover:text-blue-600 transition-colors"
+                  className="font-medium text-fg hover:text-blue-600 transition-colors"
                 >
                   {item.title}
                 </Link>
               ) : (
-                <p className="font-medium text-gray-900">{item.title}</p>
+                <p className="font-medium text-fg">{item.title}</p>
               )}
-              <p className="text-sm text-gray-600 mt-0.5">{item.description}</p>
+              <p className="text-sm text-muted mt-0.5">{item.description}</p>
             </div>
           </div>
         ))}

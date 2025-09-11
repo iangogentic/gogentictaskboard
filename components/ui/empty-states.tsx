@@ -83,11 +83,11 @@ export function EmptyState({
       'flex flex-col items-center justify-center py-12 px-6 text-center',
       className
     )}>
-      <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-        <Icon className="w-8 h-8 text-gray-400" />
+      <div className="w-16 h-16 bg-surface rounded-full flex items-center justify-center mb-4">
+        <Icon className="w-8 h-8 text-muted" />
       </div>
-      <h3 className="text-lg font-medium text-gray-900 mb-2">{title}</h3>
-      <p className="text-sm text-gray-500 max-w-sm mb-6">{description}</p>
+      <h3 className="text-lg font-medium text-fg mb-2">{title}</h3>
+      <p className="text-sm text-muted max-w-sm mb-6">{description}</p>
       {action && (
         action.href ? (
           <Link
@@ -119,7 +119,7 @@ interface InlineEmptyProps {
 export function InlineEmpty({ message, className }: InlineEmptyProps) {
   return (
     <div className={cn(
-      'text-center py-8 text-sm text-gray-500',
+      'text-center py-8 text-sm text-muted',
       className
     )}>
       {message}

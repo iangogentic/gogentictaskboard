@@ -122,7 +122,7 @@ export default function NotificationCenter() {
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="relative p-2 text-gray-600 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded-md"
+        className="relative p-2 text-muted hover:text-fg focus:outline-none focus:ring-2 focus:ring-brand rounded-md"
       >
         <Bell className="h-5 w-5" />
         {unreadCount > 0 && (
@@ -142,7 +142,7 @@ export default function NotificationCenter() {
             className="fixed inset-0 z-30"
             onClick={() => setIsOpen(false)}
           />
-          <div className="absolute right-0 mt-2 w-96 bg-white rounded-lg shadow-xl z-40 max-h-[600px] overflow-hidden">
+          <div className="absolute right-0 mt-2 w-96 bg-bg rounded-lg shadow-xl z-40 max-h-[600px] overflow-hidden">
             <div className="p-4 border-b flex items-center justify-between">
               <h3 className="text-lg font-semibold">Notifications</h3>
               <div className="flex items-center space-x-2">
@@ -150,13 +150,13 @@ export default function NotificationCenter() {
                   <>
                     <button
                       onClick={markAllAsRead}
-                      className="text-sm text-indigo-600 hover:text-indigo-700"
+                      className="text-sm text-brand hover:text-brand-hover"
                     >
                       Mark all read
                     </button>
                     <button
                       onClick={clearAll}
-                      className="text-sm text-gray-500 hover:text-gray-700"
+                      className="text-sm text-muted hover:text-fg"
                     >
                       Clear all
                     </button>
@@ -164,7 +164,7 @@ export default function NotificationCenter() {
                 )}
                 <button
                   onClick={() => setIsOpen(false)}
-                  className="text-gray-400 hover:text-gray-600"
+                  className="text-muted hover:text-muted"
                 >
                   <X className="h-5 w-5" />
                 </button>
@@ -173,8 +173,8 @@ export default function NotificationCenter() {
 
             <div className="max-h-[500px] overflow-y-auto">
               {notifications.length === 0 ? (
-                <div className="p-8 text-center text-gray-500">
-                  <Bell className="h-12 w-12 mx-auto mb-3 text-gray-300" />
+                <div className="p-8 text-center text-muted">
+                  <Bell className="h-12 w-12 mx-auto mb-3 text-border" />
                   <p>No notifications yet</p>
                 </div>
               ) : (
@@ -183,24 +183,24 @@ export default function NotificationCenter() {
                     <div
                       key={notification.id}
                       onClick={() => handleNotificationClick(notification)}
-                      className={`p-4 hover:bg-gray-50 transition-colors ${
+                      className={`p-4 hover:bg-bg transition-colors ${
                         notification.link ? 'cursor-pointer' : ''
-                      } ${!notification.read ? 'bg-blue-50' : ''}`}
+                      } ${!notification.read ? 'bg-brand/10' : ''}`}
                     >
                       <div className="flex items-start space-x-3">
                         <div className="flex-shrink-0 mt-1">
                           {getIcon(notification.type)}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className={`text-sm font-medium text-gray-900 ${
+                          <p className={`text-sm font-medium text-fg ${
                             !notification.read ? 'font-semibold' : ''
                           }`}>
                             {notification.title}
                           </p>
-                          <p className="text-sm text-gray-600 mt-1">
+                          <p className="text-sm text-muted mt-1">
                             {notification.message}
                           </p>
-                          <p className="text-xs text-gray-400 mt-1">
+                          <p className="text-xs text-muted mt-1">
                             {format(notification.timestamp, 'MMM d, h:mm a')}
                           </p>
                         </div>

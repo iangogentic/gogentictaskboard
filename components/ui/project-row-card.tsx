@@ -27,16 +27,19 @@ interface ProjectRowCardProps {
 }
 
 const statusColors = {
-  PLANNING: 'bg-gray-100 text-gray-700',
-  IN_PROGRESS: 'bg-blue-100 text-blue-700',
-  REVIEW: 'bg-purple-100 text-purple-700',
-  BLOCKED: 'bg-red-100 text-red-700',
-  COMPLETED: 'bg-green-100 text-green-700',
+  PLANNING: 'bg-info-bg text-info',
+  IN_PROGRESS: 'bg-brand/10 text-brand',
+  REVIEW: 'bg-portfolio-fisher/10 text-portfolio-fisher',
+  BLOCKED: 'bg-danger-bg text-danger',
+  COMPLETED: 'bg-success-bg text-success',
 };
 
 const branchColors = {
-  SOLUTIONS: 'bg-indigo-100 text-indigo-700',
-  DEFAULT: 'bg-gray-100 text-gray-700',
+  CORTEX: 'bg-portfolio-cortex/10 text-portfolio-cortex',
+  SOLUTIONS: 'bg-portfolio-solutions/10 text-portfolio-solutions',
+  LAUNCHPAD: 'bg-portfolio-launchpad/10 text-portfolio-launchpad',
+  FISHER: 'bg-portfolio-fisher/10 text-portfolio-fisher',
+  DEFAULT: 'bg-surface-strong text-muted',
 };
 
 export function ProjectRowCard({ project, onQuickAction, className }: ProjectRowCardProps) {
@@ -65,9 +68,9 @@ export function ProjectRowCard({ project, onQuickAction, className }: ProjectRow
   return (
     <div
       className={cn(
-        'group relative bg-white rounded-2xl border border-gray-200',
-        'shadow-[0_4px_20px_rgba(0,0,0,0.06)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.12)]',
-        'transition-all duration-200',
+        'group relative bg-bg rounded-2xl border border-border',
+        'shadow-[var(--shadow-card)] hover:shadow-[var(--shadow-card-hover)]',
+        'transition-all duration-200 hover:border-brand/20',
         className
       )}
       onMouseEnter={() => setShowActions(true)}
@@ -78,7 +81,7 @@ export function ProjectRowCard({ project, onQuickAction, className }: ProjectRow
           {/* Left: Name + Branch + Status */}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-3 mb-2">
-              <h3 className="text-lg font-medium text-gray-900 truncate">
+              <h3 className="text-lg font-medium text-fg truncate">
                 {project.title}
               </h3>
               <span className={cn(
@@ -94,7 +97,7 @@ export function ProjectRowCard({ project, onQuickAction, className }: ProjectRow
                 {project.status === 'IN_PROGRESS' ? 'In Progress' : project.status}
               </span>
             </div>
-            <p className="text-sm text-gray-500">{project.clientName}</p>
+            <p className="text-sm text-muted">{project.clientName}</p>
           </div>
 
           {/* Center: Progress + Update + Owners */}
@@ -102,19 +105,19 @@ export function ProjectRowCard({ project, onQuickAction, className }: ProjectRow
             {/* Progress */}
             <div className="w-32">
               <div className="flex items-center justify-between mb-1">
-                <span className="text-xs text-gray-500">Progress</span>
-                <span className="text-xs font-medium text-gray-700">{progress}%</span>
+                <span className="text-xs text-muted">Progress</span>
+                <span className="text-xs font-medium text-fg">{progress}%</span>
               </div>
-              <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+              <div className="h-2 bg-surface-strong rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-blue-500 rounded-full transition-all duration-300"
+                  className="h-full bg-brand rounded-full transition-all duration-300"
                   style={{ width: `${progress}%` }}
                 />
               </div>
             </div>
 
             {/* Last Update */}
-            <div className="text-sm text-gray-500">
+            <div className="text-sm text-muted">
               Last update {formatDistanceToNow(new Date(project.lastUpdatedAt), { addSuffix: true })}
             </div>
 
@@ -123,17 +126,17 @@ export function ProjectRowCard({ project, onQuickAction, className }: ProjectRow
               {owners.map((owner, i) => (
                 <div
                   key={owner.id}
-                  className="w-8 h-8 rounded-full bg-gray-300 border-2 border-white flex items-center justify-center"
+                  className="w-8 h-8 rounded-full bg-surface-strong border-2 border-bg flex items-center justify-center"
                   title={owner.name}
                 >
-                  <span className="text-xs font-medium text-gray-700">
+                  <span className="text-xs font-medium text-fg">
                     {owner.name.charAt(0).toUpperCase()}
                   </span>
                 </div>
               ))}
               {overflowCount > 0 && (
-                <div className="w-8 h-8 rounded-full bg-gray-100 border-2 border-white flex items-center justify-center">
-                  <span className="text-xs font-medium text-gray-600">+{overflowCount}</span>
+                <div className="w-8 h-8 rounded-full bg-surface border-2 border-bg flex items-center justify-center">
+                  <span className="text-xs font-medium text-muted">+{overflowCount}</span>
                 </div>
               )}
             </div>
@@ -141,20 +144,20 @@ export function ProjectRowCard({ project, onQuickAction, className }: ProjectRow
 
           {/* Right: Actions */}
           <div className="flex items-center gap-2">
-            <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-gray-600" />
+            <ChevronRight className="w-5 h-5 text-muted group-hover:text-fg" />
           </div>
         </div>
       </Link>
 
       {/* Quick Actions (hover) */}
       {showActions && onQuickAction && (
-        <div className="absolute right-6 top-1/2 -translate-y-1/2 flex items-center gap-1 bg-white rounded-lg shadow-lg border border-gray-200 p-1">
+        <div className="absolute right-6 top-1/2 -translate-y-1/2 flex items-center gap-1 bg-bg rounded-lg shadow-lg border border-border p-1">
           <button
             onClick={(e) => {
               e.preventDefault();
               onQuickAction('assign', project.id);
             }}
-            className="p-2 text-gray-600 hover:bg-gray-100 rounded-md transition-colors"
+            className="p-2 text-muted hover:bg-surface rounded-md transition-colors"
             title="Assign"
           >
             <Users className="w-4 h-4" />
@@ -164,7 +167,7 @@ export function ProjectRowCard({ project, onQuickAction, className }: ProjectRow
               e.preventDefault();
               onQuickAction('status', project.id);
             }}
-            className="p-2 text-gray-600 hover:bg-gray-100 rounded-md transition-colors"
+            className="p-2 text-muted hover:bg-surface rounded-md transition-colors"
             title="Change Status"
           >
             <AlertCircle className="w-4 h-4" />
@@ -174,7 +177,7 @@ export function ProjectRowCard({ project, onQuickAction, className }: ProjectRow
               e.preventDefault();
               onQuickAction('share', project.id);
             }}
-            className="p-2 text-gray-600 hover:bg-gray-100 rounded-md transition-colors"
+            className="p-2 text-muted hover:bg-surface rounded-md transition-colors"
             title="Share"
           >
             <MoreHorizontal className="w-4 h-4" />
@@ -184,7 +187,7 @@ export function ProjectRowCard({ project, onQuickAction, className }: ProjectRow
 
       {/* Blocked indicator */}
       {project.status === 'BLOCKED' && (
-        <div className="absolute left-0 top-0 bottom-0 w-1 bg-red-500 rounded-l-2xl" />
+        <div className="absolute left-0 top-0 bottom-0 w-1 bg-danger rounded-l-2xl" />
       )}
     </div>
   );

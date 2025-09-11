@@ -31,18 +31,18 @@ export function SlimNav({ projects, users, currentUser }: SlimNavProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
-    <nav className="sticky top-0 z-40 bg-white border-b border-gray-200">
+    <nav className="sticky top-0 z-40 bg-bg border-b border-border">
       <div className="px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <div className="flex items-center">
-            <Link href="/" className="flex items-center gap-3">
+            <Link href="/" className="flex items-center gap-2 sm:gap-3">
               <img 
                 src="/Gogentic.ai.png" 
                 alt="Gogentic AI" 
-                className="h-14 w-auto"
+                className="h-10 sm:h-14 w-auto"
               />
-              <span className="text-xl font-semibold text-gray-900">
+              <span className="text-lg sm:text-xl font-semibold text-fg hidden sm:block">
                 Gogentic Portal
               </span>
             </Link>
@@ -61,10 +61,10 @@ export function SlimNav({ projects, users, currentUser }: SlimNavProps) {
                   key={item.href}
                   href={item.href}
                   className={cn(
-                    'flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all',
+                    'flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200',
                     isActive
-                      ? 'bg-blue-50 text-blue-700'
-                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                      ? 'bg-brand/10 text-brand'
+                      : 'text-muted hover:bg-surface hover:text-fg'
                   )}
                 >
                   <Icon className="w-4 h-4" />
@@ -85,11 +85,11 @@ export function SlimNav({ projects, users, currentUser }: SlimNavProps) {
             {currentUser && (
               <div className="hidden md:flex items-center gap-2">
                 <div className="text-right">
-                  <p className="text-sm font-medium text-gray-900">{currentUser.name}</p>
-                  <p className="text-xs text-gray-500">{currentUser.email}</p>
+                  <p className="text-sm font-medium text-fg">{currentUser.name}</p>
+                  <p className="text-xs text-muted">{currentUser.email}</p>
                 </div>
                 <button
-                  className="p-2 text-gray-500 hover:text-gray-700 transition-colors"
+                  className="p-2 text-muted hover:text-fg transition-colors"
                   title="Sign out"
                 >
                   <LogOut className="w-4 h-4" />
@@ -100,7 +100,7 @@ export function SlimNav({ projects, users, currentUser }: SlimNavProps) {
             {/* Mobile Menu Toggle */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2 text-gray-500 hover:text-gray-700"
+              className="md:hidden p-2 text-muted hover:text-fg"
             >
               {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
@@ -110,7 +110,7 @@ export function SlimNav({ projects, users, currentUser }: SlimNavProps) {
 
       {/* Mobile Navigation */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-t border-gray-200 bg-white">
+        <div className="md:hidden border-t border-border bg-bg">
           <div className="px-2 py-3 space-y-1">
             {navItems.map((item) => {
               const isActive = item.href === '/' 
@@ -124,10 +124,10 @@ export function SlimNav({ projects, users, currentUser }: SlimNavProps) {
                   href={item.href}
                   onClick={() => setMobileMenuOpen(false)}
                   className={cn(
-                    'flex items-center gap-3 px-3 py-2 rounded-lg text-base font-medium',
+                    'flex items-center gap-3 px-3 py-2 rounded-lg text-base font-medium transition-all duration-200',
                     isActive
-                      ? 'bg-blue-50 text-blue-700'
-                      : 'text-gray-600 hover:bg-gray-50'
+                      ? 'bg-brand/10 text-brand'
+                      : 'text-muted hover:bg-surface hover:text-fg'
                   )}
                 >
                   <Icon className="w-5 h-5" />
@@ -137,13 +137,13 @@ export function SlimNav({ projects, users, currentUser }: SlimNavProps) {
             })}
           </div>
           {currentUser && (
-            <div className="px-3 py-3 border-t border-gray-200">
+            <div className="px-3 py-3 border-t border-border">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-900">{currentUser.name}</p>
-                  <p className="text-xs text-gray-500">{currentUser.email}</p>
+                  <p className="text-sm font-medium text-fg">{currentUser.name}</p>
+                  <p className="text-xs text-muted">{currentUser.email}</p>
                 </div>
-                <button className="p-2 text-gray-500 hover:text-gray-700">
+                <button className="p-2 text-muted hover:text-fg transition-colors">
                   <LogOut className="w-4 h-4" />
                 </button>
               </div>

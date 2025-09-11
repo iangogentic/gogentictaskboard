@@ -17,17 +17,17 @@ export interface ToastProps {
 }
 
 const variantStyles = {
-  default: 'bg-white border-gray-200',
+  default: 'bg-bg border-border',
   success: 'bg-green-50 border-green-200',
   destructive: 'bg-red-50 border-red-200',
-  info: 'bg-blue-50 border-blue-200',
+  info: 'bg-brand/10 border-blue-200',
 };
 
 const variantIcons = {
   default: null,
-  success: <CheckCircle className="w-5 h-5 text-green-600" />,
-  destructive: <AlertCircle className="w-5 h-5 text-red-600" />,
-  info: <Info className="w-5 h-5 text-blue-600" />,
+  success: <CheckCircle className="w-5 h-5 text-success" />,
+  destructive: <AlertCircle className="w-5 h-5 text-danger" />,
+  info: <Info className="w-5 h-5 text-brand" />,
 };
 
 export function Toast({
@@ -58,14 +58,14 @@ export function Toast({
       <div className="flex items-start gap-3">
         {variantIcons[variant]}
         <div className="flex-1">
-          <p className="text-sm font-medium text-gray-900">{title}</p>
+          <p className="text-sm font-medium text-fg">{title}</p>
           {description && (
-            <p className="mt-1 text-sm text-gray-600">{description}</p>
+            <p className="mt-1 text-sm text-muted">{description}</p>
           )}
           {action && (
             <button
               onClick={action.onClick}
-              className="mt-2 text-sm font-medium text-blue-600 hover:text-blue-700"
+              className="mt-2 text-sm font-medium text-brand hover:text-brand"
             >
               {action.label}
             </button>
@@ -73,7 +73,7 @@ export function Toast({
         </div>
         <button
           onClick={onDismiss}
-          className="text-gray-400 hover:text-gray-600 transition-colors"
+          className="text-muted hover:text-muted transition-colors"
         >
           <X className="w-4 h-4" />
         </button>

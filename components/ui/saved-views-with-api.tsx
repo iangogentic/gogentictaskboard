@@ -194,7 +194,7 @@ export function SavedViewsWithApi({
   if (loading) {
     return (
       <div className={cn('animate-pulse', className)}>
-        <div className="h-10 w-32 bg-gray-200 rounded-lg" />
+        <div className="h-10 w-32 bg-border rounded-lg" />
       </div>
     )
   }
@@ -203,7 +203,7 @@ export function SavedViewsWithApi({
     <div className={cn('relative', className)}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+        className="flex items-center gap-2 px-4 py-2 bg-white border border-border rounded-lg hover:bg-surface transition-colors"
       >
         {currentView.icon}
         <span className="font-medium">{currentView.name}</span>
@@ -219,11 +219,11 @@ export function SavedViewsWithApi({
             className="fixed inset-0 z-30"
             onClick={() => setIsOpen(false)}
           />
-          <div className="absolute top-full left-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 z-40">
+          <div className="absolute top-full left-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-border z-40">
             <div className="p-2 max-h-80 overflow-y-auto">
               {defaultViews.length > 0 && (
                 <>
-                  <div className="px-3 py-1 text-xs font-semibold text-gray-500 uppercase">
+                  <div className="px-3 py-1 text-xs font-semibold text-muted uppercase">
                     Default Views
                   </div>
                   {defaultViews.map((view) => (
@@ -233,7 +233,7 @@ export function SavedViewsWithApi({
                         'flex items-center justify-between px-3 py-2 rounded-md cursor-pointer',
                         currentViewId === view.id
                           ? 'bg-blue-50 text-blue-700'
-                          : 'hover:bg-gray-50'
+                          : 'hover:bg-surface'
                       )}
                       onClick={() => handleViewChange(view)}
                     >
@@ -248,7 +248,7 @@ export function SavedViewsWithApi({
               
               {customViews.length > 0 && (
                 <>
-                  <div className="px-3 py-1 mt-2 text-xs font-semibold text-gray-500 uppercase">
+                  <div className="px-3 py-1 mt-2 text-xs font-semibold text-muted uppercase">
                     Saved Views
                   </div>
                   {customViews.map((view) => (
@@ -258,7 +258,7 @@ export function SavedViewsWithApi({
                         'group flex items-center justify-between px-3 py-2 rounded-md cursor-pointer',
                         currentViewId === view.id
                           ? 'bg-blue-50 text-blue-700'
-                          : 'hover:bg-gray-50'
+                          : 'hover:bg-surface'
                       )}
                       onClick={() => handleViewChange(view)}
                     >
@@ -271,7 +271,7 @@ export function SavedViewsWithApi({
                           e.stopPropagation()
                           handleDeleteView(view.id)
                         }}
-                        className="opacity-0 group-hover:opacity-100 p-1 text-gray-400 hover:text-red-600 transition-opacity"
+                        className="opacity-0 group-hover:opacity-100 p-1 text-muted hover:text-red-600 transition-opacity"
                       >
                         <Trash2 className="w-3 h-3" />
                       </button>
@@ -281,10 +281,10 @@ export function SavedViewsWithApi({
               )}
             </div>
             
-            <div className="border-t border-gray-200 p-2">
+            <div className="border-t border-border p-2">
               <button
                 onClick={() => setShowSaveDialog(true)}
-                className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 rounded-md"
+                className="w-full flex items-center gap-2 px-3 py-2 text-sm text-muted hover:bg-surface rounded-md"
               >
                 <Plus className="w-4 h-4" />
                 Save current filters
@@ -307,7 +307,7 @@ export function SavedViewsWithApi({
               value={newViewName}
               onChange={(e) => setNewViewName(e.target.value)}
               placeholder="View name..."
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               autoFocus
               onKeyDown={(e) => {
                 if (e.key === 'Enter') handleSaveCurrentView()
@@ -321,7 +321,7 @@ export function SavedViewsWithApi({
                   'flex-1 py-2 rounded-lg font-medium transition-colors',
                   newViewName
                     ? 'bg-blue-600 text-white hover:bg-blue-700'
-                    : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                    : 'bg-surface text-muted cursor-not-allowed'
                 )}
               >
                 Save View
@@ -331,7 +331,7 @@ export function SavedViewsWithApi({
                   setShowSaveDialog(false)
                   setNewViewName('')
                 }}
-                className="flex-1 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                className="flex-1 py-2 bg-surface text-fg-muted rounded-lg hover:bg-border transition-colors"
               >
                 Cancel
               </button>

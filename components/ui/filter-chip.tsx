@@ -6,115 +6,172 @@ import { cn } from '@/lib/utils';
 
 interface FilterChipProps {
   label: string;
-  value: string;
+  value?: string | number;
+  selected?: boolean;
+  onToggle?: () => void;
+  onRemove?: () => void;
   icon?: React.ReactNode;
-  active?: boolean;
-  count?: number;
-  onToggle: (value: string) => void;
-  onClear?: (value: string) => void;
+  color?: 'default' | 'brand' | 'success' | 'warn' | 'danger' | 'portfolio-cortex' | 'portfolio-solutions' | 'portfolio-launchpad' | 'portfolio-fisher';
+  size?: 'sm' | 'md';
+  className?: string;
 }
+
+const colorClasses = {
+  default: {
+    base: 'bg-surface border-border text-fg',
+    selected: 'bg-brand text-white border-brand',
+  },
+  brand: {
+    base: 'bg-brand/10 border-brand/20 text-brand',
+    selected: 'bg-brand text-white border-brand',
+  },
+  success: {
+    base: 'bg-success-bg border-success/20 text-success',
+    selected: 'bg-success text-white border-success',
+  },
+  warn: {
+    base: 'bg-warn-bg border-warn/20 text-warn',
+    selected: 'bg-warn text-white border-warn',
+  },
+  danger: {
+    base: 'bg-danger-bg border-danger/20 text-danger',
+    selected: 'bg-danger text-white border-danger',
+  },
+  'portfolio-cortex': {
+    base: 'bg-portfolio-cortex/10 border-portfolio-cortex/20 text-portfolio-cortex',
+    selected: 'bg-portfolio-cortex text-white border-portfolio-cortex',
+  },
+  'portfolio-solutions': {
+    base: 'bg-portfolio-solutions/10 border-portfolio-solutions/20 text-portfolio-solutions',
+    selected: 'bg-portfolio-solutions text-white border-portfolio-solutions',
+  },
+  'portfolio-launchpad': {
+    base: 'bg-portfolio-launchpad/10 border-portfolio-launchpad/20 text-portfolio-launchpad',
+    selected: 'bg-portfolio-launchpad text-white border-portfolio-launchpad',
+  },
+  'portfolio-fisher': {
+    base: 'bg-portfolio-fisher/10 border-portfolio-fisher/20 text-portfolio-fisher',
+    selected: 'bg-portfolio-fisher text-white border-portfolio-fisher',
+  },
+};
+
+const sizeClasses = {
+  sm: 'px-2 py-0.5 text-xs gap-1',
+  md: 'px-3 py-1 text-sm gap-1.5',
+};
 
 export function FilterChip({
   label,
   value,
-  icon,
-  active = false,
-  count,
+  selected = false,
   onToggle,
-  onClear,
+  onRemove,
+  icon,
+  color = 'default',
+  size = 'md',
+  className,
 }: FilterChipProps) {
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      onToggle(value);
+  const isInteractive = onToggle || onRemove;
+  const colors = colorClasses[color] || colorClasses.default;
+
+  const chipClass = cn(
+    'inline-flex items-center rounded-full border font-medium transition-all duration-150',
+    sizeClasses[size],
+    selected ? colors.selected : colors.base,
+    isInteractive && 'cursor-pointer hover:shadow-sm',
+    onToggle && !selected && 'hover:bg-surface-strong',
+    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-1',
+    className
+  );
+
+  const handleClick = () => {
+    if (onToggle) {
+      onToggle();
     }
-    if (active && e.key === 'Delete' && onClear) {
-      e.preventDefault();
-      onClear(value);
+  };
+
+  const handleRemove = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onRemove) {
+      onRemove();
     }
   };
 
   return (
     <button
-      role="switch"
-      aria-checked={active}
-      aria-label={`Filter by ${label}`}
-      onClick={() => onToggle(value)}
-      onKeyDown={handleKeyDown}
-      className={cn(
-        'inline-flex items-center gap-1.5 h-8 px-3 rounded-full text-sm font-medium',
-        'transition-all duration-200 focus-visible:outline-none focus-visible:ring-2',
-        'focus-visible:ring-offset-2 focus-visible:ring-blue-500',
-        active
-          ? 'bg-blue-100 text-blue-700 hover:bg-blue-200'
-          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-      )}
+      type="button"
+      className={chipClass}
+      onClick={handleClick}
+      disabled={!isInteractive}
+      aria-pressed={selected}
     >
-      {icon && <span className="w-4 h-4">{icon}</span>}
+      {icon && <span className={cn(size === 'sm' ? 'w-3 h-3' : 'w-4 h-4')}>{icon}</span>}
       <span>{label}</span>
-      {count !== undefined && (
-        <span className={cn(
-          'ml-1 px-1.5 py-0.5 text-xs rounded-full',
-          active ? 'bg-blue-200' : 'bg-gray-200'
-        )}>
-          {count}
+      {value !== undefined && (
+        <span className={cn('font-semibold', selected && 'opacity-90')}>
+          {value}
         </span>
       )}
-      {active && onClear && (
+      {selected && onRemove && (
         <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onClear(value);
-          }}
-          className="ml-1 -mr-1 p-0.5 rounded-full hover:bg-blue-200"
-          aria-label={`Clear ${label} filter`}
+          type="button"
+          onClick={handleRemove}
+          className={cn(
+            'ml-0.5 -mr-1 rounded-full p-0.5 hover:bg-white/20 transition-colors',
+            'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white'
+          )}
+          aria-label={`Remove ${label} filter`}
         >
-          <X className="w-3 h-3" />
+          <X className={cn(size === 'sm' ? 'w-3 h-3' : 'w-3.5 h-3.5')} />
         </button>
       )}
     </button>
   );
 }
 
-interface FilterBarProps {
-  filters: Array<{
-    label: string;
-    value: string;
-    icon?: React.ReactNode;
-    count?: number;
-  }>;
-  activeFilters: string[];
-  onFilterToggle: (value: string) => void;
-  onClearAll: () => void;
+interface FilterChipGroupProps {
+  children: React.ReactNode;
   className?: string;
+  label?: string;
+  collapsible?: boolean;
+  maxVisible?: number;
 }
 
-export function FilterBar({
-  filters,
-  activeFilters,
-  onFilterToggle,
-  onClearAll,
+export function FilterChipGroup({
+  children,
   className,
-}: FilterBarProps) {
-  const activeCount = activeFilters.length;
+  label,
+  collapsible = false,
+  maxVisible = 5,
+}: FilterChipGroupProps) {
+  const [expanded, setExpanded] = React.useState(false);
+  const chips = React.Children.toArray(children);
+  const hasOverflow = collapsible && chips.length > maxVisible;
+  const visibleChips = hasOverflow && !expanded ? chips.slice(0, maxVisible) : chips;
+  const hiddenCount = chips.length - maxVisible;
 
   return (
-    <div className={cn('flex items-center gap-2 flex-wrap', className)}>
-      {filters.map((filter) => (
-        <FilterChip
-          key={filter.value}
-          {...filter}
-          active={activeFilters.includes(filter.value)}
-          onToggle={onFilterToggle}
-          onClear={onFilterToggle}
-        />
-      ))}
-      {activeCount > 0 && (
+    <div className={cn('flex flex-wrap items-center gap-2', className)}>
+      {label && (
+        <span className="text-sm font-medium text-muted mr-2">{label}</span>
+      )}
+      {visibleChips}
+      {hasOverflow && !expanded && (
         <button
-          onClick={onClearAll}
-          className="ml-2 text-sm text-gray-500 hover:text-gray-700 underline"
+          type="button"
+          onClick={() => setExpanded(true)}
+          className="px-3 py-1 text-sm font-medium text-brand hover:text-brand-hover transition-colors"
         >
-          Clear all ({activeCount})
+          +{hiddenCount} more
+        </button>
+      )}
+      {hasOverflow && expanded && (
+        <button
+          type="button"
+          onClick={() => setExpanded(false)}
+          className="px-3 py-1 text-sm font-medium text-muted hover:text-fg transition-colors"
+        >
+          Show less
         </button>
       )}
     </div>

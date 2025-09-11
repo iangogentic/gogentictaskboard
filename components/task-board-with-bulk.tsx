@@ -301,7 +301,7 @@ export default function TaskBoardWithBulk({ project, users }: TaskBoardWithBulkP
             <div className="relative">
               <button
                 onClick={() => setBulkActionOpen(!bulkActionOpen)}
-                className="px-3 py-1.5 bg-white border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+                className="px-3 py-1.5 bg-white border border-border rounded-md text-sm font-medium text-fg-muted hover:bg-surface"
               >
                 Bulk Actions
               </button>
@@ -309,21 +309,21 @@ export default function TaskBoardWithBulk({ project, users }: TaskBoardWithBulkP
               {bulkActionOpen && (
                 <div className="absolute right-0 mt-2 w-56 bg-white rounded-md shadow-lg z-10 border">
                   <div className="py-1">
-                    <div className="px-3 py-2 text-xs font-semibold text-gray-500 uppercase">Move to</div>
+                    <div className="px-3 py-2 text-xs font-semibold text-muted uppercase">Move to</div>
                     {COLUMNS.map(col => (
                       <button
                         key={col.id}
                         onClick={() => handleBulkStatusChange(col.id)}
-                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        className="block w-full text-left px-4 py-2 text-sm text-fg-muted hover:bg-surface"
                       >
                         {col.title}
                       </button>
                     ))}
                     <div className="border-t my-1"></div>
-                    <div className="px-3 py-2 text-xs font-semibold text-gray-500 uppercase">Assign to</div>
+                    <div className="px-3 py-2 text-xs font-semibold text-muted uppercase">Assign to</div>
                     <button
                       onClick={() => handleBulkAssign(null)}
-                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      className="block w-full text-left px-4 py-2 text-sm text-fg-muted hover:bg-surface"
                     >
                       Unassigned
                     </button>
@@ -331,7 +331,7 @@ export default function TaskBoardWithBulk({ project, users }: TaskBoardWithBulkP
                       <button
                         key={user.id}
                         onClick={() => handleBulkAssign(user.id)}
-                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        className="block w-full text-left px-4 py-2 text-sm text-fg-muted hover:bg-surface"
                       >
                         {user.name}
                       </button>
@@ -371,17 +371,17 @@ export default function TaskBoardWithBulk({ project, users }: TaskBoardWithBulkP
                   <div className="flex items-center space-x-2">
                     <button
                       onClick={() => handleSelectAll(column.id)}
-                      className="text-gray-400 hover:text-gray-600"
+                      className="text-muted hover:text-muted"
                       title={allSelected ? "Deselect all" : "Select all"}
                     >
                       {allSelected ? <CheckSquare className="h-4 w-4" /> : <Square className="h-4 w-4" />}
                     </button>
-                    <h3 className="font-medium text-gray-900">{column.title}</h3>
-                    <span className="text-sm text-gray-500">({columnTasks.length})</span>
+                    <h3 className="font-medium text-fg">{column.title}</h3>
+                    <span className="text-sm text-muted">({columnTasks.length})</span>
                   </div>
                   <button
                     onClick={() => setAddingTask(column.id)}
-                    className="text-gray-400 hover:text-gray-600"
+                    className="text-muted hover:text-muted"
                   >
                     <Plus className="h-4 w-4" />
                   </button>
@@ -398,7 +398,7 @@ export default function TaskBoardWithBulk({ project, users }: TaskBoardWithBulkP
                           type="checkbox"
                           checked={selectedTasks.has(task.id)}
                           onChange={() => handleSelectTask(task.id)}
-                          className="mt-3.5 flex-shrink-0 h-4 w-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500"
+                          className="mt-3.5 flex-shrink-0 h-4 w-4 text-indigo-600 rounded border-border focus:ring-indigo-500"
                           onClick={(e) => e.stopPropagation()}
                         />
                         <div className="flex-1">
@@ -432,7 +432,7 @@ export default function TaskBoardWithBulk({ project, users }: TaskBoardWithBulkP
                           setAddingTask(null)
                           setNewTaskTitle('')
                         }}
-                        className="px-2 py-1 text-xs text-gray-600 hover:text-gray-800"
+                        className="px-2 py-1 text-xs text-muted hover:text-fg"
                       >
                         Cancel
                       </button>

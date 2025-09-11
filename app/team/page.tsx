@@ -128,60 +128,60 @@ export default async function TeamPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-surface">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Team</h1>
-          <p className="text-gray-600 mt-1">Team capacity, workload, and performance</p>
+          <h1 className="text-3xl font-bold text-fg">Team</h1>
+          <p className="text-muted mt-1">Team capacity, workload, and performance</p>
         </div>
 
         {/* Team Summary */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-          <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <div className="bg-white rounded-lg border border-border p-6">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm text-gray-600">Team Size</span>
+              <span className="text-sm text-muted">Team Size</span>
               <Users className="w-5 h-5 text-blue-600" />
             </div>
             <p className="text-2xl font-bold">{users.length}</p>
-            <p className="text-xs text-gray-500">members</p>
+            <p className="text-xs text-muted">members</p>
           </div>
-          <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <div className="bg-white rounded-lg border border-border p-6">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm text-gray-600">Active Tasks</span>
+              <span className="text-sm text-muted">Active Tasks</span>
               <Clock className="w-5 h-5 text-amber-600" />
             </div>
             <p className="text-2xl font-bold">
               {teamMetrics.reduce((sum, m) => sum + m.activeTasks, 0)}
             </p>
-            <p className="text-xs text-gray-500">across team</p>
+            <p className="text-xs text-muted">across team</p>
           </div>
-          <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <div className="bg-white rounded-lg border border-border p-6">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm text-gray-600">Weekly Completed</span>
+              <span className="text-sm text-muted">Weekly Completed</span>
               <CheckCircle className="w-5 h-5 text-green-600" />
             </div>
             <p className="text-2xl font-bold">
               {teamMetrics.reduce((sum, m) => sum + m.completedThisWeek, 0)}
             </p>
-            <p className="text-xs text-gray-500">tasks</p>
+            <p className="text-xs text-muted">tasks</p>
           </div>
-          <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <div className="bg-white rounded-lg border border-border p-6">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm text-gray-600">Overdue</span>
+              <span className="text-sm text-muted">Overdue</span>
               <AlertCircle className="w-5 h-5 text-red-600" />
             </div>
             <p className="text-2xl font-bold text-red-600">
               {teamMetrics.reduce((sum, m) => sum + m.overdueTasks, 0)}
             </p>
-            <p className="text-xs text-gray-500">needs attention</p>
+            <p className="text-xs text-muted">needs attention</p>
           </div>
         </div>
 
         {/* Team Members Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {teamMetrics.map(member => (
-            <div key={member.user.id} className="bg-white rounded-2xl border border-gray-200 p-6">
+            <div key={member.user.id} className="bg-white rounded-2xl border border-border p-6">
               {/* Member Header */}
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center gap-3">
@@ -189,14 +189,14 @@ export default async function TeamPage() {
                     {member.user.name.charAt(0)}
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900">{member.user.name}</h3>
+                    <h3 className="text-lg font-semibold text-fg">{member.user.name}</h3>
                     <div className="flex items-center gap-2 mt-1">
-                      <span className="flex items-center gap-1 text-sm text-gray-600">
+                      <span className="flex items-center gap-1 text-sm text-muted">
                         {getRoleIcon(member.user.email)}
                         {getRoleLabel(member.user.email)}
                       </span>
-                      <span className="text-gray-400">•</span>
-                      <a href={`mailto:${member.user.email}`} className="text-sm text-gray-500 hover:text-blue-600">
+                      <span className="text-muted">•</span>
+                      <a href={`mailto:${member.user.email}`} className="text-sm text-muted hover:text-blue-600">
                         {member.user.email}
                       </a>
                     </div>
@@ -214,15 +214,15 @@ export default async function TeamPage() {
               {/* Metrics Grid */}
               <div className="grid grid-cols-3 gap-4 mb-4">
                 <div>
-                  <p className="text-xs text-gray-500 mb-1">Active</p>
-                  <p className="text-xl font-bold text-gray-900">{member.activeTasks}</p>
+                  <p className="text-xs text-muted mb-1">Active</p>
+                  <p className="text-xl font-bold text-fg">{member.activeTasks}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500 mb-1">This Week</p>
+                  <p className="text-xs text-muted mb-1">This Week</p>
                   <p className="text-xl font-bold text-green-600">{member.completedThisWeek}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-500 mb-1">Overdue</p>
+                  <p className="text-xs text-muted mb-1">Overdue</p>
                   <p className="text-xl font-bold text-red-600">{member.overdueTasks}</p>
                 </div>
               </div>
@@ -230,10 +230,10 @@ export default async function TeamPage() {
               {/* Capacity Bar */}
               <div className="mb-4">
                 <div className="flex justify-between items-center mb-1">
-                  <span className="text-xs text-gray-500">Workload</span>
-                  <span className="text-xs text-gray-600">{member.activeTasks} tasks</span>
+                  <span className="text-xs text-muted">Workload</span>
+                  <span className="text-xs text-muted">{member.activeTasks} tasks</span>
                 </div>
-                <div className="w-full bg-gray-100 rounded-full h-2">
+                <div className="w-full bg-surface rounded-full h-2">
                   <div 
                     className={`h-2 rounded-full transition-all ${
                       member.capacityStatus === 'over' ? 'bg-red-500' :
@@ -247,17 +247,17 @@ export default async function TeamPage() {
 
               {/* Activity Heatmap */}
               <div>
-                <p className="text-xs text-gray-500 mb-2">30-day activity</p>
+                <p className="text-xs text-muted mb-2">30-day activity</p>
                 <div className="flex gap-1">
                   {member.activityMap.map((activity, i) => (
                     <div
                       key={i}
                       className={`w-2 h-8 rounded-sm ${
-                        activity === 0 ? 'bg-gray-100' :
+                        activity === 0 ? 'bg-surface' :
                         activity === 1 ? 'bg-green-200' :
                         activity === 2 ? 'bg-green-400' :
                         activity >= 3 ? 'bg-green-600' :
-                        'bg-gray-100'
+                        'bg-surface'
                       }`}
                       title={`${format(subDays(new Date(), 29 - i), 'MMM d')}: ${activity} updates`}
                     />
@@ -268,7 +268,7 @@ export default async function TeamPage() {
               {/* Portfolio Distribution */}
               {member.portfolioProjects.size > 0 && (
                 <div className="mt-4 pt-4 border-t">
-                  <p className="text-xs text-gray-500 mb-2">Portfolio Focus</p>
+                  <p className="text-xs text-muted mb-2">Portfolio Focus</p>
                   <div className="flex gap-2 flex-wrap">
                     {Array.from(member.portfolioProjects.entries()).map(([portfolioId, count]) => {
                       const portfolio = portfolios.find(p => p.id === portfolioId)
@@ -295,19 +295,19 @@ export default async function TeamPage() {
               <div className="mt-4 pt-4 border-t flex items-center justify-between text-sm">
                 <div className="flex items-center gap-4">
                   {member.managedProjects > 0 && (
-                    <span className="text-gray-600">
+                    <span className="text-muted">
                       <span className="font-medium">{member.managedProjects}</span> PM
                     </span>
                   )}
                   {member.developingProjects > 0 && (
-                    <span className="text-gray-600">
+                    <span className="text-muted">
                       <span className="font-medium">{member.developingProjects}</span> Dev
                     </span>
                   )}
                 </div>
                 <div className="flex items-center gap-1">
-                  <TrendingUp className="w-4 h-4 text-gray-400" />
-                  <span className="text-gray-600">
+                  <TrendingUp className="w-4 h-4 text-muted" />
+                  <span className="text-muted">
                     Score: <span className="font-medium">{member.productivityScore}</span>
                   </span>
                 </div>

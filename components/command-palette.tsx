@@ -133,9 +133,9 @@ export default function CommandPalette() {
       />
 
       {/* Command Palette */}
-      <div className="fixed top-1/4 left-1/2 -translate-x-1/2 w-full max-w-2xl bg-white rounded-lg shadow-2xl z-50">
+      <div className="fixed top-1/4 left-1/2 -translate-x-1/2 w-full max-w-2xl bg-bg rounded-lg shadow-2xl z-50">
         <div className="flex items-center border-b px-4 py-3">
-          <Search className="h-5 w-5 text-gray-400 mr-3" />
+          <Search className="h-5 w-5 text-muted mr-3" />
           <input
             type="text"
             value={search}
@@ -144,12 +144,12 @@ export default function CommandPalette() {
             className="flex-1 outline-none text-lg"
             autoFocus
           />
-          <kbd className="px-2 py-1 text-xs bg-gray-100 rounded border">ESC</kbd>
+          <kbd className="px-2 py-1 text-xs bg-surface rounded border">ESC</kbd>
         </div>
 
         <div className="max-h-96 overflow-y-auto">
           {filteredCommands.length === 0 ? (
-            <div className="px-4 py-8 text-center text-gray-500">
+            <div className="px-4 py-8 text-center text-muted">
               No commands found for "{search}"
             </div>
           ) : (
@@ -163,21 +163,21 @@ export default function CommandPalette() {
                     setSearch('')
                   }}
                   onMouseEnter={() => setSelectedIndex(index)}
-                  className={`w-full px-4 py-3 flex items-center justify-between hover:bg-gray-50 ${
-                    index === selectedIndex ? 'bg-gray-50' : ''
+                  className={`w-full px-4 py-3 flex items-center justify-between hover:bg-bg ${
+                    index === selectedIndex ? 'bg-bg' : ''
                   }`}
                 >
                   <div className="flex items-center">
-                    <div className="mr-3 text-gray-400">{cmd.icon}</div>
+                    <div className="mr-3 text-muted">{cmd.icon}</div>
                     <div className="text-left">
-                      <div className="font-medium text-gray-900">{cmd.title}</div>
+                      <div className="font-medium text-fg">{cmd.title}</div>
                       {cmd.description && (
-                        <div className="text-sm text-gray-500">{cmd.description}</div>
+                        <div className="text-sm text-muted">{cmd.description}</div>
                       )}
                     </div>
                   </div>
                   {index === selectedIndex && (
-                    <ArrowRight className="h-4 w-4 text-gray-400" />
+                    <ArrowRight className="h-4 w-4 text-muted" />
                   )}
                 </button>
               ))}
@@ -185,20 +185,20 @@ export default function CommandPalette() {
           )}
         </div>
 
-        <div className="border-t px-4 py-2 flex items-center justify-between text-xs text-gray-500">
+        <div className="border-t px-4 py-2 flex items-center justify-between text-xs text-muted">
           <div className="flex items-center space-x-4">
             <span className="flex items-center">
-              <kbd className="px-1.5 py-0.5 bg-gray-100 rounded border mr-1">↑</kbd>
-              <kbd className="px-1.5 py-0.5 bg-gray-100 rounded border mr-1">↓</kbd>
+              <kbd className="px-1.5 py-0.5 bg-surface rounded border mr-1">↑</kbd>
+              <kbd className="px-1.5 py-0.5 bg-surface rounded border mr-1">↓</kbd>
               to navigate
             </span>
             <span className="flex items-center">
-              <kbd className="px-1.5 py-0.5 bg-gray-100 rounded border mr-1">↵</kbd>
+              <kbd className="px-1.5 py-0.5 bg-surface rounded border mr-1">↵</kbd>
               to select
             </span>
           </div>
           <span>
-            Press <kbd className="px-1.5 py-0.5 bg-gray-100 rounded border">⌘K</kbd> to open
+            Press <kbd className="px-1.5 py-0.5 bg-surface rounded border">⌘K</kbd> to open
           </span>
         </div>
       </div>

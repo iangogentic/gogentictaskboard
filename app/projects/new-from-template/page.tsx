@@ -45,14 +45,14 @@ export default function NewProjectFromTemplatePage() {
         <div className="flex items-center space-x-4 mb-4">
           <Link
             href="/projects/new"
-            className="flex items-center text-gray-600 hover:text-gray-900"
+            className="flex items-center text-muted hover:text-fg"
           >
             <ArrowLeft className="h-4 w-4 mr-1" />
             Back
           </Link>
           <h1 className="text-2xl font-bold">Choose a Template</h1>
         </div>
-        <p className="text-gray-600">Start your project faster with a pre-configured template</p>
+        <p className="text-muted">Start your project faster with a pre-configured template</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
@@ -61,7 +61,7 @@ export default function NewProjectFromTemplatePage() {
           <div className="bg-white rounded-lg shadow p-4">
             <div className="mb-4">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted" />
                 <input
                   type="text"
                   placeholder="Search templates..."
@@ -80,7 +80,7 @@ export default function NewProjectFromTemplatePage() {
                   className={`w-full text-left px-3 py-2 rounded-md flex items-center space-x-2 ${
                     selectedCategory === category.id
                       ? 'bg-indigo-50 text-indigo-700 font-medium'
-                      : 'hover:bg-gray-50 text-gray-700'
+                      : 'hover:bg-surface text-fg-muted'
                   }`}
                 >
                   <span className="text-xl">{category.icon}</span>
@@ -95,20 +95,20 @@ export default function NewProjectFromTemplatePage() {
               <h3 className="font-semibold mb-2">Template Details</h3>
               <div className="space-y-2 text-sm">
                 <div>
-                  <span className="text-gray-500">Branch:</span>
+                  <span className="text-muted">Branch:</span>
                   <span className="ml-2 font-medium">{selectedTemplate.branch}</span>
                 </div>
                 <div>
-                  <span className="text-gray-500">Duration:</span>
+                  <span className="text-muted">Duration:</span>
                   <span className="ml-2 font-medium">{selectedTemplate.estimatedDuration} days</span>
                 </div>
                 <div>
-                  <span className="text-gray-500">Tasks:</span>
+                  <span className="text-muted">Tasks:</span>
                   <span className="ml-2 font-medium">{selectedTemplate.defaultTasks.length}</span>
                 </div>
                 {selectedTemplate.defaultDeliverables && (
                   <div>
-                    <span className="text-gray-500">Deliverables:</span>
+                    <span className="text-muted">Deliverables:</span>
                     <span className="ml-2 font-medium">{selectedTemplate.defaultDeliverables.length}</span>
                   </div>
                 )}
@@ -128,8 +128,8 @@ export default function NewProjectFromTemplatePage() {
         <div className="lg:col-span-3">
           {filteredTemplates.length === 0 ? (
             <div className="bg-white rounded-lg shadow p-12 text-center">
-              <FileText className="h-12 w-12 mx-auto text-gray-300 mb-4" />
-              <p className="text-gray-500">No templates found matching your criteria</p>
+              <FileText className="h-12 w-12 mx-auto text-border mb-4" />
+              <p className="text-muted">No templates found matching your criteria</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -155,9 +155,9 @@ export default function NewProjectFromTemplatePage() {
                   </div>
                   
                   <h3 className="font-semibold text-lg mb-2">{template.name}</h3>
-                  <p className="text-sm text-gray-600 mb-4">{template.description}</p>
+                  <p className="text-sm text-muted mb-4">{template.description}</p>
                   
-                  <div className="flex items-center justify-between text-xs text-gray-500">
+                  <div className="flex items-center justify-between text-xs text-muted">
                     <span>{template.defaultTasks.length} tasks</span>
                     <span>{template.estimatedDuration} days</span>
                   </div>
@@ -167,12 +167,12 @@ export default function NewProjectFromTemplatePage() {
                       <h4 className="text-sm font-medium mb-2">Included Tasks:</h4>
                       <div className="space-y-1 max-h-32 overflow-y-auto">
                         {template.defaultTasks.slice(0, 5).map((task, index) => (
-                          <div key={index} className="text-xs text-gray-600">
+                          <div key={index} className="text-xs text-muted">
                             • {task.title}
                           </div>
                         ))}
                         {template.defaultTasks.length > 5 && (
-                          <div className="text-xs text-gray-400">
+                          <div className="text-xs text-muted">
                             ...and {template.defaultTasks.length - 5} more
                           </div>
                         )}
@@ -190,7 +190,7 @@ export default function NewProjectFromTemplatePage() {
       <div className="mt-8 flex justify-between">
         <Link
           href="/projects/new"
-          className="px-4 py-2 text-gray-600 hover:text-gray-900"
+          className="px-4 py-2 text-muted hover:text-fg"
         >
           Start from scratch instead
         </Link>

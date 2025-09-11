@@ -1,21 +1,139 @@
 @import "tailwindcss";
 
+/* Gogentic Design System - Core Tokens */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Typography Scale */
+  --font-size-xs: 0.75rem;    /* 12px */
+  --font-size-sm: 0.875rem;   /* 14px */
+  --font-size-base: 1rem;     /* 16px */
+  --font-size-lg: 1.125rem;   /* 18px */
+  --font-size-xl: 1.5rem;     /* 24px */
+  --font-size-2xl: 2rem;      /* 32px */
+  
+  /* Line Heights */
+  --line-height-xs: 1rem;      /* 16px */
+  --line-height-sm: 1.25rem;   /* 20px */
+  --line-height-base: 1.5rem;  /* 24px */
+  --line-height-lg: 1.75rem;   /* 28px */
+  --line-height-xl: 2rem;      /* 32px */
+  --line-height-2xl: 2.5rem;   /* 40px */
+  
+  /* Core Colors - Light Mode */
+  --brand: #4C7CF3;
+  --brand-hover: #3865E0;
+  --brand-active: #2954CE;
+  
+  --fg: #0B1220;
+  --muted: #6B7280;
+  --bg: #FFFFFF;
+  --surface: #F8FAFC;
+  --surface-strong: #EEF2F7;
+  --border: #E5E7EB;
+  
+  /* Semantic Colors */
+  --success: #10B981;
+  --success-bg: #D1FAE5;
+  --warn: #F59E0B;
+  --warn-bg: #FEF3C7;
+  --danger: #EF4444;
+  --danger-bg: #FEE2E2;
+  --info: #60A5FA;
+  --info-bg: #DBEAFE;
+  
+  /* Portfolio Colors */
+  --portfolio-cortex: #5B67F1;
+  --portfolio-solutions: #10B981;
+  --portfolio-launchpad: #F59E0B;
+  --portfolio-fisher: #8B5CF6;
+  
+  /* Shadows */
+  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.06);
+  --shadow-card-hover: 0 8px 30px rgba(0, 0, 0, 0.12);
+  
+  /* Radii */
+  --radius-sm: 0.25rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
+  --radius-2xl: 1rem;
+  --radius-full: 9999px;
+  
+  /* Legacy support */
+  --background: var(--bg);
+  --foreground: var(--fg);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  /* Map CSS variables to Tailwind utilities */
+  --color-brand: var(--brand);
+  --color-brand-hover: var(--brand-hover);
+  --color-brand-active: var(--brand-active);
+  
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-strong: var(--surface-strong);
+  --color-border: var(--border);
+  
+  --color-success: var(--success);
+  --color-success-bg: var(--success-bg);
+  --color-warn: var(--warn);
+  --color-warn-bg: var(--warn-bg);
+  --color-danger: var(--danger);
+  --color-danger-bg: var(--danger-bg);
+  --color-info: var(--info);
+  --color-info-bg: var(--info-bg);
+  
+  --color-portfolio-cortex: var(--portfolio-cortex);
+  --color-portfolio-solutions: var(--portfolio-solutions);
+  --color-portfolio-launchpad: var(--portfolio-launchpad);
+  --color-portfolio-fisher: var(--portfolio-fisher);
+  
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  
+  /* Legacy support */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    /* Dark Mode Colors */
+    --fg: #F9FAFB;
+    --muted: #9CA3AF;
+    --bg: #0B0F1A;
+    --surface: #111827;
+    --surface-strong: #1F2937;
+    --border: #374151;
+    
+    --brand: #60A5FA;
+    --brand-hover: #7EBFFF;
+    --brand-active: #93CBFF;
+    
+    --success: #34D399;
+    --success-bg: #064E3B;
+    --warn: #FBBF24;
+    --warn-bg: #78350F;
+    --danger: #F87171;
+    --danger-bg: #7F1D1D;
+    --info: #93C5FD;
+    --info-bg: #1E3A8A;
+    
+    --portfolio-cortex: #818CF8;
+    --portfolio-solutions: #34D399;
+    --portfolio-launchpad: #FBBF24;
+    --portfolio-fisher: #A78BFA;
+    
+    /* Legacy support */
+    --background: var(--bg);
+    --foreground: var(--fg);
   }
 }
 

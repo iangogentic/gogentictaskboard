@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
 import { ProjectRowCard } from '@/components/ui/project-row-card'
-import { FilterBar } from '@/components/ui/filter-chip'
+import { FilterBar } from '@/components/ui/filter-bar'
 import { SavedViews, SavedView } from '@/components/ui/saved-views'
 import { EmptyState } from '@/components/ui/empty-states'
 import { ProjectCardSkeleton } from '@/components/ui/skeletons'
@@ -154,8 +154,8 @@ export function ProjectsList({ projects, users, portfolios = [], loading = false
       {/* Header */}
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Projects</h2>
-          <p className="mt-1 text-sm text-gray-600">
+          <h2 className="text-2xl font-bold text-fg">Projects</h2>
+          <p className="mt-1 text-sm text-muted">
             {filteredProjects.length} of {projects.length} projects
           </p>
         </div>
@@ -179,7 +179,7 @@ export function ProjectsList({ projects, users, portfolios = [], loading = false
           />
           <Link
             href="/projects/new"
-            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-brand text-white rounded-lg hover:bg-brand-hover transition-colors"
           >
             <Plus className="w-4 h-4" />
             New Project
@@ -190,23 +190,48 @@ export function ProjectsList({ projects, users, portfolios = [], loading = false
       {/* Search Bar */}
       <div className="mb-4">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search projects..."
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full pl-10 pr-4 py-2 border border-border bg-bg rounded-lg focus:outline-none focus:ring-2 focus:ring-brand text-fg placeholder-muted"
           />
         </div>
       </div>
 
       {/* Filters */}
       <FilterBar
-        filters={filters}
-        activeFilters={activeFilters}
-        onFilterToggle={handleFilterToggle}
-        onClearAll={() => setActiveFilters([])}
+        filterGroups={[
+          {
+            id: 'portfolio',
+            label: 'Portfolio',
+            options: portfolios.map(p => ({
+              id: p.id,
+              label: p.name,
+              value: p.id,
+              color: (p.key === 'cortex' ? 'portfolio-cortex' : 
+                     p.key === 'solutions' ? 'portfolio-solutions' :
+                     p.key === 'launchpad' ? 'portfolio-launchpad' :
+                     p.key === 'fisher' ? 'portfolio-fisher' : 'default') as any
+            })),
+            multiple: true,
+          },
+          {
+            id: 'status',
+            label: 'Status',
+            options: [
+              { id: 'planning', label: 'Planning', value: 'PLANNING', color: 'info' },
+              { id: 'progress', label: 'In Progress', value: 'IN_PROGRESS', color: 'brand' },
+              { id: 'review', label: 'Review', value: 'REVIEW', color: 'warn' },
+              { id: 'blocked', label: 'Blocked', value: 'BLOCKED', color: 'danger' },
+              { id: 'completed', label: 'Completed', value: 'COMPLETED', color: 'success' },
+            ],
+            multiple: true,
+          },
+        ]}
+        sticky={false}
         className="mb-6"
       />
 

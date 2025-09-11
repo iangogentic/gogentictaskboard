@@ -157,7 +157,7 @@ export default function EditProjectPage({ params }: { params: Promise<{ id: stri
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="text-center py-12">
-          <p className="text-gray-500">Loading...</p>
+          <p className="text-muted">Loading...</p>
         </div>
       </div>
     )
@@ -170,7 +170,7 @@ export default function EditProjectPage({ params }: { params: Promise<{ id: stri
           <div className="flex items-center space-x-4">
             <Link
               href={projectId ? `/projects/${projectId}` : '/'}
-              className="inline-flex items-center text-sm text-gray-500 hover:text-gray-700"
+              className="inline-flex items-center text-sm text-muted hover:text-fg-muted"
             >
               <ArrowLeft className="h-4 w-4 mr-1" />
               Cancel
@@ -188,7 +188,7 @@ export default function EditProjectPage({ params }: { params: Promise<{ id: stri
 
       <form onSubmit={handleSubmit} className="space-y-6 bg-white shadow rounded-lg p-6">
         <div>
-          <label htmlFor="title" className="block text-sm font-medium text-gray-700">
+          <label htmlFor="title" className="block text-sm font-medium text-fg-muted">
             Project Title
           </label>
           <input
@@ -197,20 +197,20 @@ export default function EditProjectPage({ params }: { params: Promise<{ id: stri
             required
             value={formData.title}
             onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+            className="mt-1 block w-full border-border rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
           />
         </div>
 
         <div className="grid grid-cols-2 gap-6">
           <div>
-            <label htmlFor="portfolio" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="portfolio" className="block text-sm font-medium text-fg-muted">
               Portfolio
             </label>
             <select
               id="portfolio"
               value={formData.portfolioId}
               onChange={(e) => setFormData({ ...formData, portfolioId: e.target.value })}
-              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+              className="mt-1 block w-full border-border rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
             >
               <option value="">Select portfolio</option>
               {portfolios.map(portfolio => (
@@ -222,14 +222,14 @@ export default function EditProjectPage({ params }: { params: Promise<{ id: stri
           </div>
 
           <div>
-            <label htmlFor="stage" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="stage" className="block text-sm font-medium text-fg-muted">
               Stage
             </label>
             <select
               id="stage"
               value={formData.stage}
               onChange={(e) => setFormData({ ...formData, stage: e.target.value })}
-              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+              className="mt-1 block w-full border-border rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
             >
               <option value="Discovery">Discovery</option>
               <option value="Build">Build</option>
@@ -241,7 +241,7 @@ export default function EditProjectPage({ params }: { params: Promise<{ id: stri
 
         <div className="grid grid-cols-3 gap-6">
           <div>
-            <label htmlFor="status" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="status" className="block text-sm font-medium text-fg-muted">
               Status
             </label>
             <select
@@ -249,7 +249,7 @@ export default function EditProjectPage({ params }: { params: Promise<{ id: stri
               required
               value={formData.status}
               onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+              className="mt-1 block w-full border-border rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
             >
               {Object.entries(PROJECT_STATUS).map(([key, value]) => (
                 <option key={key} value={value}>
@@ -260,14 +260,14 @@ export default function EditProjectPage({ params }: { params: Promise<{ id: stri
           </div>
 
           <div>
-            <label htmlFor="health" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="health" className="block text-sm font-medium text-fg-muted">
               Health
             </label>
             <select
               id="health"
               value={formData.health}
               onChange={(e) => setFormData({ ...formData, health: e.target.value })}
-              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+              className="mt-1 block w-full border-border rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
             >
               <option value="Green">Green</option>
               <option value="Amber">Amber</option>
@@ -276,14 +276,14 @@ export default function EditProjectPage({ params }: { params: Promise<{ id: stri
           </div>
 
           <div>
-            <label htmlFor="branch" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="branch" className="block text-sm font-medium text-fg-muted">
               Branch (Legacy)
             </label>
             <select
               id="branch"
               value={formData.branch}
               onChange={(e) => setFormData({ ...formData, branch: e.target.value })}
-              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+              className="mt-1 block w-full border-border rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
             >
               <option value="">Select branch</option>
               {Object.entries(BRANCHES).map(([key, value]) => (
@@ -294,7 +294,7 @@ export default function EditProjectPage({ params }: { params: Promise<{ id: stri
         </div>
 
         <div>
-          <label htmlFor="pm" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="pm" className="block text-sm font-medium text-fg-muted mb-1">
             Project Manager
           </label>
           <select
@@ -302,7 +302,7 @@ export default function EditProjectPage({ params }: { params: Promise<{ id: stri
             required
             value={formData.pmId}
             onChange={(e) => setFormData({ ...formData, pmId: e.target.value })}
-            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+            className="mt-1 block w-full border-border rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
           >
             <option value="">Select PM</option>
             {users.map(user => (
@@ -312,7 +312,7 @@ export default function EditProjectPage({ params }: { params: Promise<{ id: stri
             ))}
           </select>
           {formData.pmId && (
-            <p className="mt-1 text-xs text-gray-500">
+            <p className="mt-1 text-xs text-muted">
               Current: {users.find(u => u.id === formData.pmId)?.name}
             </p>
           )}
@@ -320,9 +320,9 @@ export default function EditProjectPage({ params }: { params: Promise<{ id: stri
 
         <div>
           <div className="flex items-center justify-between mb-2">
-            <label className="block text-sm font-medium text-gray-700">
+            <label className="block text-sm font-medium text-fg-muted">
               Developers
-              <span className="ml-2 text-xs text-gray-500">
+              <span className="ml-2 text-xs text-muted">
                 ({formData.developerIds.length} selected)
               </span>
             </label>
@@ -337,32 +337,32 @@ export default function EditProjectPage({ params }: { params: Promise<{ id: stri
               <button
                 type="button"
                 onClick={() => setFormData({ ...formData, developerIds: [] })}
-                className="text-xs text-gray-600 hover:text-gray-700"
+                className="text-xs text-muted hover:text-fg-muted"
               >
                 Clear all
               </button>
             </div>
           </div>
-          <div className="border border-gray-300 rounded-md p-3 max-h-48 overflow-y-auto">
+          <div className="border border-border rounded-md p-3 max-h-48 overflow-y-auto">
             <div className="space-y-2">
               {users.map(user => (
-                <label key={user.id} className="flex items-center hover:bg-gray-50 p-1 rounded cursor-pointer">
+                <label key={user.id} className="flex items-center hover:bg-surface p-1 rounded cursor-pointer">
                   <input
                     type="checkbox"
                     checked={formData.developerIds.includes(user.id)}
                     onChange={() => toggleDeveloper(user.id)}
-                    className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                    className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-border rounded"
                   />
-                  <span className="ml-2 text-sm text-gray-700">
+                  <span className="ml-2 text-sm text-fg-muted">
                     {user.name}
-                    <span className="text-gray-400 ml-1">({user.email})</span>
+                    <span className="text-muted ml-1">({user.email})</span>
                   </span>
                 </label>
               ))}
             </div>
           </div>
           {formData.developerIds.length > 0 && (
-            <p className="mt-1 text-xs text-gray-500">
+            <p className="mt-1 text-xs text-muted">
               Selected: {users.filter(u => formData.developerIds.includes(u.id)).map(u => u.name).join(', ')}
             </p>
           )}
@@ -370,7 +370,7 @@ export default function EditProjectPage({ params }: { params: Promise<{ id: stri
 
         <div className="grid grid-cols-2 gap-6">
           <div>
-            <label htmlFor="clientName" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="clientName" className="block text-sm font-medium text-fg-muted">
               Client Name
             </label>
             <input
@@ -378,12 +378,12 @@ export default function EditProjectPage({ params }: { params: Promise<{ id: stri
               id="clientName"
               value={formData.clientName}
               onChange={(e) => setFormData({ ...formData, clientName: e.target.value })}
-              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+              className="mt-1 block w-full border-border rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
             />
           </div>
 
           <div>
-            <label htmlFor="clientEmail" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="clientEmail" className="block text-sm font-medium text-fg-muted">
               Client Email
             </label>
             <input
@@ -391,14 +391,14 @@ export default function EditProjectPage({ params }: { params: Promise<{ id: stri
               id="clientEmail"
               value={formData.clientEmail}
               onChange={(e) => setFormData({ ...formData, clientEmail: e.target.value })}
-              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+              className="mt-1 block w-full border-border rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
             />
           </div>
         </div>
 
         <div className="grid grid-cols-2 gap-6">
           <div>
-            <label htmlFor="startDate" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="startDate" className="block text-sm font-medium text-fg-muted">
               Start Date
             </label>
             <input
@@ -406,12 +406,12 @@ export default function EditProjectPage({ params }: { params: Promise<{ id: stri
               id="startDate"
               value={formData.startDate}
               onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
-              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+              className="mt-1 block w-full border-border rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
             />
           </div>
 
           <div>
-            <label htmlFor="targetDelivery" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="targetDelivery" className="block text-sm font-medium text-fg-muted">
               Target Delivery
             </label>
             <input
@@ -419,13 +419,13 @@ export default function EditProjectPage({ params }: { params: Promise<{ id: stri
               id="targetDelivery"
               value={formData.targetDelivery}
               onChange={(e) => setFormData({ ...formData, targetDelivery: e.target.value })}
-              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+              className="mt-1 block w-full border-border rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
             />
           </div>
         </div>
 
         <div>
-          <label htmlFor="notes" className="block text-sm font-medium text-gray-700">
+          <label htmlFor="notes" className="block text-sm font-medium text-fg-muted">
             Notes
           </label>
           <textarea
@@ -433,14 +433,14 @@ export default function EditProjectPage({ params }: { params: Promise<{ id: stri
             rows={4}
             value={formData.notes}
             onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+            className="mt-1 block w-full border-border rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
           />
         </div>
 
         <div className="flex justify-end space-x-3">
           <Link
             href={projectId ? `/projects/${projectId}` : '/'}
-            className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            className="px-4 py-2 border border-border rounded-md shadow-sm text-sm font-medium text-fg-muted bg-white hover:bg-surface focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
           >
             Cancel
           </Link>

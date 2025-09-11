@@ -223,12 +223,12 @@ export default async function ActivityPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-surface">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Activity</h1>
-          <p className="text-gray-600 mt-1">Track all team activity and project updates</p>
+          <h1 className="text-3xl font-bold text-fg">Activity</h1>
+          <p className="text-muted mt-1">Track all team activity and project updates</p>
         </div>
 
         {/* KPI Tiles */}
@@ -262,39 +262,39 @@ export default async function ActivityPage() {
         {/* Filters */}
         <div className="mb-6 flex items-center gap-4">
           <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted" />
             <input
               type="text"
               placeholder="Search activity..."
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full pl-10 pr-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
-          <button className="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center gap-2">
+          <button className="px-4 py-2 bg-white border border-border rounded-lg hover:bg-surface flex items-center gap-2">
             <Filter className="w-4 h-4" />
             Filter
           </button>
         </div>
 
         {/* Activity Timeline */}
-        <div className="bg-white rounded-2xl border border-gray-200">
+        <div className="bg-white rounded-2xl border border-border">
           <div className="px-6 py-4 border-b">
             <h2 className="text-lg font-semibold flex items-center gap-2">
-              <Clock className="w-5 h-5 text-gray-600" />
+              <Clock className="w-5 h-5 text-muted" />
               Timeline
             </h2>
           </div>
           
-          <div className="divide-y divide-gray-100">
+          <div className="divide-y divide-surface">
             {Object.entries(groupedActivities).slice(0, 7).map(([date, dayActivities]) => (
               <div key={date} className="p-6">
                 {/* Date Header */}
                 <div className="flex items-center mb-4">
                   <div className="flex-shrink-0 w-24">
-                    <p className="text-sm font-medium text-gray-900">{getDateLabel(date)}</p>
-                    <p className="text-xs text-gray-500">{dayActivities.length} activities</p>
+                    <p className="text-sm font-medium text-fg">{getDateLabel(date)}</p>
+                    <p className="text-xs text-muted">{dayActivities.length} activities</p>
                   </div>
                   <div className="flex-1 ml-4">
-                    <div className="h-px bg-gray-200" />
+                    <div className="h-px bg-border" />
                   </div>
                 </div>
                 
@@ -308,7 +308,7 @@ export default async function ActivityPage() {
                       purple: 'bg-purple-100',
                       indigo: 'bg-indigo-100',
                       amber: 'bg-amber-100'
-                    }[activity.color] || 'bg-gray-100'
+                    }[activity.color] || 'bg-surface'
                     
                     const iconColor = {
                       blue: 'text-blue-600',
@@ -316,7 +316,7 @@ export default async function ActivityPage() {
                       purple: 'text-purple-600',
                       indigo: 'text-indigo-600',
                       amber: 'text-amber-600'
-                    }[activity.color] || 'text-gray-600'
+                    }[activity.color] || 'text-muted'
 
                     return (
                       <div key={`${activity.type}-${idx}`} className="flex items-start gap-3">
@@ -324,15 +324,15 @@ export default async function ActivityPage() {
                           <Icon className={`w-4 h-4 ${iconColor}`} />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm text-gray-900">
+                          <p className="text-sm text-fg">
                             {getActivityDescription(activity)}
                           </p>
                           {activity.type === 'update' && activity.data.body && (
-                            <p className="text-sm text-gray-600 mt-1 line-clamp-2">
+                            <p className="text-sm text-muted mt-1 line-clamp-2">
                               {activity.data.body}
                             </p>
                           )}
-                          <p className="text-xs text-gray-500 mt-1">
+                          <p className="text-xs text-muted mt-1">
                             {formatDistanceToNow(activity.date, { addSuffix: true })}
                           </p>
                         </div>
@@ -352,7 +352,7 @@ export default async function ActivityPage() {
 
           {/* Load More */}
           <div className="px-6 py-4 border-t">
-            <button className="w-full py-2 text-sm text-gray-600 hover:text-gray-900 font-medium">
+            <button className="w-full py-2 text-sm text-muted hover:text-fg font-medium">
               Load older activities
             </button>
           </div>

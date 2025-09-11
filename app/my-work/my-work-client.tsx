@@ -119,19 +119,19 @@ export function MyWorkClient({
   const getPriorityColor = (task: any) => {
     if (task.priority === 'HIGH') return 'text-red-600 bg-red-50'
     if (task.priority === 'MEDIUM') return 'text-amber-600 bg-amber-50'
-    return 'text-gray-600 bg-gray-50'
+    return 'text-muted bg-surface'
   }
 
   const TaskCard = ({ task }: { task: any }) => (
     <div className={cn(
-      'group bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-all',
+      'group bg-white rounded-lg border border-border p-4 hover:shadow-md transition-all',
       activeTaskId === task.id && 'ring-2 ring-blue-500 bg-blue-50'
     )}>
       <div className="flex items-start justify-between">
         <div className="flex-1">
           <Link 
             href={`/projects/${task.projectId}`}
-            className="text-sm font-medium text-gray-900 hover:text-blue-600"
+            className="text-sm font-medium text-fg hover:text-blue-600"
           >
             {task.title}
           </Link>
@@ -147,13 +147,13 @@ export function MyWorkClient({
                 {task.project.portfolio.name}
               </span>
             )}
-            <span className="text-xs text-gray-500">{task.project.title}</span>
+            <span className="text-xs text-muted">{task.project.title}</span>
             {task.dueDate && (
               <span className={cn(
                 'text-xs flex items-center gap-1',
                 isPast(new Date(task.dueDate)) && !isToday(new Date(task.dueDate)) 
                   ? 'text-red-600' 
-                  : 'text-gray-500'
+                  : 'text-muted'
               )}>
                 <Calendar className="w-3 h-3" />
                 {format(new Date(task.dueDate), 'MMM d')}
@@ -182,26 +182,26 @@ export function MyWorkClient({
           ) : (
             <button
               onClick={() => handleStartTimer(task.id)}
-              className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
+              className="p-2 text-muted hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
               title="Start timer"
             >
               <PlayCircle className="w-5 h-5" />
             </button>
           )}
           <div className="relative group/menu">
-            <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-lg transition-colors">
+            <button className="p-2 text-muted hover:text-muted hover:bg-surface rounded-lg transition-colors">
               <MoreHorizontal className="w-5 h-5" />
             </button>
-            <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 hidden group-hover/menu:block z-10">
+            <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-border hidden group-hover/menu:block z-10">
               <button
                 onClick={() => handleSnooze(task.id)}
-                className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50"
+                className="w-full px-4 py-2 text-left text-sm text-fg-muted hover:bg-surface"
               >
                 Snooze to tomorrow
               </button>
               <Link
                 href={`/projects/${task.projectId}`}
-                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                className="block px-4 py-2 text-sm text-fg-muted hover:bg-surface"
               >
                 View in project
               </Link>
@@ -213,24 +213,24 @@ export function MyWorkClient({
   )
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-surface">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header with Timer */}
         <div className="mb-8 flex items-start justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">My Work</h1>
-            <p className="text-gray-600 mt-1">
+            <h1 className="text-3xl font-bold text-fg">My Work</h1>
+            <p className="text-muted mt-1">
               Focus on what matters today, {currentUser.name}
             </p>
           </div>
           <div className="flex items-center gap-4">
             {/* Today's Time */}
-            <div className="bg-white rounded-lg border border-gray-200 px-4 py-3">
+            <div className="bg-white rounded-lg border border-border px-4 py-3">
               <div className="flex items-center gap-3">
-                <Timer className="w-5 h-5 text-gray-400" />
+                <Timer className="w-5 h-5 text-muted" />
                 <div>
-                  <p className="text-xs text-gray-500">Today's time</p>
-                  <p className="text-lg font-semibold text-gray-900">
+                  <p className="text-xs text-muted">Today's time</p>
+                  <p className="text-lg font-semibold text-fg">
                     {formatMinutes(todayMinutes)}
                   </p>
                 </div>
@@ -262,8 +262,8 @@ export function MyWorkClient({
 
         {/* Portfolio Breakdown */}
         {projects.length > 0 && (
-          <div className="bg-white rounded-xl border border-gray-200 p-6 mb-8">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">My Projects by Portfolio</h2>
+          <div className="bg-white rounded-xl border border-border p-6 mb-8">
+            <h2 className="text-lg font-semibold text-fg mb-4">My Projects by Portfolio</h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {Array.from(new Set(projects.map(p => p.portfolio?.id).filter(Boolean))).map(portfolioId => {
                 const portfolio = projects.find(p => p.portfolio?.id === portfolioId)?.portfolio
@@ -278,8 +278,8 @@ export function MyWorkClient({
                       style={{ backgroundColor: portfolio.color || '#6b7280' }}
                     />
                     <div>
-                      <p className="text-sm font-medium text-gray-900">{portfolio.name}</p>
-                      <p className="text-xs text-gray-500">
+                      <p className="text-sm font-medium text-fg">{portfolio.name}</p>
+                      <p className="text-xs text-muted">
                         {portfolioProjects.length} projects • {portfolioTasks.length} tasks
                       </p>
                     </div>
@@ -292,47 +292,47 @@ export function MyWorkClient({
 
         {/* Stats Bar */}
         <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
-          <div className="bg-white rounded-lg border border-gray-200 p-4">
+          <div className="bg-white rounded-lg border border-border p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs text-gray-500">Today</p>
-                <p className="text-2xl font-bold text-gray-900">{buckets.today.length}</p>
+                <p className="text-xs text-muted">Today</p>
+                <p className="text-2xl font-bold text-fg">{buckets.today.length}</p>
               </div>
               <Target className="w-5 h-5 text-blue-500" />
             </div>
           </div>
-          <div className="bg-white rounded-lg border border-gray-200 p-4">
+          <div className="bg-white rounded-lg border border-border p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs text-gray-500">Upcoming</p>
-                <p className="text-2xl font-bold text-gray-900">{buckets.upcoming.length}</p>
+                <p className="text-xs text-muted">Upcoming</p>
+                <p className="text-2xl font-bold text-fg">{buckets.upcoming.length}</p>
               </div>
               <Calendar className="w-5 h-5 text-purple-500" />
             </div>
           </div>
-          <div className="bg-white rounded-lg border border-gray-200 p-4">
+          <div className="bg-white rounded-lg border border-border p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs text-gray-500">Overdue</p>
+                <p className="text-xs text-muted">Overdue</p>
                 <p className="text-2xl font-bold text-red-600">{buckets.overdue.length}</p>
               </div>
               <AlertCircle className="w-5 h-5 text-red-500" />
             </div>
           </div>
-          <div className="bg-white rounded-lg border border-gray-200 p-4">
+          <div className="bg-white rounded-lg border border-border p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs text-gray-500">Completed Today</p>
+                <p className="text-xs text-muted">Completed Today</p>
                 <p className="text-2xl font-bold text-green-600">{completedToday.length}</p>
               </div>
               <CheckCircle className="w-5 h-5 text-green-500" />
             </div>
           </div>
-          <div className="bg-white rounded-lg border border-gray-200 p-4">
+          <div className="bg-white rounded-lg border border-border p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs text-gray-500">Projects</p>
-                <p className="text-2xl font-bold text-gray-900">{projects.length}</p>
+                <p className="text-xs text-muted">Projects</p>
+                <p className="text-2xl font-bold text-fg">{projects.length}</p>
               </div>
               <TrendingUp className="w-5 h-5 text-indigo-500" />
             </div>
@@ -349,7 +349,7 @@ export function MyWorkClient({
                 'px-4 py-2 rounded-lg font-medium transition-all',
                 selectedBucket === bucket
                   ? 'bg-blue-600 text-white'
-                  : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'
+                  : 'bg-white text-fg-muted hover:bg-surface border border-border'
               )}
             >
               <span className="flex items-center gap-2">
@@ -362,7 +362,7 @@ export function MyWorkClient({
                   'px-2 py-0.5 text-xs rounded-full',
                   bucket === 'overdue' && buckets[bucket].length > 0
                     ? 'bg-red-100 text-red-700'
-                    : 'bg-gray-100 text-gray-700'
+                    : 'bg-surface text-fg-muted'
                 )}>
                   {buckets[bucket].length}
                 </span>
