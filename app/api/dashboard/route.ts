@@ -1,168 +1,102 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
-import { subDays, isFuture } from 'date-fns'
-
 export const runtime = 'nodejs'
+import { NextResponse } from 'next/server'
+import { prisma } from '@/lib/db'
 
-export async function GET(request: NextRequest) {
-  const searchParams = request.nextUrl.searchParams
-  const userId = searchParams.get('userId')
-
-  if (!userId) {
-    return NextResponse.json({ error: 'User ID required' }, { status: 400 })
-  }
-
-  const now = new Date()
-  const last7Days = subDays(now, 7)
-  const last30Days = subDays(now, 30)
-
+export async function GET() {
   try {
-    // Get user's projects (as PM or developer)
-    const userProjects = await prisma.project.findMany({
-      where: {
-        OR: [
-          { pmId: userId },
-          { developers: { some: { id: userId } } }
-        ]
-      },
+    // Fetch all portfolios with their project stats
+    const portfolios = await prisma.portfolio.findMany({
+      orderBy: { order: 'asc' },
       include: {
-        pm: true,
-        developers: true,
-        _count: {
-          select: {
-            tasks: true,
-            updates: true
+        projects: {
+          include: {
+            tasks: true
           }
         }
       }
     })
 
-    // Get user's tasks
-    const userTasks = await prisma.task.findMany({
-      where: {
-        assigneeId: userId,
-        status: { not: 'Done' }
-      },
-      include: {
-        project: {
-          select: {
-            id: true,
-            title: true
-          }
-        }
-      },
-      orderBy: { createdAt: 'desc' }
+    // Calculate portfolio stats
+    const portfolioStats = portfolios.map(portfolio => {
+      const projects = portfolio.projects
+      const inProgressCount = projects.filter(p => p.status === 'In Progress' || p.status === 'IN_PROGRESS').length
+      const blockedCount = projects.filter(p => p.status === 'Blocked' || p.status === 'BLOCKED').length
+      const liveCount = projects.filter(p => p.stage === 'Live').length
+      
+      // Calculate average health (mock calculation for now)
+      const healthyProjects = projects.filter(p => p.health === 'Green').length
+      const warningProjects = projects.filter(p => p.health === 'Amber').length
+      const avgHealth = projects.length > 0 
+        ? Math.round(((healthyProjects * 100) + (warningProjects * 60)) / projects.length)
+        : 100
+
+      return {
+        id: portfolio.id,
+        key: portfolio.key,
+        name: portfolio.name,
+        color: portfolio.color || '#6B7280',
+        description: portfolio.description || '',
+        projectCount: projects.length,
+        inProgressCount,
+        blockedCount,
+        liveCount,
+        avgHealth
+      }
     })
 
-    // Get recent updates from user's projects
-    const recentUpdates = await prisma.update.findMany({
+    // Find projects that need attention
+    const needsAttentionProjects = await prisma.project.findMany({
       where: {
-        project: {
-          OR: [
-            { pmId: userId },
-            { developers: { some: { id: userId } } }
-          ]
-        },
-        createdAt: { gte: last7Days }
+        OR: [
+          { status: 'Blocked' },
+          { status: 'BLOCKED' },
+          { health: 'Red' },
+          {
+            AND: [
+              { targetDelivery: { not: null } },
+              { targetDelivery: { lte: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000) } }
+            ]
+          }
+        ]
       },
       include: {
-        author: true,
-        project: true
+        portfolio: true
       },
-      orderBy: { createdAt: 'desc' },
       take: 10
     })
 
-    // Calculate stats
-    const allUserTasks = await prisma.task.findMany({
-      where: { assigneeId: userId }
+    const needsAttention = needsAttentionProjects.map(project => {
+      let issue = ''
+      let severity: 'high' | 'medium' | 'low' = 'low'
+
+      if (project.status === 'Blocked' || project.status === 'BLOCKED') {
+        issue = 'Project is blocked'
+        severity = 'high'
+      } else if (project.health === 'Red') {
+        issue = 'Health status is critical'
+        severity = 'high'
+      } else if (project.targetDelivery && project.targetDelivery <= new Date(Date.now() + 3 * 24 * 60 * 60 * 1000)) {
+        const daysUntilDue = Math.ceil((project.targetDelivery.getTime() - Date.now()) / (24 * 60 * 60 * 1000))
+        issue = `Due in ${daysUntilDue} days`
+        severity = daysUntilDue <= 1 ? 'high' : 'medium'
+      }
+
+      return {
+        id: project.id,
+        title: project.title,
+        portfolio: project.portfolio?.name || 'Unassigned',
+        portfolioColor: project.portfolio?.color || '#6B7280',
+        issue,
+        severity
+      }
     })
-
-    const stats = {
-      totalProjects: userProjects.length,
-      activeProjects: userProjects.filter(p => p.status === 'IN_PROGRESS').length,
-      totalTasks: allUserTasks.length,
-      completedTasks: allUserTasks.filter(t => t.status === 'Done').length,
-      pendingTasks: userTasks.length,
-      overdueTasks: userProjects.filter(p => 
-        p.targetDelivery && new Date(p.targetDelivery) < now && p.status !== 'COMPLETED'
-      ).length
-    }
-
-    // Get upcoming deadlines
-    const upcomingDeadlines = userProjects
-      .filter(p => p.targetDelivery && isFuture(new Date(p.targetDelivery)))
-      .sort((a, b) => {
-        const dateA = a.targetDelivery ? new Date(a.targetDelivery).getTime() : 0
-        const dateB = b.targetDelivery ? new Date(b.targetDelivery).getTime() : 0
-        return dateA - dateB
-      })
-      .slice(0, 5)
-
-    // Get team activity
-    const [allUpdates, allTasks, allProjects] = await Promise.all([
-      prisma.update.findMany({
-        where: { createdAt: { gte: last7Days } },
-        include: {
-          author: true,
-          project: true
-        },
-        orderBy: { createdAt: 'desc' },
-        take: 20
-      }),
-      prisma.task.findMany({
-        where: {
-          status: 'Done',
-          updatedAt: { gte: last7Days }
-        },
-        include: {
-          assignee: true,
-          project: true
-        },
-        orderBy: { updatedAt: 'desc' },
-        take: 20
-      }),
-      prisma.project.findMany({
-        where: {
-          lastUpdatedAt: { gte: last7Days }
-        },
-        include: {
-          pm: true
-        },
-        orderBy: { lastUpdatedAt: 'desc' },
-        take: 10
-      })
-    ])
-
-    // Format team activity
-    const teamActivity = [
-      ...allUpdates.map(update => ({
-        type: 'update',
-        date: update.createdAt,
-        description: `${update.author.name} posted an update in ${update.project.title}`
-      })),
-      ...allTasks.map(task => ({
-        type: 'task',
-        date: task.updatedAt,
-        description: `${task.assignee?.name || 'Someone'} completed "${task.title}" in ${task.project.title}`
-      })),
-      ...allProjects.map(project => ({
-        type: 'project',
-        date: project.lastUpdatedAt,
-        description: `${project.title} was updated by ${project.pm.name}`
-      }))
-    ].sort((a, b) => b.date.getTime() - a.date.getTime()).slice(0, 10)
 
     return NextResponse.json({
-      userProjects,
-      userTasks,
-      recentUpdates,
-      stats,
-      upcomingDeadlines,
-      teamActivity
+      portfolios: portfolioStats,
+      needsAttention
     })
   } catch (error) {
-    console.error('Dashboard API error:', error)
+    console.error('Error fetching dashboard data:', error)
     return NextResponse.json(
       { error: 'Failed to fetch dashboard data' },
       { status: 500 }

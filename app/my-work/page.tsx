@@ -32,6 +32,7 @@ export default async function MyWorkPage() {
         project: {
           include: {
             pm: true,
+            portfolio: true,
           }
         },
         assignee: true,
@@ -53,6 +54,7 @@ export default async function MyWorkPage() {
         pm: true,
         developers: true,
         tasks: true,
+        portfolio: true,
       }
     }),
     prisma.timeEntry.findMany({

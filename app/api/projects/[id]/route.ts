@@ -47,6 +47,9 @@ export async function PATCH(
     const {
       title,
       branch,
+      portfolioId,
+      stage,
+      health,
       pmId,
       developerIds,
       clientName,
@@ -76,6 +79,9 @@ export async function PATCH(
       data: {
         title,
         branch,
+        portfolioId: portfolioId || null,
+        stage: stage || 'Discovery',
+        health: health || null,
         pmId,
         developers: {
           set: developerIds.map((id: string) => ({ id })),

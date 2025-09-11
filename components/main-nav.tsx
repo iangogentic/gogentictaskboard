@@ -16,15 +16,15 @@ import {
 const navItems = [
   {
     href: '/',
+    label: 'Mission Control',
+    icon: LayoutDashboard,
+    description: 'Portfolio overview'
+  },
+  {
+    href: '/projects',
     label: 'Projects',
     icon: FolderOpen,
     description: 'All projects'
-  },
-  {
-    href: '/dashboard',
-    label: 'Dashboard',
-    icon: LayoutDashboard,
-    description: 'Metrics & insights'
   },
   {
     href: '/my-work',
@@ -33,10 +33,16 @@ const navItems = [
     description: 'Your tasks'
   },
   {
-    href: '/users',
-    label: 'Team',
-    icon: Users,
-    description: 'Team members'
+    href: '/dashboard',
+    label: 'Dashboard',
+    icon: BarChart3,
+    description: 'Analytics & metrics'
+  },
+  {
+    href: '/reports',
+    label: 'Reports',
+    icon: FileText,
+    description: 'Detailed reports'
   },
   {
     href: '/activity',
@@ -45,10 +51,10 @@ const navItems = [
     description: 'Recent updates'
   },
   {
-    href: '/reports',
-    label: 'Reports',
-    icon: BarChart3,
-    description: 'Analytics'
+    href: '/team',
+    label: 'Team',
+    icon: Users,
+    description: 'Team members'
   }
 ]
 

@@ -45,12 +45,22 @@ export function ProjectRowCard({ project, onQuickAction, className }: ProjectRow
     ? Math.round((project.taskCounts.completed / project.taskCounts.total) * 100) || 0
     : project.progress || 0;
 
-  const owners = [
-    ...(project.pm ? [project.pm] : []),
-    ...(project.developers || [])
-  ].slice(0, 3);
-
-  const overflowCount = (project.developers?.length || 0) + (project.pm ? 1 : 0) - 3;
+  // Deduplicate owners to avoid duplicate keys
+  const uniqueOwners = new Map();
+  
+  if (project.pm) {
+    uniqueOwners.set(project.pm.id, project.pm);
+  }
+  
+  (project.developers || []).forEach(dev => {
+    if (!uniqueOwners.has(dev.id)) {
+      uniqueOwners.set(dev.id, dev);
+    }
+  });
+  
+  const owners = Array.from(uniqueOwners.values()).slice(0, 3);
+  const totalUniqueOwners = uniqueOwners.size;
+  const overflowCount = Math.max(0, totalUniqueOwners - 3);
 
   return (
     <div

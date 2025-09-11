@@ -136,6 +136,17 @@ export function MyWorkClient({
             {task.title}
           </Link>
           <div className="flex items-center gap-3 mt-2">
+            {task.project.portfolio && (
+              <span 
+                className="text-xs px-2 py-0.5 rounded-full"
+                style={{ 
+                  backgroundColor: `${task.project.portfolio.color}20`,
+                  color: task.project.portfolio.color 
+                }}
+              >
+                {task.project.portfolio.name}
+              </span>
+            )}
             <span className="text-xs text-gray-500">{task.project.title}</span>
             {task.dueDate && (
               <span className={cn(
@@ -248,6 +259,36 @@ export function MyWorkClient({
             )}
           </div>
         </div>
+
+        {/* Portfolio Breakdown */}
+        {projects.length > 0 && (
+          <div className="bg-white rounded-xl border border-gray-200 p-6 mb-8">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">My Projects by Portfolio</h2>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {Array.from(new Set(projects.map(p => p.portfolio?.id).filter(Boolean))).map(portfolioId => {
+                const portfolio = projects.find(p => p.portfolio?.id === portfolioId)?.portfolio
+                if (!portfolio) return null
+                const portfolioProjects = projects.filter(p => p.portfolio?.id === portfolioId)
+                const portfolioTasks = tasks.filter(t => t.project.portfolio?.id === portfolioId)
+                
+                return (
+                  <div key={portfolioId} className="flex items-center gap-3">
+                    <div 
+                      className="w-3 h-3 rounded-full"
+                      style={{ backgroundColor: portfolio.color }}
+                    />
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">{portfolio.name}</p>
+                      <p className="text-xs text-gray-500">
+                        {portfolioProjects.length} projects • {portfolioTasks.length} tasks
+                      </p>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )}
 
         {/* Stats Bar */}
         <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">

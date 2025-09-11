@@ -11,6 +11,19 @@ datasource db {
   directUrl = env("DIRECT_URL")    // direct (migrate/Studio)
 }
 
+model Portfolio {
+  id          String     @id @default(cuid())
+  key         String     @unique   // "cortex" | "solutions" | "launchpad" | "fisher"
+  name        String
+  color       String?              // e.g. "#5B67F1"
+  description String?
+  order       Int        @default(0)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  
+  projects    Project[]
+}
+
 model User {
   id          String     @id @default(cuid())
   name        String
@@ -24,12 +37,17 @@ model User {
   tasks          Task[]
   updates        Update[]
   timeEntries    TimeEntry[]
+  savedViews     SavedView[]
 }
 
 model Project {
   id               String       @id @default(cuid())
   title            String
-  branch           String       // CORTEX, SOLUTIONS, FISHER
+  branch           String       // Legacy field - keeping for compatibility
+  portfolioId      String?      // New portfolio relation
+  portfolio        Portfolio?   @relation(fields: [portfolioId], references: [id])
+  stage            String       @default("Discovery") // Discovery | Build | Launch | Live
+  health           String?      // Green | Amber | Red
   pmId             String
   pm               User         @relation("ProjectPM", fields: [pmId], references: [id])
   developers       User[]       @relation("ProjectDevs")
@@ -48,6 +66,9 @@ model Project {
   tasks            Task[]
   updates          Update[]
   deliverables     Deliverable[]
+  
+  @@index([portfolioId, stage, health])
+  @@index([portfolioId, status])
 }
 
 model Task {
@@ -101,4 +122,21 @@ model TimeEntry {
   date        DateTime   // When the work was done
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
+}
+
+model SavedView {
+  id          String     @id @default(cuid())
+  userId      String
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name        String
+  viewType    String     // "projects" | "tasks" | "portfolio"
+  filters     Json       // JSON object storing filter state
+  sortBy      String?    // Sort field
+  sortOrder   String?    // "asc" | "desc"
+  isDefault   Boolean    @default(false)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  
+  @@unique([userId, name, viewType])
+  @@index([userId, viewType])
 }

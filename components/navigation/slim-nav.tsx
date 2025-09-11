@@ -4,15 +4,16 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { 
   FolderOpen, User, BarChart3, FileText, Activity, Users,
-  Menu, X, LogOut
+  Menu, X, LogOut, LayoutDashboard, Briefcase
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { CommandPalette } from '@/components/ui/command-palette';
 import { useState } from 'react';
 
 const navItems = [
-  { href: '/', label: 'Projects', icon: FolderOpen },
-  { href: '/my-work', label: 'My Work', icon: User },
+  { href: '/', label: 'Mission Control', icon: LayoutDashboard },
+  { href: '/projects', label: 'Projects', icon: FolderOpen },
+  { href: '/my-work', label: 'My Work', icon: Briefcase },
   { href: '/dashboard', label: 'Dashboard', icon: BarChart3 },
   { href: '/reports', label: 'Reports', icon: FileText },
   { href: '/activity', label: 'Activity', icon: Activity },

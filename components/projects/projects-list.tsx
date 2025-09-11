@@ -15,10 +15,11 @@ import {
 interface ProjectsListProps {
   projects: any[]
   users: any[]
+  portfolios?: any[]
   loading?: boolean
 }
 
-export function ProjectsList({ projects, users, loading = false }: ProjectsListProps) {
+export function ProjectsList({ projects, users, portfolios = [], loading = false }: ProjectsListProps) {
   const [searchQuery, setSearchQuery] = useState('')
   const [activeFilters, setActiveFilters] = useState<string[]>([])
   const [customViews, setCustomViews] = useState<SavedView[]>([])
@@ -26,10 +27,21 @@ export function ProjectsList({ projects, users, loading = false }: ProjectsListP
 
   // Filter configuration
   const filters = [
-    { label: 'Solutions', value: 'branch:SOLUTIONS', icon: <GitBranch className="w-3 h-3" /> },
-    { label: 'In Progress', value: 'status:IN_PROGRESS', icon: <Clock className="w-3 h-3" /> },
-    { label: 'Blocked', value: 'status:BLOCKED', icon: <AlertCircle className="w-3 h-3" /> },
-    { label: 'Completed', value: 'status:COMPLETED', icon: <CheckCircle className="w-3 h-3" /> },
+    // Portfolio filters
+    ...portfolios.map(p => ({
+      label: p.name,
+      value: `portfolio:${p.id}`,
+      icon: <div className="w-3 h-3 rounded-full" style={{ backgroundColor: p.color }} />
+    })),
+    // Status filters
+    { label: 'In Progress', value: 'status:In Progress', icon: <Clock className="w-3 h-3" /> },
+    { label: 'Blocked', value: 'status:Blocked', icon: <AlertCircle className="w-3 h-3" /> },
+    { label: 'Done', value: 'status:Done', icon: <CheckCircle className="w-3 h-3" /> },
+    // Stage filters
+    { label: 'Discovery', value: 'stage:Discovery', icon: <div className="w-3 h-3 bg-blue-500 rounded-full" /> },
+    { label: 'Build', value: 'stage:Build', icon: <div className="w-3 h-3 bg-purple-500 rounded-full" /> },
+    { label: 'Launch', value: 'stage:Launch', icon: <div className="w-3 h-3 bg-amber-500 rounded-full" /> },
+    { label: 'Live', value: 'stage:Live', icon: <div className="w-3 h-3 bg-green-500 rounded-full" /> },
     { label: 'My Projects', value: 'mine', icon: <Users className="w-3 h-3" /> },
   ]
 
@@ -65,7 +77,17 @@ export function ProjectsList({ projects, users, loading = false }: ProjectsListP
         return false
       }
 
-      // Branch filter
+      // Portfolio filter
+      if (filterCriteria.portfolio && project.portfolioId !== filterCriteria.portfolio) {
+        return false
+      }
+
+      // Stage filter
+      if (filterCriteria.stage && project.stage !== filterCriteria.stage) {
+        return false
+      }
+
+      // Branch filter (legacy)
       if (filterCriteria.branch && project.branch !== filterCriteria.branch) {
         return false
       }

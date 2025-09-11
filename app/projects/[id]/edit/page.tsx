@@ -12,10 +12,21 @@ interface User {
   email: string
 }
 
+interface Portfolio {
+  id: string
+  key: string
+  name: string
+  color: string | null
+}
+
 interface Project {
   id: string
   title: string
   branch: string
+  portfolioId: string | null
+  portfolio: Portfolio | null
+  stage: string
+  health: string | null
   pmId: string
   developers: User[]
   clientName: string
@@ -31,12 +42,16 @@ export default function EditProjectPage({ params }: { params: Promise<{ id: stri
   const [projectId, setProjectId] = useState<string | null>(null)
   const [project, setProject] = useState<Project | null>(null)
   const [users, setUsers] = useState<User[]>([])
+  const [portfolios, setPortfolios] = useState<Portfolio[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   
   const [formData, setFormData] = useState({
     title: '',
     branch: '',
+    portfolioId: '',
+    stage: 'Discovery',
+    health: 'Green',
     pmId: '',
     developerIds: [] as string[],
     clientName: '',
@@ -60,24 +75,31 @@ export default function EditProjectPage({ params }: { params: Promise<{ id: stri
   const fetchProjectAndUsers = async () => {
     if (!projectId) return
     try {
-      const [projectRes, usersRes] = await Promise.all([
+      const [projectRes, usersRes, portfoliosRes] = await Promise.all([
         fetch(`/api/projects/${projectId}`),
-        fetch('/api/users')
+        fetch('/api/users'),
+        fetch('/api/portfolios')
       ])
 
       if (!projectRes.ok) throw new Error('Failed to fetch project')
       if (!usersRes.ok) throw new Error('Failed to fetch users')
+      if (!portfoliosRes.ok) throw new Error('Failed to fetch portfolios')
 
       const projectData = await projectRes.json()
       const usersData = await usersRes.json()
+      const portfoliosData = await portfoliosRes.json()
 
       setProject(projectData)
       setUsers(usersData)
+      setPortfolios(portfoliosData)
 
       // Populate form with existing data
       setFormData({
         title: projectData.title,
         branch: projectData.branch,
+        portfolioId: projectData.portfolioId || '',
+        stage: projectData.stage || 'Discovery',
+        health: projectData.health || 'Green',
         pmId: projectData.pmId,
         developerIds: projectData.developers.map((d: User) => d.id),
         clientName: projectData.clientName || '',
@@ -181,23 +203,43 @@ export default function EditProjectPage({ params }: { params: Promise<{ id: stri
 
         <div className="grid grid-cols-2 gap-6">
           <div>
-            <label htmlFor="branch" className="block text-sm font-medium text-gray-700">
-              Branch
+            <label htmlFor="portfolio" className="block text-sm font-medium text-gray-700">
+              Portfolio
             </label>
             <select
-              id="branch"
-              required
-              value={formData.branch}
-              onChange={(e) => setFormData({ ...formData, branch: e.target.value })}
+              id="portfolio"
+              value={formData.portfolioId}
+              onChange={(e) => setFormData({ ...formData, portfolioId: e.target.value })}
               className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
             >
-              <option value="">Select branch</option>
-              {Object.entries(BRANCHES).map(([key, value]) => (
-                <option key={key} value={value}>{value.charAt(0) + value.slice(1).toLowerCase()}</option>
+              <option value="">Select portfolio</option>
+              {portfolios.map(portfolio => (
+                <option key={portfolio.id} value={portfolio.id}>
+                  {portfolio.name}
+                </option>
               ))}
             </select>
           </div>
 
+          <div>
+            <label htmlFor="stage" className="block text-sm font-medium text-gray-700">
+              Stage
+            </label>
+            <select
+              id="stage"
+              value={formData.stage}
+              onChange={(e) => setFormData({ ...formData, stage: e.target.value })}
+              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+            >
+              <option value="Discovery">Discovery</option>
+              <option value="Build">Build</option>
+              <option value="Launch">Launch</option>
+              <option value="Live">Live</option>
+            </select>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-3 gap-6">
           <div>
             <label htmlFor="status" className="block text-sm font-medium text-gray-700">
               Status
@@ -213,6 +255,39 @@ export default function EditProjectPage({ params }: { params: Promise<{ id: stri
                 <option key={key} value={value}>
                   {value.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ')}
                 </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label htmlFor="health" className="block text-sm font-medium text-gray-700">
+              Health
+            </label>
+            <select
+              id="health"
+              value={formData.health}
+              onChange={(e) => setFormData({ ...formData, health: e.target.value })}
+              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+            >
+              <option value="Green">Green</option>
+              <option value="Amber">Amber</option>
+              <option value="Red">Red</option>
+            </select>
+          </div>
+
+          <div>
+            <label htmlFor="branch" className="block text-sm font-medium text-gray-700">
+              Branch (Legacy)
+            </label>
+            <select
+              id="branch"
+              value={formData.branch}
+              onChange={(e) => setFormData({ ...formData, branch: e.target.value })}
+              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm px-3 py-2 border"
+            >
+              <option value="">Select branch</option>
+              {Object.entries(BRANCHES).map(([key, value]) => (
+                <option key={key} value={value}>{value.charAt(0) + value.slice(1).toLowerCase()}</option>
               ))}
             </select>
           </div>

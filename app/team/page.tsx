@@ -8,7 +8,7 @@ import {
 export const revalidate = 60
 
 export default async function TeamPage() {
-  const [users, projects, tasks, recentActivity] = await Promise.all([
+  const [users, projects, tasks, recentActivity, portfolios] = await Promise.all([
     prisma.user.findMany({
       orderBy: { name: 'asc' },
     }),
@@ -16,6 +16,7 @@ export default async function TeamPage() {
       include: {
         pm: true,
         developers: true,
+        portfolio: true,
       },
     }),
     prisma.task.findMany({
@@ -33,6 +34,9 @@ export default async function TeamPage() {
       include: {
         author: true,
       },
+    }),
+    prisma.portfolio.findMany({
+      orderBy: { order: 'asc' },
     }),
   ])
 
@@ -73,6 +77,20 @@ export default async function TeamPage() {
       }).length
       return dayActivity
     })
+    
+    // Portfolio assignments
+    const portfolioProjects = new Map<string, number>()
+    const allUserProjects = [...managedProjects, ...developingProjects]
+    const uniqueProjects = Array.from(new Set(allUserProjects.map(p => p.id)))
+      .map(id => allUserProjects.find(p => p.id === id))
+      .filter(p => p?.portfolio)
+    
+    uniqueProjects.forEach(project => {
+      if (project?.portfolio) {
+        const current = portfolioProjects.get(project.portfolio.id) || 0
+        portfolioProjects.set(project.portfolio.id, current + 1)
+      }
+    })
 
     return {
       user,
@@ -87,6 +105,7 @@ export default async function TeamPage() {
       productivityScore,
       activityMap,
       totalUpdates: recentUpdates.length,
+      portfolioProjects,
     }
   })
 
@@ -245,6 +264,32 @@ export default async function TeamPage() {
                   ))}
                 </div>
               </div>
+
+              {/* Portfolio Distribution */}
+              {member.portfolioProjects.size > 0 && (
+                <div className="mt-4 pt-4 border-t">
+                  <p className="text-xs text-gray-500 mb-2">Portfolio Focus</p>
+                  <div className="flex gap-2 flex-wrap">
+                    {Array.from(member.portfolioProjects.entries()).map(([portfolioId, count]) => {
+                      const portfolio = portfolios.find(p => p.id === portfolioId)
+                      if (!portfolio) return null
+                      return (
+                        <span 
+                          key={portfolioId}
+                          className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs"
+                          style={{ 
+                            backgroundColor: `${portfolio.color}20`,
+                            color: portfolio.color 
+                          }}
+                        >
+                          {portfolio.name}
+                          <span className="font-medium">{count}</span>
+                        </span>
+                      )
+                    })}
+                  </div>
+                </div>
+              )}
 
               {/* Projects */}
               <div className="mt-4 pt-4 border-t flex items-center justify-between text-sm">
