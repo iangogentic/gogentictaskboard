@@ -112,7 +112,7 @@ async function getRecentActivity() {
       icon: GitBranch,
       color: 'indigo'
     })),
-    ...timeEntries.filter(e => e.endTime).map(entry => ({
+    ...timeEntries.map(entry => ({
       type: 'time_logged' as const,
       date: entry.date,
       data: entry,
@@ -142,9 +142,7 @@ export default async function ActivityPage() {
   const weekCompleted = tasks.filter(t => t.status === 'DONE').length
   const activeProjects = projects.filter(p => p.status === 'IN_PROGRESS').length
   const totalHours = timeEntries.reduce((sum, e) => {
-    if (!e.endTime) return sum
-    const duration = (new Date(e.endTime).getTime() - new Date(e.startTime).getTime()) / 3600000
-    return sum + duration
+    return sum + (e.minutes || 0) / 60
   }, 0)
 
   // Activity trends (mock data - would calculate from historical data)

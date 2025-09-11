@@ -65,18 +65,16 @@ export default async function MyWorkPage() {
       include: {
         task: true,
       },
-      orderBy: { startTime: 'desc' }
+      orderBy: { date: 'desc' }
     })
   ])
 
   // Calculate today's total time
   const todayMinutes = timeEntries.reduce((sum, entry) => {
-    const start = new Date(entry.startTime)
-    const end = entry.endTime ? new Date(entry.endTime) : new Date()
-    return sum + Math.floor((end.getTime() - start.getTime()) / 60000)
+    return sum + (entry.minutes || 0)
   }, 0)
 
-  const activeTimer = timeEntries.find(entry => !entry.endTime)
+  const activeTimer = null // Timer functionality would need separate implementation
 
   return <MyWorkClient 
     tasks={tasks}
