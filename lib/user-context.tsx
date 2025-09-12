@@ -32,13 +32,14 @@ export function UserProvider({ children }: { children: ReactNode }) {
       const data = await response.json()
       setUsers(data)
       
-      // Set default user (Ian) or first user
-      const defaultUser = data.find((u: User) => u.name === 'Ian') || data[0]
-      setCurrentUser(defaultUser)
-      
-      // Store in localStorage for persistence
-      if (defaultUser) {
-        localStorage.setItem('currentUserId', defaultUser.id)
+      // Don't auto-set a user - let auth handle this
+      // Check if there's a stored user ID from previous session
+      const storedUserId = localStorage.getItem('currentUserId')
+      if (storedUserId) {
+        const storedUser = data.find((u: User) => u.id === storedUserId)
+        if (storedUser) {
+          setCurrentUser(storedUser)
+        }
       }
     } catch (error) {
       console.error('Failed to fetch users:', error)

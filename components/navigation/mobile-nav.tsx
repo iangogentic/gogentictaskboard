@@ -8,6 +8,7 @@ import {
   FileText, Activity, Users, LogOut, ChevronRight 
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { handleSignOut } from '@/app/actions/auth';
 
 const navItems = [
   { href: '/', label: 'Mission Control', icon: Home },
@@ -133,10 +134,7 @@ export function MobileNav({ user }: MobileNavProps) {
           {/* Menu Footer */}
           <div className="p-4 border-t border-border">
             <button
-              onClick={() => {
-                // Handle sign out
-                console.log('Sign out');
-              }}
+              onClick={() => handleSignOut()}
               className="flex items-center gap-3 w-full p-3 text-fg hover:bg-surface rounded-lg transition-colors"
             >
               <LogOut className="w-5 h-5" />
