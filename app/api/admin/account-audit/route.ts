@@ -10,7 +10,7 @@ export async function GET(req: NextRequest) {
   }
   
   const adminKey = req.headers.get('X-ADMIN-KEY')
-  if (!adminKey || adminKey !== process.env.ADMIN_FIX_TOKEN) {
+  if (!adminKey || adminKey !== process.env.ADMIN_FIX_TOKEN?.trim()) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
   
