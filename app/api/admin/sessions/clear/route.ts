@@ -1,10 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 
+export const runtime = 'nodejs'
+
 export async function POST(req: NextRequest) {
   // Security checks
+  console.log('AUTH_DEBUG value:', process.env.AUTH_DEBUG)
   if (process.env.AUTH_DEBUG !== 'true') {
-    return NextResponse.json({ error: 'Admin endpoint disabled' }, { status: 403 })
+    return NextResponse.json({ 
+      error: 'Admin endpoint disabled',
+      auth_debug: process.env.AUTH_DEBUG,
+      env_keys: Object.keys(process.env).filter(k => k.includes('AUTH')).length
+    }, { status: 403 })
   }
   
   const adminKey = req.headers.get('X-ADMIN-KEY')
