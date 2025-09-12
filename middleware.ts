@@ -8,8 +8,7 @@ export default auth((req) => {
   const isLoggedIn = !!req.auth
   const isAuthRoute = nextUrl.pathname.startsWith('/login') || 
                       nextUrl.pathname.startsWith('/register')
-  const isPublicRoute = nextUrl.pathname === '/' || 
-                        nextUrl.pathname.startsWith('/api/auth')
+  const isPublicRoute = nextUrl.pathname.startsWith('/api/auth')
 
   // Redirect logged-in users away from auth pages
   if (isAuthRoute && isLoggedIn) {
@@ -19,6 +18,15 @@ export default auth((req) => {
   // Redirect non-logged-in users to login page
   if (!isLoggedIn && !isAuthRoute && !isPublicRoute) {
     return Response.redirect(new URL('/login', nextUrl))
+  }
+  
+  // Redirect root to dashboard if logged in, login if not
+  if (nextUrl.pathname === '/') {
+    if (isLoggedIn) {
+      return Response.redirect(new URL('/dashboard', nextUrl))
+    } else {
+      return Response.redirect(new URL('/login', nextUrl))
+    }
   }
 
   return null
