@@ -236,6 +236,79 @@ async function cleanupAuth(dryRun = true) {
 cleanupAuth(process.argv.includes('--execute') ? false : true)
 ```
 
+## Database Constraints
+
+Add this migration to ensure uniqueness at the DB level:
+```sql
+-- Ensure no duplicate provider accounts
+CREATE UNIQUE INDEX IF NOT EXISTS account_provider_unique
+  ON "Account"(provider, "providerAccountId");
+```
+
+## Specific Aakansha Check
+
+```sql
+-- Check who is linked to Google accounts
+SELECT 
+  a."userId", 
+  u.email, 
+  u.name,
+  a.provider, 
+  a."providerAccountId"
+FROM "Account" a
+JOIN "User" u ON u.id = a."userId"
+WHERE a.provider = 'google'
+ORDER BY u.email;
+
+-- Find all Aakansha sessions
+SELECT 
+  s.id as session_id, 
+  s."userId", 
+  u.email,
+  u.name,
+  s."sessionToken",
+  s.expires,
+  CASE 
+    WHEN s.expires < NOW() THEN 'EXPIRED'
+    ELSE 'ACTIVE'
+  END as status
+FROM "Session" s 
+JOIN "User" u ON u.id = s."userId"
+WHERE LOWER(u.email) LIKE '%aakansha%'
+ORDER BY s.expires DESC;
+
+-- Check if any Google providerAccountId is linked to Aakansha incorrectly
+SELECT 
+  a."userId",
+  u.email,
+  a."providerAccountId",
+  a.id as account_id
+FROM "Account" a
+JOIN "User" u ON u.id = a."userId"
+WHERE a.provider = 'google'
+  AND LOWER(u.email) LIKE '%aakansha%';
+```
+
+## Emergency Repair
+
+If someone's Google account is incorrectly linked to Aakansha:
+```sql
+-- 1. First backup the problematic records
+SELECT * FROM "Account" 
+WHERE provider = 'google' 
+  AND "providerAccountId" = 'GOOGLE_ID_HERE';
+
+-- 2. Delete the incorrect link
+-- DELETE FROM "Account" 
+-- WHERE provider = 'google'
+--   AND "providerAccountId" = 'GOOGLE_ID_HERE'
+--   AND "userId" = 'WRONG_USER_ID';
+
+-- 3. Clear all sessions for affected users
+-- DELETE FROM "Session"
+-- WHERE "userId" IN ('USER_ID_1', 'USER_ID_2');
+```
+
 ## Emergency Contacts
 
 If auth is completely broken:
