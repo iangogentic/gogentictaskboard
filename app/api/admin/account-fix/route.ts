@@ -5,7 +5,7 @@ export const runtime = 'nodejs'
 
 export async function POST(req: NextRequest) {
   // Security checks
-  if (process.env.AUTH_DEBUG !== 'true') {
+  if (process.env.AUTH_DEBUG?.trim() !== 'true') {
     return NextResponse.json({ error: 'Admin endpoint disabled' }, { status: 403 })
   }
   
