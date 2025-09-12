@@ -44,6 +44,8 @@ model User {
   updates        Update[]
   timeEntries    TimeEntry[]
   savedViews     SavedView[]
+  auditLogs      AuditLog[]
+  integrationCredentials IntegrationCredential[]
 }
 
 model Account {
@@ -107,6 +109,7 @@ model Project {
   tasks            Task[]
   updates          Update[]
   deliverables     Deliverable[]
+  documents        Document[]
   
   @@index([portfolioId, stage, health])
   @@index([portfolioId, status])
@@ -180,4 +183,68 @@ model SavedView {
   
   @@unique([userId, name, viewType])
   @@index([userId, viewType])
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorId    String
+  actor      User     @relation(fields: [actorId], references: [id])
+  action     String   // "create" | "update" | "delete" | "execute"
+  targetType String   // "project" | "task" | "update" | "deliverable" | "agent_action"
+  targetId   String?
+  payload    Json     // JSON object with details of the action
+  status     String   // "planned" | "executed" | "failed"
+  error      String?  // Error message if status is "failed"
+  createdAt  DateTime @default(now())
+  
+  @@index([actorId, createdAt])
+  @@index([targetType, targetId])
+}
+
+model IntegrationCredential {
+  id        String   @id @default(cuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String   // "slack" | "gdrive" | "github"
+  data      Json     // Encrypted credentials JSON
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@unique([userId, type])
+  @@index([type, active])
+}
+
+model Document {
+  id         String      @id @default(cuid())
+  projectId  String
+  project    Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  title      String
+  source     String      // "slack" | "gdrive" | "upload" | "manual"
+  sourceId   String?     // External ID from source system
+  url        String?
+  mimeType   String?
+  size       Int?        // File size in bytes
+  content    String?     @db.Text // Full text content for search
+  metadata   Json?       // Additional metadata from source
+  embeddings Embedding[]
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  
+  @@index([projectId, source])
+  @@index([sourceId])
+}
+
+model Embedding {
+  id         String   @id @default(cuid())
+  documentId String
+  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  chunkIndex Int      // Order of chunk in document
+  text       String   @db.Text // Original text chunk
+  vector     Float[]  // Vector embedding
+  metadata   Json?    // Additional metadata (page number, section, etc)
+  createdAt  DateTime @default(now())
+  
+  @@unique([documentId, chunkIndex])
+  @@index([documentId])
 }
