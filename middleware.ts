@@ -15,18 +15,9 @@ export default auth((req) => {
     return Response.redirect(new URL('/dashboard', nextUrl))
   }
 
-  // Redirect non-logged-in users to login page
+  // Redirect non-logged-in users to login page (including root)
   if (!isLoggedIn && !isAuthRoute && !isPublicRoute) {
     return Response.redirect(new URL('/login', nextUrl))
-  }
-  
-  // Redirect root to dashboard if logged in, login if not
-  if (nextUrl.pathname === '/') {
-    if (isLoggedIn) {
-      return Response.redirect(new URL('/dashboard', nextUrl))
-    } else {
-      return Response.redirect(new URL('/login', nextUrl))
-    }
   }
 
   return null

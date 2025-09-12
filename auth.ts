@@ -16,15 +16,6 @@ export const {
     error: "/auth/error",
   },
   callbacks: {
-    async signIn({ user, account, profile }) {
-      // For OAuth providers, ensure we're creating/linking the correct user
-      if (account?.provider === "google" || account?.provider === "github") {
-        // This will create a new user if they don't exist, or link to existing
-        // NextAuth handles this with the PrismaAdapter
-        return true
-      }
-      return true
-    },
     async session({ token, session }) {
       if (token.sub && session.user) {
         session.user.id = token.sub
@@ -36,14 +27,7 @@ export const {
 
       return session
     },
-    async jwt({ token, user, account }) {
-      // When user signs in, add their info to the token
-      if (user) {
-        token.id = user.id
-        token.email = user.email
-        token.name = user.name
-      }
-      
+    async jwt({ token }) {
       if (!token.sub) return token
 
       const existingUser = await prisma.user.findUnique({
