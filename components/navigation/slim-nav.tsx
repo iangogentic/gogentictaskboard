@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils';
 import { CommandPalette } from '@/components/ui/command-palette';
 import { useState } from 'react';
 import { handleSignOut } from '@/app/actions/auth';
+import WhoAmI from '@/app/_components/WhoAmI';
 
 const navItems = [
   { href: '/', label: 'Mission Control', icon: LayoutDashboard },
@@ -88,6 +89,7 @@ export function SlimNav({ projects, users, currentUser }: SlimNavProps) {
                 <div className="text-right">
                   <p className="text-sm font-medium text-fg">{currentUser.name}</p>
                   <p className="text-xs text-muted">{currentUser.email}</p>
+                  <WhoAmI />
                 </div>
                 <button
                   onClick={() => handleSignOut()}

@@ -1,14 +1,42 @@
 export const runtime = 'nodejs'
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
+import { auth } from '@/auth'
 
 export async function GET() {
   try {
-    // Fetch all portfolios with their project stats
+    // Get current user from NextAuth session
+    const session = await auth()
+    
+    if (!session?.user?.email) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
+
+    const currentUser = await prisma.user.findUnique({
+      where: { email: session.user.email },
+      select: { id: true, email: true, name: true }
+    })
+
+    if (!currentUser) {
+      return NextResponse.json(
+        { error: 'User not found' },
+        { status: 403 }
+      )
+    }
+    // Fetch portfolios with projects where user is involved (PM or developer)
     const portfolios = await prisma.portfolio.findMany({
       orderBy: { order: 'asc' },
       include: {
         projects: {
+          where: {
+            OR: [
+              { pmId: currentUser.id },
+              { developers: { some: { id: currentUser.id } } }
+            ]
+          },
           include: {
             tasks: true
           }
@@ -44,17 +72,27 @@ export async function GET() {
       }
     })
 
-    // Find projects that need attention
+    // Find projects that need attention (only user's projects)
     const needsAttentionProjects = await prisma.project.findMany({
       where: {
-        OR: [
-          { status: 'Blocked' },
-          { status: 'BLOCKED' },
-          { health: 'Red' },
+        AND: [
           {
-            AND: [
-              { targetDelivery: { not: null } },
-              { targetDelivery: { lte: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000) } }
+            OR: [
+              { pmId: currentUser.id },
+              { developers: { some: { id: currentUser.id } } }
+            ]
+          },
+          {
+            OR: [
+              { status: 'Blocked' },
+              { status: 'BLOCKED' },
+              { health: 'Red' },
+              {
+                AND: [
+                  { targetDelivery: { not: null } },
+                  { targetDelivery: { lte: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000) } }
+                ]
+              }
             ]
           }
         ]

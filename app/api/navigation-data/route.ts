@@ -1,16 +1,22 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { cookies } from 'next/headers'
+import { auth } from '@/auth'
 
 export const runtime = 'nodejs'
 
 export async function GET() {
   try {
-    // Get current user from cookie
-    const cookieStore = await cookies()
-    const userEmail = cookieStore.get('currentUser')?.value
+    // Get current user from NextAuth session
+    const session = await auth()
+    
+    if (!session?.user?.email) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
 
-    const [projects, users] = await Promise.all([
+    const [projects, users, currentUser] = await Promise.all([
       prisma.project.findMany({
         select: {
           id: true,
@@ -27,11 +33,15 @@ export async function GET() {
           email: true,
         },
       }),
+      prisma.user.findUnique({
+        where: { email: session.user.email },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      })
     ])
-
-    const currentUser = userEmail 
-      ? users.find(u => u.email === userEmail)
-      : users[0]
 
     return NextResponse.json({
       projects,
