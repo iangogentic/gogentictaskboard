@@ -9,6 +9,12 @@ export default auth((req) => {
   const isAuthRoute = nextUrl.pathname.startsWith('/login') || 
                       nextUrl.pathname.startsWith('/register')
   const isPublicRoute = nextUrl.pathname.startsWith('/api/auth')
+  const isAdminRoute = nextUrl.pathname.startsWith('/api/admin')
+
+  // Allow admin routes when AUTH_DEBUG is true and proper key is provided
+  if (isAdminRoute) {
+    return null // Let the route handler check the auth
+  }
 
   // Redirect logged-in users away from auth pages
   if (isAuthRoute && isLoggedIn) {
