@@ -1,15 +1,20 @@
 import { prisma } from '@/lib/prisma'
 import { MyWorkClient } from './my-work-client'
-import { cookies } from 'next/headers'
+import { auth } from '@/auth'
+import { redirect } from 'next/navigation'
 
 export const revalidate = 60
 
 export default async function MyWorkPage() {
-  const cookieStore = await cookies()
-  const currentUserEmail = cookieStore.get('currentUser')?.value || 'ian@gogentic.com'
+  // Get the authenticated user from NextAuth
+  const session = await auth()
+  
+  if (!session?.user?.email) {
+    redirect('/login')
+  }
   
   const currentUser = await prisma.user.findUnique({
-    where: { email: currentUserEmail }
+    where: { email: session.user.email }
   })
 
   if (!currentUser) {
@@ -17,7 +22,7 @@ export default async function MyWorkPage() {
       <div className="min-h-screen bg-surface flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-2xl font-bold text-fg mb-2">User Not Found</h2>
-          <p className="text-muted">Please select a user from the user switcher</p>
+          <p className="text-muted">Your email ({session.user.email}) is not registered in the system</p>
         </div>
       </div>
     )
