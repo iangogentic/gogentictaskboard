@@ -293,11 +293,11 @@ export default function ProjectDetail({ project, users }: ProjectDetailProps) {
                         <div className="flex items-start justify-between">
                           <div className="flex items-start space-x-3">
                             <div className="h-8 w-8 rounded-full bg-border flex items-center justify-center text-xs font-medium text-fg">
-                              {update.author.name.slice(0, 2).toUpperCase()}
+                              {update.author.name?.slice(0, 2).toUpperCase() || 'NA'}
                             </div>
                             <div>
                               <div className="flex items-center space-x-2">
-                                <span className="font-medium text-sm">{update.author.name}</span>
+                                <span className="font-medium text-sm">{update.author.name || 'Unknown'}</span>
                                 <span className="text-xs text-muted">
                                   {format(new Date(update.createdAt), 'MMM d, h:mm a')}
                                 </span>

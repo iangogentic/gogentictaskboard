@@ -186,10 +186,10 @@ export default async function TeamPage() {
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-indigo-600 flex items-center justify-center text-white font-bold">
-                    {member.user.name.charAt(0)}
+                    {member.user.name?.charAt(0) || '?'}
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-fg">{member.user.name}</h3>
+                    <h3 className="text-lg font-semibold text-fg">{member.user.name || 'Unknown'}</h3>
                     <div className="flex items-center gap-2 mt-1">
                       <span className="flex items-center gap-1 text-sm text-muted">
                         {getRoleIcon(member.user.email)}
