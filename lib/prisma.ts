@@ -14,3 +14,5 @@ export const prisma =
   });
 
 if (process.env.NODE_ENV !== 'production') g.prisma = prisma;
+
+export default prisma;
