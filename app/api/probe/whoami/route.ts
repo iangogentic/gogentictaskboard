@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { auth } from '@/auth'
-import { prisma } from '@/lib/prisma'
+import { getAuthedUser } from '@/lib/getAuthedUser'
 import { cookies } from 'next/headers'
 
 export const runtime = 'nodejs'
@@ -15,38 +15,45 @@ export async function GET() {
       name: session.user.name
     } : null
 
-    // Get app's current user (mimic my-work logic)
-    const cookieStore = await cookies()
-    const currentUserEmail = cookieStore.get('currentUser')?.value || 'ian@gogentic.com'
-    
+    // Get app's current user using the new helper
     let appUser = null
     let appUserSource = 'NOT_FOUND'
     
-    if (currentUserEmail) {
-      const user = await prisma.user.findUnique({
-        where: { email: currentUserEmail }
-      })
-      
-      if (user) {
-        appUser = {
-          id: user.id,
-          email: user.email,
-          name: user.name
+    try {
+      if (session?.user?.email) {
+        const user = await getAuthedUser()
+        if (user) {
+          appUser = {
+            id: user.id,
+            email: user.email,
+            name: user.name
+          }
+          appUserSource = 'getAuthedUser() helper using NextAuth session'
         }
-        appUserSource = `Cookie 'currentUser' = '${currentUserEmail}' -> DB lookup`
       }
+    } catch (e) {
+      appUser = { error: (e as Error).message }
+      appUserSource = 'Error calling getAuthedUser()'
+    }
+
+    // Also check for any lingering cookies (should be empty in production)
+    const cookieStore = await cookies()
+    const legacyCookies = {
+      currentUser: cookieStore.get('currentUser')?.value || null,
+      demoUser: cookieStore.get('demo-user')?.value || null,
+      userSwitcher: cookieStore.get('user-switcher')?.value || null
     }
 
     // Check if they match
-    const equal = sessionUser?.id === appUser?.id
+    const equal = !!sessionUser?.id && !!appUser && 'id' in appUser && sessionUser.id === appUser.id
 
     return NextResponse.json({
       sessionUser,
       appUser,
       appUserSource,
       equal,
-      cookieValue: currentUserEmail,
-      fallback: 'ian@gogentic.com'
+      legacyCookies,
+      environment: process.env.NODE_ENV
     })
   } catch (error) {
     console.error('Whoami probe error:', error)
