@@ -11,7 +11,18 @@
     "migrate:deploy": "prisma migrate deploy",
     "migrate:dev": "prisma migrate dev",
     "studio": "prisma studio",
-    "test": "playwright test"
+    "test": "playwright test",
+    "lint": "next lint",
+    "lint:fix": "next lint --fix",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "prettier --write"
+    ],
+    "*.{js,jsx,json,md}": [
+      "prettier --write"
+    ]
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
@@ -22,6 +33,7 @@
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
     "@prisma/client": "^6.16.0",
+    "@sentry/nextjs": "^10.11.0",
     "bcryptjs": "^3.0.2",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
@@ -40,6 +52,15 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@typescript-eslint/eslint-plugin": "^8.43.0",
+    "@typescript-eslint/parser": "^8.43.0",
+    "eslint": "^9.35.0",
+    "eslint-config-next": "^15.5.3",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.1.6",
+    "prettier": "^3.6.2",
     "prisma": "^6.16.0",
     "tailwindcss": "^4",
     "tsx": "^4.20.5",
