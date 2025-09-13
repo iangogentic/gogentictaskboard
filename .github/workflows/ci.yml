@@ -68,6 +68,7 @@ jobs:
       - name: Setup test database
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/testdb
+          DIRECT_URL: postgresql://postgres:postgres@localhost:5432/testdb
         run: |
           npx prisma generate
           npx prisma db push
@@ -75,6 +76,7 @@ jobs:
       - name: Run tests
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/testdb
+          DIRECT_URL: postgresql://postgres:postgres@localhost:5432/testdb
         run: npm test
         continue-on-error: true # Temporary until tests are created
 
@@ -95,6 +97,11 @@ jobs:
         run: npm ci
       
       - name: Build application
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/testdb' }}
+          DIRECT_URL: ${{ secrets.DIRECT_URL || 'postgresql://postgres:postgres@localhost:5432/testdb' }}
+          NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET || 'test-secret' }}
+          NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL || 'http://localhost:3000' }}
         run: npm run build
       
       - name: Upload build artifacts

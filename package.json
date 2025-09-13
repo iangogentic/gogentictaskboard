@@ -12,8 +12,8 @@
     "migrate:dev": "prisma migrate dev",
     "studio": "prisma studio",
     "test": "playwright test",
-    "lint": "eslint . --ext .ts,.tsx",
-    "lint:fix": "eslint . --ext .ts,.tsx --fix",
+    "lint": "next lint",
+    "lint:fix": "next lint --fix",
     "prepare": "husky"
   },
   "lint-staged": {
