@@ -1,11 +1,16 @@
-import { prisma } from '@/lib/db'
-import { notFound } from 'next/navigation'
-import ProjectDetail from '@/components/project-detail'
+import { prisma } from "@/lib/db";
+import { notFound } from "next/navigation";
+import ProjectDetail from "@/components/project-detail";
 
-export const revalidate = 60
+export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
-export default async function ProjectPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params
+export default async function ProjectPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
   const [project, users] = await Promise.all([
     prisma.project.findUnique({
       where: { id },
@@ -14,23 +19,23 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
         developers: true,
         tasks: {
           include: { assignee: true },
-          orderBy: { order: 'asc' },
+          orderBy: { order: "asc" },
         },
         updates: {
           include: { author: true },
-          orderBy: { createdAt: 'desc' },
+          orderBy: { createdAt: "desc" },
         },
         deliverables: {
-          orderBy: { updatedAt: 'desc' },
+          orderBy: { updatedAt: "desc" },
         },
       },
     }),
     prisma.user.findMany(),
-  ])
+  ]);
 
   if (!project) {
-    notFound()
+    notFound();
   }
 
-  return <ProjectDetail project={project} users={users} />
+  return <ProjectDetail project={project} users={users} />;
 }
