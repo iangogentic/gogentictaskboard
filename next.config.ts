@@ -30,7 +30,7 @@ const nextConfig: NextConfig = {
 // Sentry configuration
 const sentryWebpackPluginOptions = {
   org: "gogentic",
-  project: "portal",
+  project: "gogentic-portal",
   authToken: process.env.SENTRY_AUTH_TOKEN,
   silent: true,
   widenClientFileUpload: true,
