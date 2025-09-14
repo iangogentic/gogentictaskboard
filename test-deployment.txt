@@ -1,0 +1,4 @@
+Testing automatic deployment trigger
+Time: 2025-09-14
+Branch: experimental
+This file is just to test if Vercel automatically deploys when we push to GitHub.
