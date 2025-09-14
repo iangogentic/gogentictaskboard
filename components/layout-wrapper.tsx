@@ -5,7 +5,6 @@ import { ToastProvider } from '@/providers/toast-provider'
 import { SlimNav } from '@/components/navigation/slim-nav'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { prisma } from '@/lib/prisma'
 
 export default function LayoutWrapper({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
