@@ -1,0 +1,70 @@
+export const runtime = "nodejs";
+import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { AgentService } from "@/lib/agent/service";
+
+const agentService = AgentService.getInstance();
+
+// Execute an approved plan
+export async function POST(request: NextRequest) {
+  try {
+    const authSession = await getServerSession(authOptions);
+    if (!authSession?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const body = await request.json();
+    const { sessionId } = body;
+
+    if (!sessionId) {
+      return NextResponse.json(
+        { error: "Session ID is required" },
+        { status: 400 }
+      );
+    }
+
+    // Check session ownership
+    const session = await agentService.getSessionStatus(sessionId);
+    if (!session) {
+      return NextResponse.json({ error: "Session not found" }, { status: 404 });
+    }
+
+    if (
+      session.userId !== authSession.user.id &&
+      authSession.user.role !== "admin"
+    ) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    if (!session.plan) {
+      return NextResponse.json(
+        { error: "No plan to execute" },
+        { status: 400 }
+      );
+    }
+
+    if (!session.plan.approvedAt) {
+      return NextResponse.json({ error: "Plan not approved" }, { status: 400 });
+    }
+
+    // Check if already executing
+    if (agentService.isSessionActive(sessionId)) {
+      return NextResponse.json(
+        { error: "Session is already executing" },
+        { status: 409 }
+      );
+    }
+
+    // Execute plan
+    const result = await agentService.executePlan(sessionId);
+
+    return NextResponse.json({ result });
+  } catch (error: any) {
+    console.error("Failed to execute plan:", error);
+    return NextResponse.json(
+      { error: error.message || "Failed to execute plan" },
+      { status: 500 }
+    );
+  }
+}
