@@ -256,12 +256,12 @@ export default function AgentConsole({ isOpen, onClose, projectId }: AgentConsol
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Ask me to do something..."
-            disabled={isLoading || (currentPlan && !currentPlan.approved)}
+            disabled={isLoading || (currentPlan && !currentPlan.approved) || false}
             className="flex-1 px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-100"
           />
           <button
             type="submit"
-            disabled={isLoading || !input.trim() || (currentPlan && !currentPlan.approved)}
+            disabled={isLoading || !input.trim() || (currentPlan && !currentPlan.approved) || false}
             className="p-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50"
           >
             {isLoading ? (

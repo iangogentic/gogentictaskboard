@@ -94,7 +94,7 @@ async function executeTaskTool(action: string, params: any, userId: string) {
           assigneeId: params.assigneeId || userId,
         },
       })
-      return { id: task.id, type: 'task', ...task }
+      return { type: 'task', ...task }
       
     case 'update':
       const updatedTask = await prisma.task.update({
@@ -104,7 +104,7 @@ async function executeTaskTool(action: string, params: any, userId: string) {
           assigneeId: params.assigneeId,
         },
       })
-      return { id: updatedTask.id, type: 'task', ...updatedTask }
+      return { type: 'task', ...updatedTask }
       
     default:
       throw new Error(`Unknown task action: ${action}`)
@@ -120,7 +120,7 @@ async function executeProjectTool(action: string, params: any, userId: string) {
           status: params.status,
         },
       })
-      return { id: project.id, type: 'project', ...project }
+      return { type: 'project', ...project }
       
     default:
       throw new Error(`Unknown project action: ${action}`)
@@ -137,7 +137,7 @@ async function executeUpdateTool(action: string, params: any, userId: string) {
           body: params.body || 'Status update',
         },
       })
-      return { id: update.id, type: 'update', ...update }
+      return { type: 'update', ...update }
       
     default:
       throw new Error(`Unknown update action: ${action}`)

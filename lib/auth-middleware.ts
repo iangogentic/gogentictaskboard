@@ -103,7 +103,7 @@ export async function checkProjectAccess(
     case 'view':
       return isPM || isDev || (role === 'pm' && hasPermission(role, 'canViewAllProjects'))
     case 'edit':
-      return isPM || (role === 'admin' && hasPermission(role, 'canEditAllProjects'))
+      return isPM
     case 'delete':
       return hasPermission(role, 'canDeleteProjects')
     default:
