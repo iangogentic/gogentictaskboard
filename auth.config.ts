@@ -1,6 +1,5 @@
-import type { NextAuthConfig } from "next-auth"
-import Google from "next-auth/providers/google"
-import GitHub from "next-auth/providers/github"
+import type { NextAuthConfig } from "next-auth";
+import Google from "next-auth/providers/google";
 
 // For Edge runtime (middleware), export OAuth-only config
 export default {
@@ -9,9 +8,6 @@ export default {
       clientId: process.env.AUTH_GOOGLE_ID,
       clientSecret: process.env.AUTH_GOOGLE_SECRET,
     }),
-    GitHub({
-      clientId: process.env.AUTH_GITHUB_ID,
-      clientSecret: process.env.AUTH_GITHUB_SECRET,
-    }),
+    // GitHub provider removed - credentials not configured
   ],
-} satisfies NextAuthConfig
+} satisfies NextAuthConfig;
