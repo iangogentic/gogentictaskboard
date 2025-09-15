@@ -1,6 +1,6 @@
 export const runtime = "nodejs";
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
+import { getServerSession } from "@/lib/auth";
 import { authOptions } from "@/lib/auth";
 import { AgentService } from "@/lib/agent/service";
 
@@ -9,7 +9,7 @@ const agentService = AgentService.getInstance();
 // Approve a plan
 export async function POST(request: NextRequest) {
   try {
-    const authSession = await getServerSession(authOptions);
+    const authSession = await getServerSession();
     if (!authSession?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }

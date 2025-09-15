@@ -295,3 +295,17 @@ export class AuditService {
 
 export const auditService = new AuditService();
 export const AuditLogger = AuditService;
+
+// Export logAction as a standalone function for backwards compatibility
+export async function logAction(params: {
+  userId: string;
+  action: string;
+  entity: string;
+  entityId?: string;
+  projectId?: string;
+  metadata?: any;
+  ipAddress?: string;
+  userAgent?: string;
+}): Promise<AuditEntry> {
+  return auditService.log(params);
+}

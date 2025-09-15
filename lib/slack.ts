@@ -439,3 +439,6 @@ export class SlackService {
     }
   }
 }
+
+// Export singleton instance as slackService
+export const slackService = SlackService.getInstance();

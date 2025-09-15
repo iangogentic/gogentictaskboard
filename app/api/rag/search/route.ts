@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
+import { getServerSession } from "@/lib/auth";
 import { authOptions } from "@/lib/auth";
 import { embeddingService } from "@/lib/embeddings";
 import { checkPermissions } from "@/lib/rbac";
@@ -7,7 +7,7 @@ import { logAction } from "@/lib/audit";
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await getServerSession();
     if (!session) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
@@ -79,7 +79,7 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await getServerSession();
     if (!session) {
       return new NextResponse("Unauthorized", { status: 401 });
     }

@@ -263,3 +263,19 @@ export class AgentTools {
     };
   }
 }
+
+// Export singleton instance
+export const agentTools = new AgentTools();
+
+// Export helper functions for backwards compatibility
+export function getTool(toolName: string): any {
+  const tools = agentTools as any;
+  return tools[toolName]?.bind(tools);
+}
+
+export function getAllTools(): string[] {
+  return Object.getOwnPropertyNames(Object.getPrototypeOf(agentTools)).filter(
+    (name) =>
+      name !== "constructor" && typeof (agentTools as any)[name] === "function"
+  );
+}
