@@ -288,6 +288,7 @@ model IntegrationCredential {
   createdAt DateTime @default(now())
   updatedAt DateTime
 
+  @@unique([userId, type])
   @@index([type])
   @@index([userId])
 }
