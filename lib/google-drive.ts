@@ -1,7 +1,7 @@
 import { google, drive_v3 } from "googleapis";
 import { OAuth2Client } from "google-auth-library";
 import { prisma } from "@/lib/prisma";
-import { AuditLogger } from "@/lib/audit";
+import { auditService } from "@/lib/audit";
 
 export interface GoogleDriveConfig {
   clientId?: string;
@@ -145,27 +145,25 @@ export class GoogleDriveService {
       };
 
       // Log the operation
-      await AuditLogger.logSuccess(
+      await auditService.log({
         userId,
-        "create_drive_folder",
-        "integration",
-        folder.id,
-        {
+        action: "create_drive_folder",
+        entity: "integration",
+        entityId: folder.id,
+        metadata: {
           folderName,
           parentFolderId,
-        }
-      );
+        },
+      });
 
       return folder;
     } catch (error: any) {
-      await AuditLogger.logFailure(
+      await auditService.log({
         userId,
-        "create_drive_folder",
-        "integration",
-        error.message,
-        undefined,
-        { folderName, parentFolderId }
-      );
+        action: "create_drive_folder_failed",
+        entity: "integration",
+        metadata: { error: error.message, folderName, parentFolderId },
+      });
       throw error;
     }
   }
@@ -326,28 +324,26 @@ export class GoogleDriveService {
       };
 
       // Log the operation
-      await AuditLogger.logSuccess(
+      await auditService.log({
         userId,
-        "upload_drive_file",
-        "integration",
-        file.id,
-        {
+        action: "upload_drive_file",
+        entity: "integration",
+        entityId: file.id,
+        metadata: {
           fileName,
           mimeType,
           folderId,
-        }
-      );
+        },
+      });
 
       return file;
     } catch (error: any) {
-      await AuditLogger.logFailure(
+      await auditService.log({
         userId,
-        "upload_drive_file",
-        "integration",
-        error.message,
-        undefined,
-        { fileName, mimeType, folderId }
-      );
+        action: "upload_drive_file_failed",
+        entity: "integration",
+        metadata: { error: error.message, fileName, mimeType, folderId },
+      });
       throw error;
     }
   }
@@ -404,20 +400,20 @@ export class GoogleDriveService {
       const drive = await this.getDriveClient(userId);
       await drive.files.delete({ fileId });
 
-      await AuditLogger.logSuccess(
+      await auditService.log({
         userId,
-        "delete_drive_file",
-        "integration",
-        fileId
-      );
+        action: "delete_drive_file",
+        entity: "integration",
+        entityId: fileId,
+      });
     } catch (error: any) {
-      await AuditLogger.logFailure(
+      await auditService.log({
         userId,
-        "delete_drive_file",
-        "integration",
-        error.message,
-        fileId
-      );
+        action: "delete_drive_file_failed",
+        entity: "integration",
+        entityId: fileId,
+        metadata: { error: error.message },
+      });
       throw error;
     }
   }
@@ -442,22 +438,21 @@ export class GoogleDriveService {
         sendNotificationEmail: true,
       });
 
-      await AuditLogger.logSuccess(
+      await auditService.log({
         userId,
-        "share_drive_file",
-        "integration",
-        fileId,
-        { email, role }
-      );
+        action: "share_drive_file",
+        entity: "integration",
+        entityId: fileId,
+        metadata: { email, role },
+      });
     } catch (error: any) {
-      await AuditLogger.logFailure(
+      await auditService.log({
         userId,
-        "share_drive_file",
-        "integration",
-        error.message,
-        fileId,
-        { email, role }
-      );
+        action: "share_drive_file_failed",
+        entity: "integration",
+        entityId: fileId,
+        metadata: { error: error.message, email, role },
+      });
       throw error;
     }
   }
@@ -541,3 +536,4 @@ export class GoogleDriveService {
     }
   }
 }
+// Trigger recompile

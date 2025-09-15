@@ -1,6 +1,6 @@
 import { OpenAI } from "openai";
 import { OpenAIEmbeddings } from "@langchain/openai";
-import { RecursiveCharacterTextSplitter } from "@langchain/core/text_splitter";
+import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
 import { prisma } from "@/lib/prisma";
 import { Document, Embedding } from "@prisma/client";
 import pgvector from "pgvector/utils";

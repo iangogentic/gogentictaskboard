@@ -1,10 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import { embeddingService } from "@/lib/embeddings";
 import { slackService } from "@/lib/slack";
-import { googleDriveService } from "@/lib/google-drive";
+import { GoogleDriveService } from "@/lib/google-drive";
 import { Document } from "@prisma/client";
-import * as pdfParse from "pdf-parse";
-import * as mammoth from "mammoth";
 
 export class DocumentIngestionService {
   /**
@@ -145,7 +143,10 @@ export class DocumentIngestionService {
       const folderId = projectIntegration.value;
 
       // List files in folder
-      const files = await googleDriveService.listFiles(userId, folderId);
+      const files = await GoogleDriveService.getInstance().listFiles(
+        userId,
+        folderId
+      );
 
       let ingestedCount = 0;
 
@@ -159,7 +160,7 @@ export class DocumentIngestionService {
         ) {
           try {
             // Download file content
-            const content = await googleDriveService.downloadFile(
+            const content = await GoogleDriveService.getInstance().downloadFile(
               userId,
               file.id!
             );
@@ -168,17 +169,29 @@ export class DocumentIngestionService {
 
             // Extract text based on mime type
             if (file.mimeType === "application/pdf" && content.data) {
-              const pdf = await pdfParse(Buffer.from(content.data));
-              textContent = pdf.text;
+              try {
+                const pdfParse = await import("pdf-parse");
+                const pdf = await pdfParse.default(Buffer.from(content.data));
+                textContent = pdf.text;
+              } catch (error) {
+                console.error("Error parsing PDF:", error);
+                textContent = "";
+              }
             } else if (
               file.mimeType ===
                 "application/vnd.openxmlformats-officedocument.wordprocessingml.document" &&
               content.data
             ) {
-              const result = await mammoth.extractRawText({
-                buffer: Buffer.from(content.data),
-              });
-              textContent = result.value;
+              try {
+                const mammoth = await import("mammoth");
+                const result = await mammoth.extractRawText({
+                  buffer: Buffer.from(content.data),
+                });
+                textContent = result.value;
+              } catch (error) {
+                console.error("Error parsing Word document:", error);
+                textContent = "";
+              }
             } else if (typeof content.data === "string") {
               textContent = content.data;
             }
