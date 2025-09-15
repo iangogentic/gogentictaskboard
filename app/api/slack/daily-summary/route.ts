@@ -8,8 +8,9 @@ import { AuditLogger } from "@/lib/audit";
 
 // Send daily work summary to a user
 export async function POST(request: NextRequest) {
+  let session;
   try {
-    const session = await getServerSession();
+    session = await getServerSession();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -87,7 +88,7 @@ export async function POST(request: NextRequest) {
         title: task.title,
         status: task.status,
         projectTitle: task.project.title,
-        dueDate: task.dueDate,
+        dueDate: task.dueDate || undefined,
       })),
       blockedTasks: blockedTasks.map((task) => ({
         id: task.id,
@@ -172,24 +173,34 @@ export async function GET(request: NextRequest) {
         id: true,
         name: true,
         email: true,
-        integrationCredentials: {
-          where: {
-            type: "slack",
-          },
-          select: {
-            metadata: true,
-          },
-        },
       },
     });
+
+    // Get Slack integration credentials for all users
+    const integrations = await prisma.integrationCredential.findMany({
+      where: {
+        type: "slack",
+        userId: {
+          in: users.map((u) => u.id),
+        },
+      },
+      select: {
+        userId: true,
+        metadata: true,
+      },
+    });
+
+    const integrationMap = new Map(
+      integrations.map((i) => [i.userId, i.metadata])
+    );
 
     const userStatuses = users.map((user) => ({
       id: user.id,
       name: user.name,
       email: user.email,
-      slackConnected: user.integrationCredentials.length > 0,
-      lastSummary: user.integrationCredentials[0]?.metadata
-        ? (user.integrationCredentials[0].metadata as any).lastDailySummary
+      slackConnected: integrationMap.has(user.id),
+      lastSummary: integrationMap.has(user.id)
+        ? (integrationMap.get(user.id) as any)?.lastDailySummary || null
         : null,
     }));
 

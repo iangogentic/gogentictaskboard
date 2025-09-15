@@ -3,7 +3,7 @@ import { ScheduledTask, Workflow } from "@prisma/client";
 import { WorkflowEngine } from "./workflow-engine";
 import { AgentContext } from "./types";
 import * as cron from "node-cron";
-import { parseExpression } from "cron-parser";
+const cronParser = require("cron-parser");
 
 export class SchedulerService {
   private scheduledJobs: Map<string, cron.ScheduledTask> = new Map();
@@ -30,17 +30,22 @@ export class SchedulerService {
     // Calculate next run time
     const nextRun = this.calculateNextRun(cronExpression);
 
-    const task = await prisma.scheduledTask.create({
-      data: {
-        name,
-        cron: cronExpression,
-        workflowId,
-        nextRun,
-        status: "active",
-        metadata: metadata || {},
-        createdBy: this.context.user.id,
-      },
-    });
+    const { randomUUID } = require("crypto");
+    const data: any = {
+      id: randomUUID(),
+      name,
+      cron: cronExpression,
+      nextRun,
+      status: "active",
+      metadata: metadata || {},
+      createdBy: this.context.user.id,
+    };
+
+    if (workflowId) {
+      data.workflowId = workflowId;
+    }
+
+    const task = await prisma.scheduledTask.create({ data });
 
     // Schedule the task
     await this.scheduleTask(task);
@@ -57,16 +62,9 @@ export class SchedulerService {
     }
 
     // Create cron job
-    const job = cron.schedule(
-      task.cron,
-      async () => {
-        await this.executeScheduledTask(task.id);
-      },
-      {
-        scheduled: true,
-        timezone: "UTC",
-      }
-    );
+    const job = cron.schedule(task.cron, async () => {
+      await this.executeScheduledTask(task.id);
+    });
 
     // Store job reference
     this.scheduledJobs.set(task.id, job);
@@ -79,7 +77,7 @@ export class SchedulerService {
     try {
       const task = await prisma.scheduledTask.findUnique({
         where: { id: taskId },
-        include: { workflow: true },
+        include: { Workflow: true },
       });
 
       if (!task || task.status !== "active") {
@@ -96,7 +94,7 @@ export class SchedulerService {
       });
 
       // Execute workflow if linked
-      if (task.workflow) {
+      if (task.Workflow) {
         const engine = new WorkflowEngine(this.context);
         await engine.executeWorkflow(task.workflowId!, task.metadata as any);
       }
@@ -336,7 +334,7 @@ Health: ${project.health || "Not set"}
    * Calculate next run time for cron expression
    */
   private calculateNextRun(cronExpression: string): Date {
-    const interval = parseExpression(cronExpression);
+    const interval = cronParser.parseExpression(cronExpression);
     return interval.next().toDate();
   }
 
@@ -427,7 +425,7 @@ Health: ${project.health || "Not set"}
       orderBy: { nextRun: "asc" },
       take: limit,
       include: {
-        workflow: true,
+        Workflow: true,
       },
     });
   }

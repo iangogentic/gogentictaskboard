@@ -69,8 +69,7 @@ export class AgentEngine {
           }
         }
 
-        // Update current step in session
-        this.session.currentStep = this.session.plan.steps.indexOf(step) + 1;
+        // Track current step locally (not persisted to DB)
         await this.saveSession();
       }
 
@@ -96,7 +95,6 @@ export class AgentEngine {
       // Update session with result
       this.session.result = result;
       this.session.state = result.success ? "completed" : "failed";
-      this.session.completedAt = new Date();
       await this.saveSession();
 
       // Log execution
@@ -234,10 +232,9 @@ export class AgentEngine {
       data: {
         state: this.session.state,
         plan: this.session.plan as any,
-        currentStep: this.session.currentStep,
         result: this.session.result as any,
-        completedAt: this.session.completedAt,
         error: this.session.error,
+        updatedAt: new Date(),
       },
     });
   }
@@ -253,12 +250,14 @@ export class AgentEngine {
     projectId?: string,
     context?: Partial<AgentContext>
   ): Promise<AgentSession> {
+    const { randomUUID } = require("crypto");
     const session = await prisma.agentSession.create({
       data: {
+        id: randomUUID(),
         userId,
         projectId,
         state: "idle",
-        context: (context as any) || {},
+        updatedAt: new Date(),
       },
     });
 
@@ -267,7 +266,7 @@ export class AgentEngine {
       userId: session.userId,
       projectId: session.projectId || undefined,
       state: session.state as AgentState,
-      context: session.context as AgentContext,
+      context: (context as AgentContext) || {},
       startedAt: session.createdAt,
     };
   }
@@ -285,12 +284,10 @@ export class AgentEngine {
       userId: session.userId,
       projectId: session.projectId || undefined,
       state: session.state as AgentState,
-      plan: session.plan as AgentPlan | undefined,
-      currentStep: session.currentStep || undefined,
-      result: session.result as AgentResult | undefined,
-      context: session.context as AgentContext,
+      plan: session.plan as any as AgentPlan | undefined,
+      result: session.result as any as AgentResult | undefined,
+      context: {} as AgentContext, // context not stored in DB
       startedAt: session.createdAt,
-      completedAt: session.completedAt || undefined,
       error: session.error || undefined,
     };
   }

@@ -16,9 +16,11 @@ export class ConversationMemory {
     if (!conversation) {
       conversation = await prisma.conversation.create({
         data: {
+          id: `conv_${userId}_${projectId || "general"}_${Date.now()}`,
           userId,
           projectId,
           title: projectId ? "Project Chat" : "General Chat",
+          updatedAt: new Date(),
         },
       });
     }
@@ -29,6 +31,7 @@ export class ConversationMemory {
   async addMessage(conversationId: string, role: string, content: string) {
     return await prisma.message.create({
       data: {
+        id: `msg_${conversationId}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         conversationId,
         role,
         content,
@@ -57,7 +60,7 @@ export class ConversationMemory {
         },
       },
       include: {
-        document: true,
+        Document: true,
       },
       take: limit,
     });

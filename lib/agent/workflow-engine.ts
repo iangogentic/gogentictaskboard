@@ -51,12 +51,14 @@ export class WorkflowEngine {
   ): Promise<Workflow> {
     const workflow = await prisma.workflow.create({
       data: {
+        id: uuidv4(),
         name,
         description,
         steps: steps as any,
         triggers: triggers as any,
         createdBy: this.context.user.id,
         projectId,
+        updatedAt: new Date(),
       },
     });
 
@@ -88,11 +90,12 @@ export class WorkflowEngine {
       throw new Error("Workflow not found");
     }
 
-    const definition = workflow.steps as WorkflowStep[];
+    const definition = workflow.steps as unknown as WorkflowStep[];
 
     // Create execution record
     const execution = await prisma.workflowExecution.create({
       data: {
+        id: uuidv4(),
         workflowId,
         status: "running",
         context: {
@@ -149,9 +152,12 @@ export class WorkflowEngine {
         action: "execute_workflow",
         targetType: "workflow",
         targetId: workflowId,
-        payload: { executionId: execution.id, success: false },
+        payload: {
+          executionId: execution.id,
+          success: false,
+          error: error.message,
+        },
         status: "failed",
-        error: error.message,
       });
 
       throw error;
@@ -168,7 +174,7 @@ export class WorkflowEngine {
   ): Promise<Record<string, any>> {
     const results: Record<string, any> = {};
     const stepMap = new Map(steps.map((s) => [s.id, s]));
-    let currentStepId = steps[0]?.id;
+    let currentStepId: string | null = steps[0]?.id || null;
     let stepIndex = 0;
 
     while (currentStepId && stepIndex < steps.length * 2) {
@@ -380,8 +386,8 @@ export class WorkflowEngine {
     return await this.createWorkflow(
       name,
       template.description || `Cloned from ${template.name}`,
-      template.steps as WorkflowStep[],
-      template.triggers as any[],
+      template.steps as unknown as WorkflowStep[],
+      template.triggers as unknown as any[],
       projectId
     );
   }
@@ -403,7 +409,7 @@ export class WorkflowEngine {
       orderBy: { startedAt: "desc" },
       take: limit,
       include: {
-        workflow: true,
+        Workflow: true,
       },
     });
   }

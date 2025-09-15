@@ -7,34 +7,44 @@ export const createProjectTool: AgentTool = {
   description: "Create a new project with specified details",
   parameters: {
     title: { type: "string", required: true },
-    description: { type: "string", required: false },
+    branch: { type: "string", required: false },
     status: {
       type: "string",
       required: false,
       enum: ["planning", "active", "on_hold", "completed"],
     },
-    priority: {
+    stage: {
       type: "string",
       required: false,
-      enum: ["low", "medium", "high", "critical"],
+      enum: ["Discovery", "Development", "Testing", "Deployment"],
     },
     startDate: { type: "string", required: false },
-    endDate: { type: "string", required: false },
-    pmId: { type: "string", required: false },
+    targetDelivery: { type: "string", required: false },
+    pmId: { type: "string", required: true },
+    clientName: { type: "string", required: true },
+    clientEmail: { type: "string", required: true },
   },
   execute: async (params: any): Promise<ToolResult> => {
     try {
+      const { randomUUID } = require("crypto");
       const project = await prisma.project.create({
         data: {
+          id: randomUUID(),
           title: params.title,
-          description: params.description,
+          branch: params.branch || "main",
           status: params.status || "planning",
-          priority: params.priority || "medium",
+          stage: params.stage || "Discovery",
           startDate: params.startDate ? new Date(params.startDate) : undefined,
-          endDate: params.endDate ? new Date(params.endDate) : undefined,
+          targetDelivery: params.targetDelivery
+            ? new Date(params.targetDelivery)
+            : undefined,
           pmId: params.pmId,
-          portfolioId: params.portfolioId,
-          metadata: params.metadata || {},
+          clientName: params.clientName,
+          clientEmail: params.clientEmail,
+          clientShareToken: randomUUID(),
+          archived: false,
+          lastUpdatedAt: new Date(),
+          createdAt: new Date(),
         },
       });
 

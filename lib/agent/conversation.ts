@@ -30,7 +30,7 @@ export class ConversationManager {
       const existing = await prisma.conversation.findUnique({
         where: { id: conversationId },
         include: {
-          messages: {
+          Message: {
             orderBy: { createdAt: "asc" },
             take: 50, // Last 50 messages for context
           },
@@ -42,14 +42,17 @@ export class ConversationManager {
       }
 
       conversation = existing;
-      messages = existing.messages;
+      messages = existing.Message;
     } else {
       // Create new conversation
+      const { randomUUID } = require("crypto");
       conversation = await prisma.conversation.create({
         data: {
+          id: randomUUID(),
           userId,
           projectId,
           title: `Conversation ${new Date().toLocaleString()}`,
+          updatedAt: new Date(),
         },
       });
       messages = [];
@@ -71,8 +74,10 @@ export class ConversationManager {
     content: string,
     metadata?: any
   ): Promise<Message> {
+    const { randomUUID } = require("crypto");
     const message = await prisma.message.create({
       data: {
+        id: randomUUID(),
         conversationId,
         role,
         content,
@@ -307,7 +312,7 @@ ${ragContext}
       where: { userId },
       include: {
         _count: {
-          select: { messages: true },
+          select: { Message: true },
         },
       },
     });
@@ -318,7 +323,7 @@ ${ragContext}
     for (const conv of conversations) {
       const projectKey = conv.projectId || "no-project";
       byProject[projectKey] = (byProject[projectKey] || 0) + 1;
-      totalMessages += conv._count.messages;
+      totalMessages += conv._count.Message;
     }
 
     const averageLength =
@@ -327,7 +332,7 @@ ${ragContext}
         : 0;
 
     const mostActive = conversations
-      .sort((a, b) => b._count.messages - a._count.messages)
+      .sort((a, b) => b._count.Message - a._count.Message)
       .slice(0, 5)
       .map((c) => c.title || c.id);
 

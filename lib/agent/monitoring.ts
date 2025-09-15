@@ -405,7 +405,39 @@ export class MonitoringService {
     }
 
     try {
-      await slackService.sendDirectMessage(userId, message);
+      // Get user's Slack ID from integration credentials
+      const userIntegration = await prisma.integrationCredential.findFirst({
+        where: {
+          userId,
+          type: "slack",
+        },
+      });
+
+      if (!userIntegration || !userIntegration.metadata) {
+        console.log(`No Slack integration found for user ${userId}`);
+        return;
+      }
+
+      const slackUserId = (userIntegration.metadata as any).slackUserId;
+      if (!slackUserId) {
+        console.log(`No Slack user ID found for user ${userId}`);
+        return;
+      }
+
+      // Open a DM channel with the user
+      const dmChannel = await (slackService as any).client.conversations.open({
+        users: slackUserId,
+      });
+
+      if (!dmChannel.channel?.id) {
+        throw new Error("Failed to open DM channel");
+      }
+
+      // Send the message
+      await slackService.sendMessage({
+        channel: dmChannel.channel.id,
+        text: message,
+      });
     } catch (error) {
       console.error("Failed to send alerts:", error);
     }
@@ -429,8 +461,10 @@ export class MonitoringService {
       metadata?: any;
     }
   ): Promise<void> {
+    const { randomUUID } = require("crypto");
     await prisma.agentAnalytics.create({
       data: {
+        id: randomUUID(),
         userId,
         action,
         duration,

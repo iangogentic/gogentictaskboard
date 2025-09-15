@@ -7,19 +7,7 @@ export const createUpdateTool: AgentTool = {
   description: "Create a project update or status report",
   parameters: {
     projectId: { type: "string", required: true },
-    title: { type: "string", required: true },
-    content: { type: "string", required: true },
-    type: {
-      type: "string",
-      required: false,
-      enum: ["progress", "milestone", "blocker", "risk", "general"],
-    },
-    visibility: {
-      type: "string",
-      required: false,
-      enum: ["public", "team", "private"],
-    },
-    tags: { type: "array", required: false },
+    body: { type: "string", required: true },
   },
   execute: async (params: any): Promise<ToolResult> => {
     try {
@@ -27,12 +15,7 @@ export const createUpdateTool: AgentTool = {
         data: {
           projectId: params.projectId,
           authorId: params.executorId || "agent",
-          title: params.title,
-          content: params.content,
-          type: params.type || "general",
-          visibility: params.visibility || "team",
-          tags: params.tags || [],
-          metadata: params.metadata || {},
+          body: params.body,
         },
         include: {
           project: { select: { title: true } },
@@ -77,7 +60,6 @@ export const listUpdatesTool: AgentTool = {
   parameters: {
     projectId: { type: "string", required: false },
     authorId: { type: "string", required: false },
-    type: { type: "string", required: false },
     limit: { type: "number", required: false, default: 10 },
     since: { type: "string", required: false },
   },
@@ -86,7 +68,6 @@ export const listUpdatesTool: AgentTool = {
       const where: any = {};
       if (params.projectId) where.projectId = params.projectId;
       if (params.authorId) where.authorId = params.authorId;
-      if (params.type) where.type = params.type;
       if (params.since) {
         where.createdAt = { gte: new Date(params.since) };
       }

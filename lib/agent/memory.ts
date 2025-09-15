@@ -1,7 +1,7 @@
 import { embeddingService } from "@/lib/embeddings";
 import { documentIngestionService } from "@/lib/document-ingestion";
 import { prisma } from "@/lib/prisma";
-import { AgentSession } from "@prisma/client";
+import { AgentSession, Prisma } from "@prisma/client";
 
 export interface MemoryContext {
   relevantDocuments: Array<{
@@ -117,7 +117,9 @@ export class AgentMemory {
       where: {
         userId,
         state: "completed",
-        plan: { not: null },
+        plan: {
+          not: Prisma.JsonNull,
+        },
       },
       orderBy: { createdAt: "desc" },
       take: 20,

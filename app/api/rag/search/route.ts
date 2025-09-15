@@ -23,8 +23,7 @@ export async function POST(request: NextRequest) {
     if (projectId) {
       const hasAccess = await checkPermissions(
         session.user.id,
-        "project",
-        projectId,
+        `project:${projectId}`,
         "read"
       );
 
@@ -100,8 +99,7 @@ export async function GET(request: NextRequest) {
     if (projectId) {
       const hasAccess = await checkPermissions(
         session.user.id,
-        "project",
-        projectId,
+        `project:${projectId}`,
         "read"
       );
 

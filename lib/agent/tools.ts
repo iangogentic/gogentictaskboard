@@ -81,8 +81,8 @@ export class AgentTools {
           orderBy: { createdAt: "desc" },
           take: 5,
         },
-        projectMembers: {
-          include: { user: true },
+        ProjectMember: {
+          include: { User: true },
         },
       },
     });
@@ -136,7 +136,14 @@ export class AgentTools {
     url?: string;
     metadata?: any;
   }) {
-    return await prisma.document.create({ data });
+    const { randomUUID } = require("crypto");
+    return await prisma.document.create({
+      data: {
+        ...data,
+        id: randomUUID(),
+        updatedAt: new Date(),
+      },
+    });
   }
 
   // Sprint 2: Slack Integration
@@ -243,23 +250,37 @@ export class AgentTools {
   async getUserPermissions(userId: string) {
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      include: {
-        managedProjects: { select: { id: true, title: true } },
-        developingProjects: { select: { id: true, title: true } },
-      },
     });
 
     if (!user) {
       throw new Error("User not found");
     }
 
+    // Get projects where user is a member
+    const memberProjects = await prisma.projectMember.findMany({
+      where: { userId },
+      include: {
+        Project: {
+          select: { id: true, title: true },
+        },
+      },
+    });
+
+    const managedProjects = memberProjects
+      .filter((m) => m.role === "MANAGER")
+      .map((m) => m.Project);
+
+    const developingProjects = memberProjects
+      .filter((m) => m.role === "DEVELOPER")
+      .map((m) => m.Project);
+
     return {
       role: user.role,
       canCreateProjects: user.role === "ADMIN" || user.role === "PM",
       canDeleteProjects: user.role === "ADMIN",
       canManageUsers: user.role === "ADMIN",
-      managedProjects: user.managedProjects,
-      developingProjects: user.developingProjects,
+      managedProjects,
+      developingProjects,
     };
   }
 }

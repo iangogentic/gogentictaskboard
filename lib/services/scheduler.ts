@@ -9,7 +9,7 @@ export class TaskScheduler {
         status: "active",
       },
       include: {
-        workflow: true,
+        Workflow: true,
       },
       orderBy: { nextRun: "asc" },
     });
@@ -27,9 +27,11 @@ export class TaskScheduler {
 
     return await prisma.scheduledTask.create({
       data: {
+        id: `task_${data.createdBy}_${Date.now()}`,
         ...data,
         nextRun,
         status: "active",
+        updatedAt: new Date(),
       },
     });
   }
@@ -68,7 +70,7 @@ export class TaskScheduler {
         nextRun: { lte: now },
       },
       include: {
-        workflow: true,
+        Workflow: true,
       },
     });
 
@@ -84,9 +86,10 @@ export class TaskScheduler {
         });
 
         // Execute associated workflow if exists
-        if (task.workflowId && task.workflow) {
+        if (task.workflowId && task.Workflow) {
           const execution = await prisma.workflowExecution.create({
             data: {
+              id: `exec_${task.workflowId}_${Date.now()}`,
               workflowId: task.workflowId,
               status: "running",
               context: {
@@ -97,7 +100,7 @@ export class TaskScheduler {
           });
 
           // In production, this would be handled asynchronously
-          console.log("Executing scheduled workflow:", task.workflow.name);
+          console.log("Executing scheduled workflow:", task.Workflow.name);
         }
       } catch (error) {
         console.error("Error running scheduled task:", task.id, error);

@@ -32,20 +32,17 @@ export class AgentService {
     // Get user context
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        role: true,
-        integrationCredentials: {
-          select: { type: true },
-        },
-      },
     });
 
     if (!user) {
       throw new Error("User not found");
     }
+
+    // Get integration credentials separately
+    const integrationCredentials = await prisma.integrationCredential.findMany({
+      where: { userId },
+      select: { type: true },
+    });
 
     // Get project context if provided
     let project = undefined;
@@ -55,7 +52,6 @@ export class AgentService {
         select: {
           id: true,
           title: true,
-          description: true,
         },
       });
 
@@ -66,8 +62,8 @@ export class AgentService {
 
     // Check integrations
     const integrations = {
-      slack: user.integrationCredentials.some((i) => i.type === "slack"),
-      googleDrive: user.integrationCredentials.some(
+      slack: integrationCredentials.some((i) => i.type === "slack"),
+      googleDrive: integrationCredentials.some(
         (i) => i.type === "google_drive"
       ),
     };
@@ -226,7 +222,7 @@ export class AgentService {
       data: {
         state: "failed",
         error: "Cancelled by user",
-        completedAt: new Date(),
+        updatedAt: new Date(),
       },
     });
 
@@ -264,11 +260,10 @@ export class AgentService {
       projectId: s.projectId || undefined,
       state: s.state as any,
       plan: s.plan as any,
-      currentStep: s.currentStep || undefined,
       result: s.result as any,
-      context: s.context as any,
+      context: {} as any, // Context is not stored in DB, provide empty object
       startedAt: s.createdAt,
-      completedAt: s.completedAt || undefined,
+      updatedAt: s.updatedAt,
       error: s.error || undefined,
     }));
   }

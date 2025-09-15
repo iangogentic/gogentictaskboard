@@ -8,20 +8,14 @@ export const createTaskTool: AgentTool = {
   parameters: {
     projectId: { type: "string", required: true },
     title: { type: "string", required: true },
-    description: { type: "string", required: false },
+    notes: { type: "string", required: false },
     status: {
       type: "string",
       required: false,
       enum: ["todo", "in_progress", "review", "done", "blocked"],
     },
-    priority: {
-      type: "string",
-      required: false,
-      enum: ["low", "medium", "high", "critical"],
-    },
     assigneeId: { type: "string", required: false },
     dueDate: { type: "string", required: false },
-    tags: { type: "array", required: false },
   },
   execute: async (params: any): Promise<ToolResult> => {
     try {
@@ -29,13 +23,10 @@ export const createTaskTool: AgentTool = {
         data: {
           projectId: params.projectId,
           title: params.title,
-          description: params.description,
+          notes: params.notes,
           status: params.status || "todo",
-          priority: params.priority || "medium",
           assigneeId: params.assigneeId,
           dueDate: params.dueDate ? new Date(params.dueDate) : undefined,
-          tags: params.tags || [],
-          metadata: params.metadata || {},
         },
         include: {
           project: { select: { title: true } },
@@ -80,16 +71,11 @@ export const updateTaskTool: AgentTool = {
   parameters: {
     taskId: { type: "string", required: true },
     title: { type: "string", required: false },
-    description: { type: "string", required: false },
+    notes: { type: "string", required: false },
     status: {
       type: "string",
       required: false,
       enum: ["todo", "in_progress", "review", "done", "blocked"],
-    },
-    priority: {
-      type: "string",
-      required: false,
-      enum: ["low", "medium", "high", "critical"],
     },
     assigneeId: { type: "string", required: false },
     dueDate: { type: "string", required: false },
@@ -99,10 +85,8 @@ export const updateTaskTool: AgentTool = {
     try {
       const updateData: any = {};
       if (params.title !== undefined) updateData.title = params.title;
-      if (params.description !== undefined)
-        updateData.description = params.description;
+      if (params.notes !== undefined) updateData.notes = params.notes;
       if (params.status !== undefined) updateData.status = params.status;
-      if (params.priority !== undefined) updateData.priority = params.priority;
       if (params.assigneeId !== undefined)
         updateData.assigneeId = params.assigneeId;
       if (params.dueDate !== undefined)
@@ -160,7 +144,6 @@ export const listTasksTool: AgentTool = {
     projectId: { type: "string", required: false },
     assigneeId: { type: "string", required: false },
     status: { type: "string", required: false },
-    priority: { type: "string", required: false },
     limit: { type: "number", required: false, default: 10 },
   },
   execute: async (params: any): Promise<ToolResult> => {
@@ -169,16 +152,11 @@ export const listTasksTool: AgentTool = {
       if (params.projectId) where.projectId = params.projectId;
       if (params.assigneeId) where.assigneeId = params.assigneeId;
       if (params.status) where.status = params.status;
-      if (params.priority) where.priority = params.priority;
 
       const tasks = await prisma.task.findMany({
         where,
         take: params.limit || 10,
-        orderBy: [
-          { priority: "desc" },
-          { dueDate: "asc" },
-          { createdAt: "desc" },
-        ],
+        orderBy: [{ dueDate: "asc" }, { createdAt: "desc" }],
         include: {
           project: { select: { title: true } },
           assignee: { select: { name: true, email: true } },

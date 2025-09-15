@@ -21,7 +21,13 @@ export class WorkflowEngine {
     createdBy: string;
     projectId?: string;
   }) {
-    return await prisma.workflow.create({ data });
+    return await prisma.workflow.create({
+      data: {
+        id: `workflow_${data.createdBy}_${Date.now()}`,
+        ...data,
+        updatedAt: new Date(),
+      },
+    });
   }
 
   async executeWorkflow(workflowId: string, context: any = {}) {
@@ -36,6 +42,7 @@ export class WorkflowEngine {
     // Create execution record
     const execution = await prisma.workflowExecution.create({
       data: {
+        id: `exec_${workflowId}_${Date.now()}`,
         workflowId,
         status: "running",
         context,

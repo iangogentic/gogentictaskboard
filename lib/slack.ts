@@ -261,6 +261,7 @@ export class SlackService {
           },
         },
         create: {
+          id: `${projectId}_slackChannelId_${Date.now()}`,
           projectId,
           key: "slackChannelId",
           value: channelId,
@@ -268,6 +269,7 @@ export class SlackService {
             channelName,
             linkedAt: new Date().toISOString(),
           },
+          updatedAt: new Date(),
         },
         update: {
           value: channelId,
@@ -371,10 +373,10 @@ export class SlackService {
                 type: "plain_text",
                 text: "View in Portal",
                 emoji: true,
-              },
+              } as any,
               url: update.url,
               action_id: "view_in_portal",
-            },
+            } as any,
           ],
         });
       }

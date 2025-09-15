@@ -8,8 +8,9 @@ import { AuditLogger } from "@/lib/audit";
 
 // Share a file or folder
 export async function POST(request: NextRequest) {
+  let session;
   try {
-    const session = await getServerSession();
+    session = await getServerSession();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }

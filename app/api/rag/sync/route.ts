@@ -6,13 +6,15 @@ import { checkPermissions } from "@/lib/rbac";
 import { logAction } from "@/lib/audit";
 
 export async function POST(request: NextRequest) {
+  let session;
+  let body: any = {};
   try {
-    const session = await getServerSession();
+    session = await getServerSession();
     if (!session) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    const body = await request.json();
+    body = await request.json();
     const { projectId, sources = ["project"] } = body;
 
     if (!projectId) {
@@ -25,8 +27,7 @@ export async function POST(request: NextRequest) {
     // Check permissions
     const hasAccess = await checkPermissions(
       session.user.id,
-      "project",
-      projectId,
+      `project:${projectId}`,
       "write"
     );
 
@@ -78,16 +79,18 @@ export async function POST(request: NextRequest) {
     console.error("Document sync error:", error);
 
     // Log failed action
-    if (session) {
+    if (session?.user?.id) {
       await logAction({
         actorId: session.user.id,
         actorType: "user",
-        action: "sync_documents",
+        action: "sync_documents_failed",
         targetType: "project",
-        targetId: body.projectId,
-        payload: body,
+        targetId: body?.projectId,
+        payload: {
+          ...body,
+          error: error instanceof Error ? error.message : "Unknown error",
+        },
         status: "failed",
-        error: error instanceof Error ? error.message : "Unknown error",
       });
     }
 
@@ -118,8 +121,7 @@ export async function DELETE(request: NextRequest) {
     // Check permissions
     const hasAccess = await checkPermissions(
       session.user.id,
-      "project",
-      projectId,
+      `project:${projectId}`,
       "admin"
     );
 

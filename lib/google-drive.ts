@@ -72,7 +72,7 @@ export class GoogleDriveService {
     const { tokens } = await this.oauth2Client.getToken(code);
     return {
       access_token: tokens.access_token!,
-      refresh_token: tokens.refresh_token,
+      refresh_token: tokens.refresh_token || undefined,
       expiry_date: tokens.expiry_date || undefined,
     };
   }
@@ -146,7 +146,7 @@ export class GoogleDriveService {
 
       // Log the operation
       await auditService.log({
-        userId,
+        actorId: userId,
         action: "create_drive_folder",
         entity: "integration",
         entityId: folder.id,
@@ -159,7 +159,7 @@ export class GoogleDriveService {
       return folder;
     } catch (error: any) {
       await auditService.log({
-        userId,
+        actorId: userId,
         action: "create_drive_folder_failed",
         entity: "integration",
         metadata: { error: error.message, folderName, parentFolderId },
@@ -206,22 +206,24 @@ export class GoogleDriveService {
           },
         },
         create: {
+          id: `${projectId}_gdriveFolderId_${Date.now()}`,
           projectId,
           key: "gdriveFolderId",
           value: rootFolder.id,
           metadata: {
             folderName: projectName,
             webViewLink: rootFolder.webViewLink,
-            subFolders,
+            subFolders: JSON.parse(JSON.stringify(subFolders)),
             createdAt: new Date().toISOString(),
           },
+          updatedAt: new Date(),
         },
         update: {
           value: rootFolder.id,
           metadata: {
             folderName: projectName,
             webViewLink: rootFolder.webViewLink,
-            subFolders,
+            subFolders: JSON.parse(JSON.stringify(subFolders)),
             updatedAt: new Date().toISOString(),
           },
         },
@@ -325,7 +327,7 @@ export class GoogleDriveService {
 
       // Log the operation
       await auditService.log({
-        userId,
+        actorId: userId,
         action: "upload_drive_file",
         entity: "integration",
         entityId: file.id,
@@ -339,7 +341,7 @@ export class GoogleDriveService {
       return file;
     } catch (error: any) {
       await auditService.log({
-        userId,
+        actorId: userId,
         action: "upload_drive_file_failed",
         entity: "integration",
         metadata: { error: error.message, fileName, mimeType, folderId },
@@ -401,14 +403,14 @@ export class GoogleDriveService {
       await drive.files.delete({ fileId });
 
       await auditService.log({
-        userId,
+        actorId: userId,
         action: "delete_drive_file",
         entity: "integration",
         entityId: fileId,
       });
     } catch (error: any) {
       await auditService.log({
-        userId,
+        actorId: userId,
         action: "delete_drive_file_failed",
         entity: "integration",
         entityId: fileId,
@@ -439,7 +441,7 @@ export class GoogleDriveService {
       });
 
       await auditService.log({
-        userId,
+        actorId: userId,
         action: "share_drive_file",
         entity: "integration",
         entityId: fileId,
@@ -447,7 +449,7 @@ export class GoogleDriveService {
       });
     } catch (error: any) {
       await auditService.log({
-        userId,
+        actorId: userId,
         action: "share_drive_file_failed",
         entity: "integration",
         entityId: fileId,
@@ -516,7 +518,7 @@ export class GoogleDriveService {
         limit: response.data.storageQuota?.limit || "0",
         usage: response.data.storageQuota?.usage || "0",
         usageInDrive: response.data.storageQuota?.usageInDrive || "0",
-        usageInTrash: response.data.storageQuota?.usageInTrash || "0",
+        usageInTrash: response.data.storageQuota?.usageInDriveTrash || "0",
       };
     } catch (error: any) {
       console.error("Failed to get storage quota:", error);

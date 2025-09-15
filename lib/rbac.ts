@@ -31,7 +31,7 @@ export const permissions = {
 export async function hasPermission(
   userRole: Role,
   permission: string
-): boolean {
+): Promise<boolean> {
   const rolePermissions = permissions[userRole] || [];
 
   // Admin has all permissions
@@ -90,7 +90,7 @@ export async function canUserModifyProject(
   const project = await prisma.project.findUnique({
     where: { id: projectId },
     include: {
-      members: {
+      ProjectMember: {
         where: { userId },
       },
     },
@@ -100,7 +100,7 @@ export async function canUserModifyProject(
 
   // PMs and developers can modify projects they're members of
   if (user?.role === "pm" || user?.role === "developer") {
-    return project.members.length > 0;
+    return project.ProjectMember.length > 0;
   }
 
   return false;

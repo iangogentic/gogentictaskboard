@@ -5,9 +5,11 @@ export class AgentMonitor {
   async startSession(userId: string, projectId?: string) {
     return await prisma.agentSession.create({
       data: {
+        id: `session_${userId}_${Date.now()}`,
         userId,
         projectId,
         state: "active",
+        updatedAt: new Date(),
       },
     });
   }
@@ -35,7 +37,12 @@ export class AgentMonitor {
     errorType?: string;
     metadata?: any;
   }) {
-    return await prisma.agentAnalytics.create({ data });
+    return await prisma.agentAnalytics.create({
+      data: {
+        id: `analytics_${data.userId}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        ...data,
+      },
+    });
   }
 
   async getAnalytics(userId: string, projectId?: string) {

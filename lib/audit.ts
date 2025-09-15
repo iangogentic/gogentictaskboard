@@ -2,8 +2,7 @@ import { prisma } from "@/lib/prisma";
 
 export interface AuditEntry {
   id: string;
-  userId: string;
-  projectId?: string;
+  actorId: string;
   action: string;
   entity: string;
   entityId?: string;
@@ -14,15 +13,55 @@ export interface AuditEntry {
 }
 
 export class AuditService {
+  private static instance: AuditService;
+
+  static getInstance(): AuditService {
+    if (!AuditService.instance) {
+      AuditService.instance = new AuditService();
+    }
+    return AuditService.instance;
+  }
+
+  static async logSuccess(
+    actorId: string,
+    action: string,
+    entity: string,
+    entityId?: string,
+    metadata?: any
+  ): Promise<AuditEntry> {
+    return AuditService.getInstance().log({
+      actorId,
+      action,
+      entity,
+      entityId,
+      metadata: { ...metadata, status: "success" },
+    });
+  }
+
+  static async logFailure(
+    actorId: string,
+    action: string,
+    entity: string,
+    error: string,
+    entityId?: string,
+    metadata?: any
+  ): Promise<AuditEntry> {
+    return AuditService.getInstance().log({
+      actorId,
+      action,
+      entity,
+      entityId,
+      metadata: { ...metadata, error, status: "failure" },
+    });
+  }
   /**
    * Log an audit entry
    */
   async log(params: {
-    userId: string;
+    actorId: string;
     action: string;
     entity: string;
     entityId?: string;
-    projectId?: string;
     metadata?: any;
     ipAddress?: string;
     userAgent?: string;
@@ -30,28 +69,35 @@ export class AuditService {
     try {
       const entry = await prisma.auditLog.create({
         data: {
-          userId: params.userId,
+          id: `audit_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          actorId: params.actorId,
+          actorType: "user",
           action: params.action,
-          entity: params.entity,
-          entityId: params.entityId,
-          projectId: params.projectId,
-          metadata: params.metadata || {},
-          ipAddress: params.ipAddress,
-          userAgent: params.userAgent,
+          targetType: params.entity,
+          targetId: params.entityId,
+          payload: params.metadata || {},
+          status: "executed",
         },
       });
 
-      return entry as AuditEntry;
+      return {
+        id: entry.id,
+        actorId: entry.actorId,
+        action: entry.action,
+        entity: entry.targetType,
+        entityId: entry.targetId,
+        metadata: entry.payload,
+        createdAt: entry.createdAt,
+      } as AuditEntry;
     } catch (error) {
       console.error("Failed to create audit log:", error);
       // Return a mock entry if database fails
       return {
         id: `audit_${Date.now()}`,
-        userId: params.userId,
+        actorId: params.actorId,
         action: params.action,
         entity: params.entity,
         entityId: params.entityId,
-        projectId: params.projectId,
         metadata: params.metadata,
         ipAddress: params.ipAddress,
         userAgent: params.userAgent,
@@ -64,16 +110,24 @@ export class AuditService {
    * Get audit logs for a user
    */
   async getUserAuditLogs(
-    userId: string,
+    actorId: string,
     limit: number = 100
   ): Promise<AuditEntry[]> {
     try {
       const logs = await prisma.auditLog.findMany({
-        where: { userId },
+        where: { actorId },
         orderBy: { createdAt: "desc" },
         take: limit,
       });
-      return logs as AuditEntry[];
+      return logs.map((log) => ({
+        id: log.id,
+        actorId: log.actorId,
+        action: log.action,
+        entity: log.targetType,
+        entityId: log.targetId,
+        metadata: log.payload,
+        createdAt: log.createdAt,
+      })) as AuditEntry[];
     } catch (error) {
       console.error("Failed to fetch audit logs:", error);
       return [];
@@ -81,19 +135,31 @@ export class AuditService {
   }
 
   /**
-   * Get audit logs for a project
+   * Get audit logs for a project (Note: AuditLog model doesn't have projectId)
    */
   async getProjectAuditLogs(
     projectId: string,
     limit: number = 100
   ): Promise<AuditEntry[]> {
     try {
+      // Since AuditLog doesn't have projectId, we'll filter by targetId for project-related actions
       const logs = await prisma.auditLog.findMany({
-        where: { projectId },
+        where: {
+          targetType: "project",
+          targetId: projectId,
+        },
         orderBy: { createdAt: "desc" },
         take: limit,
       });
-      return logs as AuditEntry[];
+      return logs.map((log) => ({
+        id: log.id,
+        actorId: log.actorId,
+        action: log.action,
+        entity: log.targetType,
+        entityId: log.targetId,
+        metadata: log.payload,
+        createdAt: log.createdAt,
+      })) as AuditEntry[];
     } catch (error) {
       console.error("Failed to fetch project audit logs:", error);
       return [];
@@ -104,7 +170,7 @@ export class AuditService {
    * Search audit logs
    */
   async searchAuditLogs(params: {
-    userId?: string;
+    actorId?: string;
     projectId?: string;
     action?: string;
     entity?: string;
@@ -115,10 +181,13 @@ export class AuditService {
     try {
       const where: any = {};
 
-      if (params.userId) where.userId = params.userId;
-      if (params.projectId) where.projectId = params.projectId;
+      if (params.actorId) where.actorId = params.actorId;
+      if (params.projectId) {
+        where.targetType = "project";
+        where.targetId = params.projectId;
+      }
       if (params.action) where.action = params.action;
-      if (params.entity) where.entity = params.entity;
+      if (params.entity) where.targetType = params.entity;
 
       if (params.startDate || params.endDate) {
         where.createdAt = {};
@@ -132,7 +201,15 @@ export class AuditService {
         take: params.limit || 100,
       });
 
-      return logs as AuditEntry[];
+      return logs.map((log) => ({
+        id: log.id,
+        actorId: log.actorId,
+        action: log.action,
+        entity: log.targetType,
+        entityId: log.targetId,
+        metadata: log.payload,
+        createdAt: log.createdAt,
+      })) as AuditEntry[];
     } catch (error) {
       console.error("Failed to search audit logs:", error);
       return [];
@@ -143,14 +220,14 @@ export class AuditService {
    * Get recent activity for a user
    */
   async getRecentActivity(
-    userId: string,
+    actorId: string,
     hours: number = 24
   ): Promise<AuditEntry[]> {
     const startDate = new Date();
     startDate.setHours(startDate.getHours() - hours);
 
     return this.searchAuditLogs({
-      userId,
+      actorId,
       startDate,
       limit: 50,
     });
@@ -160,7 +237,7 @@ export class AuditService {
    * Log agent activity
    */
   async logAgentActivity(params: {
-    userId: string;
+    actorId: string;
     action: string;
     projectId?: string;
     message?: string;
@@ -168,14 +245,14 @@ export class AuditService {
     response?: string;
   }): Promise<AuditEntry> {
     return this.log({
-      userId,
+      actorId: params.actorId,
       action: `agent:${params.action}`,
       entity: "agent",
-      projectId: params.projectId,
       metadata: {
         message: params.message,
         toolsUsed: params.toolsUsed,
         response: params.response?.substring(0, 500), // Truncate long responses
+        projectId: params.projectId, // Store in metadata since AuditLog doesn't have projectId
       },
     });
   }
@@ -184,19 +261,21 @@ export class AuditService {
    * Log task activity
    */
   async logTaskActivity(params: {
-    userId: string;
+    actorId: string;
     action: "create" | "update" | "delete" | "complete";
     taskId: string;
     projectId?: string;
     changes?: any;
   }): Promise<AuditEntry> {
     return this.log({
-      userId,
+      actorId: params.actorId,
       action: `task:${params.action}`,
       entity: "task",
       entityId: params.taskId,
-      projectId: params.projectId,
-      metadata: params.changes,
+      metadata: {
+        ...params.changes,
+        projectId: params.projectId, // Store in metadata since AuditLog doesn't have projectId
+      },
     });
   }
 
@@ -204,17 +283,16 @@ export class AuditService {
    * Log project activity
    */
   async logProjectActivity(params: {
-    userId: string;
+    actorId: string;
     action: "create" | "update" | "delete" | "archive";
     projectId: string;
     changes?: any;
   }): Promise<AuditEntry> {
     return this.log({
-      userId,
+      actorId: params.actorId,
       action: `project:${params.action}`,
       entity: "project",
       entityId: params.projectId,
-      projectId: params.projectId,
       metadata: params.changes,
     });
   }
@@ -223,18 +301,21 @@ export class AuditService {
    * Get audit statistics
    */
   async getAuditStats(
-    userId?: string,
+    actorId?: string,
     projectId?: string
   ): Promise<{
     totalActions: number;
     actionsByType: Record<string, number>;
-    mostActiveUsers: Array<{ userId: string; count: number }>;
+    mostActiveUsers: Array<{ actorId: string; count: number }>;
     recentActions: AuditEntry[];
   }> {
     try {
       const where: any = {};
-      if (userId) where.userId = userId;
-      if (projectId) where.projectId = projectId;
+      if (actorId) where.actorId = actorId;
+      if (projectId) {
+        where.targetType = "project";
+        where.targetId = projectId;
+      }
 
       // Get total count
       const totalActions = await prisma.auditLog.count({ where });
@@ -259,18 +340,20 @@ export class AuditService {
       });
 
       // Get most active users (if not filtering by user)
-      let mostActiveUsers: Array<{ userId: string; count: number }> = [];
-      if (!userId) {
+      let mostActiveUsers: Array<{ actorId: string; count: number }> = [];
+      if (!actorId) {
         const userGroups = await prisma.auditLog.groupBy({
-          by: ["userId"],
-          where: projectId ? { projectId } : {},
+          by: ["actorId"],
+          where: projectId
+            ? { targetType: "project", targetId: projectId }
+            : {},
           _count: true,
-          orderBy: { _count: { userId: "desc" } },
+          orderBy: { _count: { actorId: "desc" } },
           take: 5,
         });
 
         mostActiveUsers = userGroups.map((group) => ({
-          userId: group.userId,
+          actorId: group.actorId,
           count: group._count,
         }));
       }
@@ -279,7 +362,15 @@ export class AuditService {
         totalActions,
         actionsByType,
         mostActiveUsers,
-        recentActions: recentActions as AuditEntry[],
+        recentActions: recentActions.map((log) => ({
+          id: log.id,
+          actorId: log.actorId,
+          action: log.action,
+          entity: log.targetType,
+          entityId: log.targetId,
+          metadata: log.payload,
+          createdAt: log.createdAt,
+        })) as AuditEntry[],
       };
     } catch (error) {
       console.error("Failed to get audit stats:", error);
@@ -293,19 +384,25 @@ export class AuditService {
   }
 }
 
-export const auditService = new AuditService();
+export const auditService = AuditService.getInstance();
+
 export const AuditLogger = AuditService;
 
 // Export logAction as a standalone function for backwards compatibility
 export async function logAction(params: {
-  userId: string;
+  actorId: string;
+  actorType: string;
   action: string;
-  entity: string;
-  entityId?: string;
-  projectId?: string;
-  metadata?: any;
-  ipAddress?: string;
-  userAgent?: string;
+  targetType: string;
+  targetId?: string;
+  payload?: any;
+  status?: string;
 }): Promise<AuditEntry> {
-  return auditService.log(params);
+  return auditService.log({
+    actorId: params.actorId,
+    action: params.action,
+    entity: params.targetType,
+    entityId: params.targetId,
+    metadata: params.payload,
+  });
 }

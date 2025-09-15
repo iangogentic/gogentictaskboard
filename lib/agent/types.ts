@@ -57,11 +57,9 @@ export interface AgentSession {
   projectId?: string;
   state: AgentState;
   plan?: AgentPlan;
-  currentStep?: number;
   result?: AgentResult;
   context: AgentContext;
   startedAt: Date;
-  completedAt?: Date;
   error?: string;
 }
 

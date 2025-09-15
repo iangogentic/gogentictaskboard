@@ -37,16 +37,17 @@ export const searchTool: AgentTool = {
           where: {
             OR: [
               { title: { contains: searchQuery, mode: "insensitive" } },
-              { description: { contains: searchQuery, mode: "insensitive" } },
+              { clientName: { contains: searchQuery, mode: "insensitive" } },
+              { notes: { contains: searchQuery, mode: "insensitive" } },
             ],
           },
           take: params.limit || 10,
           select: {
             id: true,
             title: true,
-            description: true,
             status: true,
-            priority: true,
+            stage: true,
+            clientName: true,
           },
         });
       }
@@ -56,7 +57,7 @@ export const searchTool: AgentTool = {
         const taskWhere: any = {
           OR: [
             { title: { contains: searchQuery, mode: "insensitive" } },
-            { description: { contains: searchQuery, mode: "insensitive" } },
+            { notes: { contains: searchQuery, mode: "insensitive" } },
           ],
         };
         if (params.projectId) taskWhere.projectId = params.projectId;
@@ -67,9 +68,8 @@ export const searchTool: AgentTool = {
           select: {
             id: true,
             title: true,
-            description: true,
             status: true,
-            priority: true,
+            notes: true,
             project: { select: { title: true } },
           },
         });
@@ -78,10 +78,7 @@ export const searchTool: AgentTool = {
       // Search updates
       if (searchTypes.includes("updates")) {
         const updateWhere: any = {
-          OR: [
-            { title: { contains: searchQuery, mode: "insensitive" } },
-            { content: { contains: searchQuery, mode: "insensitive" } },
-          ],
+          body: { contains: searchQuery, mode: "insensitive" },
         };
         if (params.projectId) updateWhere.projectId = params.projectId;
 
@@ -90,11 +87,10 @@ export const searchTool: AgentTool = {
           take: params.limit || 10,
           select: {
             id: true,
-            title: true,
-            content: true,
-            type: true,
+            body: true,
             createdAt: true,
             project: { select: { title: true } },
+            author: { select: { name: true, email: true } },
           },
         });
       }
@@ -117,7 +113,7 @@ export const searchTool: AgentTool = {
             title: true,
             source: true,
             createdAt: true,
-            project: { select: { title: true } },
+            Project: { select: { title: true } },
           },
         });
       }

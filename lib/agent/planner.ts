@@ -21,7 +21,7 @@ export class AgentPlanner {
       // Get available tools
       const tools = getAllTools();
       const toolDescriptions = tools
-        .map((t) => `- ${t.name}: ${t.description}`)
+        .map((toolName) => `- ${toolName}`)
         .join("\n");
 
       // Retrieve relevant memory/context
@@ -221,7 +221,7 @@ export class AgentPlanner {
     plan.steps.forEach((step, index) => {
       // Check tool exists
       const tools = getAllTools();
-      if (!tools.find((t) => t.name === step.tool)) {
+      if (!tools.find((toolName) => toolName === step.tool)) {
         errors.push(`Step ${index + 1}: Unknown tool '${step.tool}'`);
       }
 

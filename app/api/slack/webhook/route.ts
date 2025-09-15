@@ -275,16 +275,17 @@ async function getUserBySlackId(slackUserId: string) {
     where: {
       type: "slack",
       metadata: {
-        path: "$.slackUserId",
+        path: ["$.slackUserId"],
         equals: slackUserId,
       },
     },
-    include: {
-      user: true,
-    },
   });
 
-  return integration?.user;
+  if (!integration?.userId) return null;
+
+  return await prisma.user.findUnique({
+    where: { id: integration.userId },
+  });
 }
 
 // Helper: Generate user summary
@@ -329,7 +330,7 @@ async function generateUserSummary(userId: string) {
       title: task.title,
       status: task.status,
       projectTitle: task.project.title,
-      dueDate: task.dueDate,
+      dueDate: task.dueDate || undefined,
     })),
     blockedTasks: blockedTasks.map((task) => ({
       id: task.id,

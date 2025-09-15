@@ -71,8 +71,10 @@ export async function POST(request: NextRequest) {
 
     // Store document reference in database if linked to project
     if (projectId) {
+      const { randomUUID } = require("crypto");
       await prisma.document.create({
         data: {
+          id: randomUUID(),
           projectId,
           title: file.name,
           source: "gdrive",
@@ -83,6 +85,7 @@ export async function POST(request: NextRequest) {
             size: uploadedFile.size,
             webContentLink: uploadedFile.webContentLink,
           },
+          updatedAt: new Date(),
         },
       });
 
@@ -153,7 +156,7 @@ export async function GET(request: NextRequest) {
     );
 
     // Return file as response
-    return new NextResponse(data, {
+    return new NextResponse(data as any, {
       headers: {
         "Content-Type": metadata.mimeType,
         "Content-Disposition": `attachment; filename="${metadata.name}"`,
@@ -210,7 +213,7 @@ export async function DELETE(request: NextRequest) {
     await prisma.document.deleteMany({
       where: {
         metadata: {
-          path: "$.driveFileId",
+          path: ["$.driveFileId"],
           equals: fileId,
         },
       },
