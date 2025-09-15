@@ -4,6 +4,7 @@ import { getServerSession } from "@/lib/auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { AuditLogger } from "@/lib/audit";
+import { randomUUID } from "crypto";
 
 // Slack OAuth callback handler
 export async function GET(request: NextRequest) {
@@ -52,6 +53,7 @@ export async function GET(request: NextRequest) {
         },
       },
       create: {
+        id: randomUUID(),
         userId: session.user.id,
         type: "slack",
         data: {
@@ -64,6 +66,7 @@ export async function GET(request: NextRequest) {
           slackUserId: tokenData.authed_user?.id,
           installedAt: new Date().toISOString(),
         },
+        updatedAt: new Date(),
       },
       update: {
         data: {
@@ -76,6 +79,7 @@ export async function GET(request: NextRequest) {
           slackUserId: tokenData.authed_user?.id,
           installedAt: new Date().toISOString(),
         },
+        updatedAt: new Date(),
       },
     });
 

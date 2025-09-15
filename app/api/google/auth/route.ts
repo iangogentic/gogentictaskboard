@@ -5,6 +5,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { GoogleDriveService } from "@/lib/google-drive";
 import { AuditLogger } from "@/lib/audit";
+import { randomUUID } from "crypto";
 
 // Google OAuth callback handler
 export async function GET(request: NextRequest) {
@@ -47,6 +48,7 @@ export async function GET(request: NextRequest) {
         },
       },
       create: {
+        id: randomUUID(),
         userId: session.user.id,
         type: "google_drive",
         data: {
@@ -57,6 +59,7 @@ export async function GET(request: NextRequest) {
         metadata: {
           connectedAt: new Date().toISOString(),
         },
+        updatedAt: new Date(),
       },
       update: {
         data: {
@@ -67,6 +70,7 @@ export async function GET(request: NextRequest) {
         metadata: {
           reconnectedAt: new Date().toISOString(),
         },
+        updatedAt: new Date(),
       },
     });
 
