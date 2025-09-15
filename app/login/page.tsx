@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation"
 import Link from "next/link"
 
 // Check if credentials auth is enabled (only for dev/staging)
-const enableCredentials = process.env.NEXT_PUBLIC_ENABLE_CREDENTIALS_AUTH === 'true'
+const enableCredentials = false // Disabled in production for now
 
 export default function LoginPage() {
   const router = useRouter()
