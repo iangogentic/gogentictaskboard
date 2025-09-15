@@ -1,49 +1,45 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
   provider  = "postgresql"
-  url       = env("DATABASE_URL")  // pooled (PgBouncer)
-  directUrl = env("DIRECT_URL")    // direct (migrate/Studio)
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model Portfolio {
-  id          String     @id @default(cuid())
-  key         String     @unique   // "cortex" | "solutions" | "launchpad" | "fisher"
+  id          String    @id @default(cuid())
+  key         String    @unique
   name        String
-  color       String?              // e.g. "#5B67F1"
+  color       String?
   description String?
-  order       Int        @default(0)
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
-  
+  order       Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
   projects    Project[]
 }
 
 model User {
-  id             String     @id @default(cuid())
-  name           String?
-  email          String     @unique
-  emailVerified  DateTime?
-  password       String?    // For credentials provider
-  image          String?
-  avatar         String?
-  role           String     @default("user") // "admin" | "pm" | "developer" | "client" | "user"
-  createdAt      DateTime   @default(now())
-  updatedAt      DateTime   @updatedAt
-  
-  accounts       Account[]
-  sessions       Session[]
-  projectsAsPM   Project[]  @relation("ProjectPM")
-  projectsAsDev  Project[]  @relation("ProjectDevs")
-  tasks          Task[]
-  updates        Update[]
-  timeEntries    TimeEntry[]
-  savedViews     SavedView[]
+  id            String          @id @default(cuid())
+  name          String?
+  email         String          @unique
+  avatar        String?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  emailVerified DateTime?
+  image         String?
+  password      String?
+  role          String          @default("user")
+  accounts      Account[]
+  projectsAsPM  Project[]       @relation("ProjectPM")
+  ProjectMember ProjectMember[]
+  savedViews    SavedView[]
+  sessions      Session[]
+  tasks         Task[]
+  timeEntries   TimeEntry[]
+  updates       Update[]
+  projectsAsDev Project[]       @relation("ProjectDevs")
 }
 
 model Account {
@@ -52,15 +48,14 @@ model Account {
   type              String
   provider          String
   providerAccountId String
-  refresh_token     String? @db.Text
-  access_token      String? @db.Text
+  refresh_token     String?
+  access_token      String?
   expires_at        Int?
   token_type        String?
   scope             String?
-  id_token          String? @db.Text
+  id_token          String?
   session_state     String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
 }
@@ -82,102 +77,311 @@ model VerificationToken {
 }
 
 model Project {
-  id               String       @id @default(cuid())
-  title            String
-  branch           String       // Legacy field - keeping for compatibility
-  portfolioId      String?      // New portfolio relation
-  portfolio        Portfolio?   @relation(fields: [portfolioId], references: [id])
-  stage            String       @default("Discovery") // Discovery | Build | Launch | Live
-  health           String?      // Green | Amber | Red
-  pmId             String
-  pm               User         @relation("ProjectPM", fields: [pmId], references: [id])
-  developers       User[]       @relation("ProjectDevs")
-  clientName       String
-  clientEmail      String
-  status           String       // Not Started, In Progress, Review, Blocked, Done
-  startDate        DateTime?
-  targetDelivery   DateTime?
-  lastUpdatedAt    DateTime     @updatedAt
-  notes            String?
-  clientShareToken String       @unique @default(cuid())
-  createdAt        DateTime     @default(now())
-  archived         Boolean      @default(false)
-  archivedAt       DateTime?
-  
-  tasks            Task[]
-  updates          Update[]
-  deliverables     Deliverable[]
-  
+  id                 String               @id @default(cuid())
+  title              String
+  branch             String
+  pmId               String
+  clientName         String
+  clientEmail        String
+  status             String
+  startDate          DateTime?
+  targetDelivery     DateTime?
+  lastUpdatedAt      DateTime             @updatedAt
+  notes              String?
+  clientShareToken   String               @unique @default(cuid())
+  createdAt          DateTime             @default(now())
+  archived           Boolean              @default(false)
+  archivedAt         DateTime?
+  health             String?
+  portfolioId        String?
+  stage              String               @default("Discovery")
+  deliverables       Deliverable[]
+  Document           Document[]
+  pm                 User                 @relation("ProjectPM", fields: [pmId], references: [id])
+  portfolio          Portfolio?           @relation(fields: [portfolioId], references: [id])
+  ProjectIntegration ProjectIntegration[]
+  ProjectMember      ProjectMember[]
+  tasks              Task[]
+  updates            Update[]
+  developers         User[]               @relation("ProjectDevs")
+
   @@index([portfolioId, stage, health])
   @@index([portfolioId, status])
 }
 
 model Task {
-  id          String     @id @default(cuid())
-  projectId   String
-  project     Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  title       String
-  status      String     // Todo, Doing, Review, Done
-  assigneeId  String?
-  assignee    User?      @relation(fields: [assigneeId], references: [id])
-  dueDate     DateTime?
-  notes       String?
-  order       Int        @default(0)
-  estimatedHours Float?  // Estimated time in hours
-  actualHours Float      @default(0) // Actual time spent in hours
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
-  
-  timeEntries TimeEntry[]
+  id             String      @id @default(cuid())
+  projectId      String
+  title          String
+  status         String
+  assigneeId     String?
+  dueDate        DateTime?
+  notes          String?
+  order          Int         @default(0)
+  estimatedHours Float?
+  actualHours    Float       @default(0)
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+  assignee       User?       @relation(fields: [assigneeId], references: [id])
+  project        Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  timeEntries    TimeEntry[]
 }
 
 model Update {
-  id          String     @id @default(cuid())
-  projectId   String
-  project     Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  authorId    String
-  author      User       @relation(fields: [authorId], references: [id])
-  body        String
-  createdAt   DateTime   @default(now())
+  id        String   @id @default(cuid())
+  projectId String
+  authorId  String
+  body      String
+  createdAt DateTime @default(now())
+  author    User     @relation(fields: [authorId], references: [id])
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
 }
 
 model Deliverable {
-  id          String     @id @default(cuid())
-  projectId   String
-  project     Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  title       String
-  status      String     // Draft, Submitted, Approved, Revisions
-  fileUrl     String?
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  id        String   @id @default(cuid())
+  projectId String
+  title     String
+  status    String
+  fileUrl   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
 }
 
 model TimeEntry {
-  id          String     @id @default(cuid())
+  id          String   @id @default(cuid())
   taskId      String
-  task        Task       @relation(fields: [taskId], references: [id], onDelete: Cascade)
   userId      String
-  user        User       @relation(fields: [userId], references: [id])
-  hours       Float      // Hours worked
-  description String?    // What was done
-  date        DateTime   // When the work was done
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  hours       Float
+  description String?
+  date        DateTime
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  task        Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  user        User     @relation(fields: [userId], references: [id])
 }
 
 model SavedView {
-  id          String     @id @default(cuid())
-  userId      String
-  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  name        String
-  viewType    String     // "projects" | "tasks" | "portfolio"
-  filters     Json       // JSON object storing filter state
-  sortBy      String?    // Sort field
-  sortOrder   String?    // "asc" | "desc"
-  isDefault   Boolean    @default(false)
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
-  
+  id        String   @id @default(cuid())
+  userId    String
+  name      String
+  viewType  String
+  filters   Json
+  sortBy    String?
+  sortOrder String?
+  isDefault Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@unique([userId, name, viewType])
   @@index([userId, viewType])
+}
+
+model AgentAnalytics {
+  id         String   @id
+  sessionId  String?
+  userId     String
+  projectId  String?
+  action     String
+  duration   Int
+  toolsUsed  Json?
+  tokensUsed Int?
+  cost       Float?
+  success    Boolean
+  errorType  String?
+  metadata   Json?
+  createdAt  DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([projectId])
+  @@index([userId])
+}
+
+model AgentSession {
+  id        String   @id
+  userId    String
+  projectId String?
+  state     String
+  plan      Json?
+  result    Json?
+  error     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+
+  @@index([projectId])
+  @@index([userId])
+}
+
+model AuditLog {
+  id         String   @id
+  actorId    String
+  actorType  String
+  action     String
+  targetType String
+  targetId   String?
+  payload    Json
+  status     String
+  error      String?
+  createdAt  DateTime @default(now())
+
+  @@index([actorId])
+  @@index([createdAt])
+  @@index([targetType, targetId])
+}
+
+model Conversation {
+  id        String    @id
+  userId    String
+  projectId String?
+  title     String?
+  summary   String?
+  metadata  Json?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime
+  Message   Message[]
+
+  @@index([projectId])
+  @@index([userId])
+}
+
+model Document {
+  id        String      @id
+  projectId String
+  title     String
+  source    String
+  sourceId  String?
+  url       String?
+  content   String?
+  metadata  Json?
+  createdAt DateTime    @default(now())
+  updatedAt DateTime
+  Project   Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  Embedding Embedding[]
+
+  @@index([projectId])
+  @@index([source])
+}
+
+model Embedding {
+  id         String                 @id
+  documentId String
+  chunkIndex Int
+  chunkText  String
+  metadata   Json?
+  createdAt  DateTime               @default(now())
+  vector     Unsupported("vector")?
+  Document   Document               @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@unique([documentId, chunkIndex])
+  @@index([documentId])
+  @@index([vector], map: "embedding_vector_idx")
+}
+
+model IntegrationCredential {
+  id        String   @id
+  userId    String?
+  orgLevel  Boolean  @default(false)
+  type      String
+  data      Json
+  metadata  Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+
+  @@index([type])
+  @@index([userId])
+}
+
+model Message {
+  id             String       @id
+  conversationId String
+  role           String
+  content        String
+  metadata       Json?
+  createdAt      DateTime     @default(now())
+  Conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId])
+}
+
+model ProjectIntegration {
+  id        String   @id
+  projectId String
+  key       String
+  value     String
+  metadata  Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+  Project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, key])
+  @@index([projectId])
+}
+
+model ProjectMember {
+  id        String   @id
+  projectId String
+  userId    String
+  role      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+  Project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, userId])
+  @@index([projectId])
+  @@index([userId])
+}
+
+model ScheduledTask {
+  id         String    @id
+  workflowId String?
+  name       String
+  cron       String
+  nextRun    DateTime
+  lastRun    DateTime?
+  status     String
+  metadata   Json?
+  createdBy  String
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime
+  Workflow   Workflow? @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+
+  @@index([nextRun])
+  @@index([status])
+}
+
+model Workflow {
+  id                String              @id
+  name              String
+  description       String?
+  steps             Json
+  triggers          Json?
+  isActive          Boolean             @default(true)
+  isTemplate        Boolean             @default(false)
+  createdBy         String
+  projectId         String?
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime
+  ScheduledTask     ScheduledTask[]
+  WorkflowExecution WorkflowExecution[]
+
+  @@index([createdBy])
+  @@index([projectId])
+}
+
+model WorkflowExecution {
+  id          String    @id
+  workflowId  String
+  status      String
+  currentStep Int       @default(0)
+  context     Json
+  result      Json?
+  error       String?
+  startedAt   DateTime  @default(now())
+  completedAt DateTime?
+  Workflow    Workflow  @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+
+  @@index([status])
+  @@index([workflowId])
 }

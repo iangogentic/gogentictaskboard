@@ -1,0 +1,216 @@
+// Sprint 1: RBAC & Audit Logging
+model ProjectMember {
+  id          String   @id @default(cuid())
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  role        String   // "admin", "member", "viewer"
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([projectId, userId])
+  @@index([userId])
+}
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  action      String   // "create", "update", "delete", etc.
+  entity      String   // "project", "task", "update", etc.
+  entityId    String
+  details     Json?
+  ip          String?
+  userAgent   String?
+  createdAt   DateTime @default(now())
+
+  @@index([userId])
+  @@index([entity, entityId])
+  @@index([createdAt])
+}
+
+// Sprint 2-3: Integrations
+model ProjectIntegration {
+  id          String   @id @default(cuid())
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  type        String   // "slack", "google_drive"
+  config      Json     // Integration-specific configuration
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([projectId, type])
+  @@index([type])
+}
+
+model IntegrationCredential {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id])
+  provider     String   // "slack", "google"
+  accessToken  String   @db.Text
+  refreshToken String?  @db.Text
+  expiresAt    DateTime?
+  metadata     Json?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([userId, provider])
+  @@index([provider])
+}
+
+// Sprint 4: Agent System
+model AgentSession {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  projectId   String?
+  project     Project? @relation(fields: [projectId], references: [id])
+  state       String   // "initialized", "planning", "approved", "executing", "completed", "failed"
+  plan        Json?    // Execution plan
+  result      Json?    // Execution results
+  error       String?  @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId])
+  @@index([projectId])
+  @@index([state])
+}
+
+// Sprint 5: RAG Memory System
+model Document {
+  id          String      @id @default(cuid())
+  projectId   String?
+  project     Project?    @relation(fields: [projectId], references: [id])
+  source      String      // "project", "task", "update", "slack", "google_drive"
+  sourceId    String?
+  title       String
+  content     String      @db.Text
+  metadata    Json?
+  embeddings  Embedding[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@index([projectId])
+  @@index([source, sourceId])
+}
+
+model Embedding {
+  id         String   @id @default(cuid())
+  documentId String
+  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  chunk      String   @db.Text
+  embedding  Json     // Store as JSON array for pgvector
+  metadata   Json?
+  createdAt  DateTime @default(now())
+
+  @@index([documentId])
+}
+
+// Sprint 6: Advanced Agent Features
+model Conversation {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id])
+  projectId   String?
+  project     Project?  @relation(fields: [projectId], references: [id])
+  title       String?
+  summary     String?   @db.Text
+  messages    Message[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([projectId])
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  role           String       // "user", "assistant", "system"
+  content        String       @db.Text
+  metadata       Json?
+  createdAt      DateTime     @default(now())
+
+  @@index([conversationId])
+}
+
+model Workflow {
+  id          String               @id @default(cuid())
+  name        String
+  description String?
+  steps       Json                 // Array of workflow steps
+  createdBy   String
+  creator     User                 @relation(fields: [createdBy], references: [id])
+  isActive    Boolean              @default(true)
+  executions  WorkflowExecution[]
+  tasks       ScheduledTask[]
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+
+  @@index([createdBy])
+}
+
+model WorkflowExecution {
+  id          String   @id @default(cuid())
+  workflowId  String
+  workflow    Workflow @relation(fields: [workflowId], references: [id])
+  triggeredBy String
+  user        User     @relation(fields: [triggeredBy], references: [id])
+  status      String   // "running", "completed", "failed"
+  input       Json?
+  output      Json?
+  error       String?  @db.Text
+  startedAt   DateTime @default(now())
+  completedAt DateTime?
+
+  @@index([workflowId])
+  @@index([triggeredBy])
+  @@index([status])
+}
+
+model ScheduledTask {
+  id          String    @id @default(cuid())
+  name        String
+  cron        String    // Cron expression
+  workflowId  String?
+  workflow    Workflow? @relation(fields: [workflowId], references: [id])
+  action      String?   // Custom action if no workflow
+  parameters  Json?
+  status      String    // "active", "paused", "completed"
+  lastRun     DateTime?
+  nextRun     DateTime?
+  createdBy   String
+  creator     User      @relation(fields: [createdBy], references: [id])
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([status])
+  @@index([nextRun])
+  @@index([createdBy])
+}
+
+model AgentAnalytics {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  projectId   String?
+  project     Project? @relation(fields: [projectId], references: [id])
+  operation   String   // Tool/action name
+  duration    Int      // Milliseconds
+  tokens      Int?     // Token count
+  cost        Float?   // Cost in USD
+  success     Boolean
+  error       String?  @db.Text
+  metadata    Json?
+  createdAt   DateTime @default(now())
+
+  @@index([userId])
+  @@index([projectId])
+  @@index([operation])
+  @@index([createdAt])
+}
