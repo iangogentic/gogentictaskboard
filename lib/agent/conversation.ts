@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma";
+import prisma from "@/lib/prisma";
 import { agentMemory } from "./memory";
 import { Conversation, Message } from "@prisma/client";
 import OpenAI from "openai";

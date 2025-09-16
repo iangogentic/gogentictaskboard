@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
-import { prisma } from "@/lib/prisma";
+import prisma from "@/lib/prisma";
 import { AgentTools } from "@/lib/agent/tools";
 import { conversationManager } from "@/lib/agent/conversation";
 import OpenAI from "openai";
