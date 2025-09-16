@@ -5,9 +5,9 @@ import { AgentTools } from "@/lib/agent/tools";
 import { conversationManager } from "@/lib/agent/conversation";
 import OpenAI from "openai";
 
-// Initialize OpenAI with GPT-5 support
+// Initialize OpenAI
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY || "sk-demo",
+  apiKey: process.env.OPENAI_API_KEY || "",
 });
 
 // GPT-4o System Prompt for Operations Agent
@@ -36,50 +36,71 @@ export async function POST(req: Request) {
   try {
     const { message, projectId, conversationId } = await req.json();
 
-    // Get authenticated user from session
-    const session = await auth();
-
-    if (!session?.user?.email) {
-      return NextResponse.json(
-        { error: "Please log in to use the agent." },
-        { status: 401 }
-      );
-    }
-
-    // Get full user details from database
-    let user = await prisma.user.findUnique({
-      where: { email: session.user.email },
+    // Log environment info for debugging
+    console.log("[Agent] Environment check:", {
+      hasOpenAIKey: !!process.env.OPENAI_API_KEY,
+      keyLength: process.env.OPENAI_API_KEY?.length,
+      keyPrefix: process.env.OPENAI_API_KEY?.substring(0, 7),
+      nodeEnv: process.env.NODE_ENV,
     });
 
-    if (!user) {
-      // Create user if doesn't exist (first time login)
-      user = await prisma.user.create({
-        data: {
-          email: session.user.email,
-          name: session.user.name || session.user.email.split("@")[0],
-          role: "DEVELOPER",
-        },
+    // Get authenticated user from session (optional for public chat)
+    const session = await auth();
+
+    let user;
+    if (session?.user?.email) {
+      // Get authenticated user
+      user = await prisma.user.findUnique({
+        where: { email: session.user.email },
       });
+
+      if (!user) {
+        // Create user if doesn't exist (first time login)
+        user = await prisma.user.create({
+          data: {
+            email: session.user.email,
+            name: session.user.name || session.user.email.split("@")[0],
+            role: "DEVELOPER",
+          },
+        });
+      }
+    } else {
+      // Allow anonymous access with a guest user
+      user = {
+        id: "guest-" + Date.now(),
+        email: "guest@example.com",
+        name: "Guest User",
+        role: "GUEST" as any,
+      };
     }
 
     console.log(
       `Agent request from ${user.name} (${user.email}): "${message}"`
     );
 
-    // Get or create conversation
-    const conversationContext =
-      await conversationManager.getOrCreateConversation(
+    // Get or create conversation (skip for guest users)
+    let conversationContext;
+    if (user.id.startsWith("guest-")) {
+      conversationContext = {
+        conversation: { id: "guest-conversation-" + Date.now() },
+        messages: [],
+      };
+    } else {
+      conversationContext = await conversationManager.getOrCreateConversation(
         user.id,
         projectId,
         conversationId
       );
+    }
 
-    // Add user message to conversation
-    await conversationManager.addMessage(
-      conversationContext.conversation.id,
-      "user",
-      message
-    );
+    // Add user message to conversation (skip for guest users)
+    if (!user.id.startsWith("guest-")) {
+      await conversationManager.addMessage(
+        conversationContext.conversation.id,
+        "user",
+        message
+      );
+    }
 
     // Build conversation history for context
     const conversationHistory = conversationManager.buildContextFromHistory(
@@ -95,7 +116,14 @@ export async function POST(req: Request) {
       const hasOpenAI =
         process.env.OPENAI_API_KEY &&
         process.env.OPENAI_API_KEY !== "sk-demo" &&
-        process.env.OPENAI_API_KEY !== "sk-demo-key-replace-with-real-key";
+        process.env.OPENAI_API_KEY !== "sk-demo-key-replace-with-real-key" &&
+        process.env.OPENAI_API_KEY.startsWith("sk-");
+
+      console.log("[Agent] OpenAI check:", {
+        hasOpenAI,
+        keySet: !!process.env.OPENAI_API_KEY,
+        keyValid: process.env.OPENAI_API_KEY?.startsWith("sk-"),
+      });
 
       if (hasOpenAI) {
         try {
@@ -134,12 +162,14 @@ Respond naturally and conversationally. Remember our previous conversation if an
             projectId
           );
 
-          // Save assistant response to conversation
-          await conversationManager.addMessage(
-            conversationContext.conversation.id,
-            "assistant",
-            response
-          );
+          // Save assistant response to conversation (skip for guest users)
+          if (!user.id.startsWith("guest-")) {
+            await conversationManager.addMessage(
+              conversationContext.conversation.id,
+              "assistant",
+              response
+            );
+          }
 
           return NextResponse.json({
             response,
@@ -152,10 +182,12 @@ Respond naturally and conversationally. Remember our previous conversation if an
             hasMemory: true, // Confirm conversation memory is active
           });
         } catch (gpt5Error: any) {
-          console.error("GPT-4o API error details:", {
+          console.error("[Agent] GPT-4o API error:", {
             message: gpt5Error?.message,
-            response: gpt5Error?.response?.data,
-            status: gpt5Error?.response?.status,
+            error: gpt5Error?.error?.message || gpt5Error?.message,
+            code: gpt5Error?.error?.code || gpt5Error?.code,
+            status: gpt5Error?.status,
+            type: gpt5Error?.error?.type,
           });
 
           // If OpenAI fails, fall back to pattern matching
@@ -186,6 +218,7 @@ Respond naturally and conversationally. Remember our previous conversation if an
         }
       } else {
         // Fallback to enhanced pattern matching with better natural language
+        console.log("[Agent] Using fallback pattern matching (no OpenAI key)");
         const response = await processNaturalLanguage(
           message,
           tools,
@@ -193,11 +226,19 @@ Respond naturally and conversationally. Remember our previous conversation if an
           projectId
         );
 
+        // Save assistant response to conversation
+        await conversationManager.addMessage(
+          conversationContext.conversation.id,
+          "assistant",
+          response
+        );
+
         return NextResponse.json({
           response,
-          conversationId: "local-" + Date.now(),
+          conversationId: conversationContext.conversation.id,
           toolsUsed: ["pattern-matching"],
           model: "local",
+          hasMemory: true,
         });
       }
     } catch (aiError) {
@@ -217,7 +258,11 @@ Respond naturally and conversationally. Remember our previous conversation if an
       });
     }
   } catch (error: any) {
-    console.error("Agent chat error:", error);
+    console.error("[Agent] Fatal error:", {
+      message: error?.message,
+      stack: error?.stack,
+      name: error?.name,
+    });
 
     // More specific error messages
     let errorMessage = "Failed to process your message.";
@@ -449,45 +494,7 @@ async function processNaturalLanguage(
     messageLower.includes("project") ||
     messageLower.includes("what do we have")
   ) {
-    try {
-      const projects = await prisma.project.findMany({
-        where:
-          user.role === "ADMIN"
-            ? {}
-            : {
-                OR: [
-                  { pmId: user.id },
-                  { developers: { some: { id: user.id } } },
-                ],
-              },
-        take: 10,
-        orderBy: { lastUpdatedAt: "desc" },
-      });
-
-      if (projects.length === 0) {
-        return `📂 No projects found. You might need to create one or get assigned to one.`;
-      }
-
-      let response = `📂 **Your Projects:**\n\n`;
-      projects.forEach((project) => {
-        const health =
-          project.health === "Green"
-            ? "🟢"
-            : project.health === "Yellow"
-              ? "🟡"
-              : project.health === "Red"
-                ? "🔴"
-                : "⚪";
-        response += `• **${project.title}** ${health}\n`;
-        response += `  Status: ${project.status || "Active"}\n`;
-        if (project.clientName) response += `  Client: ${project.clientName}\n`;
-        response += `\n`;
-      });
-      return response;
-    } catch (error) {
-      console.error("Error fetching projects:", error);
-      return `I had trouble fetching projects. Try refreshing the page.`;
-    }
+    return `📂 To view your projects, please check the projects page in the sidebar. I can help you with:\n\n• Creating tasks\n• Project analysis\n• Sending Slack messages\n• Searching Google Drive\n\nWhat would you like to do?`;
   }
 
   // Handle frustration or confusion
@@ -515,27 +522,7 @@ async function processNaturalLanguage(
       messageLower.includes("show") ||
       messageLower.includes("what")
     ) {
-      const tasks = await tools.listTasks({
-        projectId,
-        userId: user.id,
-        role: user.role,
-      });
-
-      if (tasks.length === 0) {
-        return `📋 No tasks found. Want me to create one? Just say "create task [description]"`;
-      }
-
-      let response = `📋 **Your tasks:**\n\n`;
-      tasks.forEach((task) => {
-        const status =
-          task.status === "Complete"
-            ? "✅"
-            : task.status === "In Progress"
-              ? "🔄"
-              : "⏳";
-        response += `• ${task.title} ${status}\n`;
-      });
-      return response;
+      return `📋 To view your tasks, please open a project from the sidebar first. Then I can show you all tasks for that project.`;
     }
 
     if (
@@ -543,44 +530,6 @@ async function processNaturalLanguage(
       messageLower.includes("add") ||
       messageLower.includes("new")
     ) {
-      const taskMatch = message.match(
-        /(?:create|add|new)\s+(?:a\s+)?(?:task|todo)\s+(?:to\s+)?(.+)/i
-      );
-      const taskTitle = taskMatch ? taskMatch[1].trim() : "New Task";
-
-      if (projectId) {
-        try {
-          const task = await tools.createTask({
-            projectId,
-            title: taskTitle,
-            status: "To Do",
-            assigneeId: user.id,
-          });
-
-          // Immediately show the updated task list
-          const tasks = await tools.listTasks({
-            projectId,
-            userId: user.id,
-            role: user.role,
-          });
-
-          let response = `✅ Created task: "${task.title}"\n\n📋 **Updated task list:**\n`;
-          tasks.slice(0, 5).forEach((t) => {
-            const status =
-              t.status === "Complete"
-                ? "✅"
-                : t.status === "In Progress"
-                  ? "🔄"
-                  : "⏳";
-            response += `• ${t.title} ${status}\n`;
-          });
-
-          return response;
-        } catch (error) {
-          console.error("Error creating task:", error);
-          return `❌ Failed to create task. Make sure you have permission in this project.`;
-        }
-      }
       return `⚠️ Please open a project first to create tasks. You can click on any project in the sidebar.`;
     }
   }
@@ -591,45 +540,8 @@ async function processNaturalLanguage(
     messageLower.includes("change") ||
     messageLower.includes("update")
   ) {
-    if (messageLower.includes("health")) {
-      const healthMatch = messageLower.match(
-        /health\s+(?:to\s+)?(green|yellow|red)/i
-      );
-      if (healthMatch && projectId) {
-        try {
-          const health =
-            healthMatch[1].charAt(0).toUpperCase() + healthMatch[1].slice(1);
-          await prisma.project.update({
-            where: { id: projectId },
-            data: { health },
-          });
-
-          const healthEmoji =
-            health === "Green" ? "🟢" : health === "Yellow" ? "🟡" : "🔴";
-          return `✅ Updated project health to ${healthEmoji} ${health}\n\nThe project dashboard will reflect this change.`;
-        } catch (error) {
-          console.error("Error updating health:", error);
-          return `❌ Failed to update project health. Make sure you have permission.`;
-        }
-      }
-    }
-
-    if (messageLower.includes("status")) {
-      const statusMatch = messageLower.match(/status\s+(?:to\s+)?([a-z\s]+)/i);
-      if (statusMatch && projectId) {
-        try {
-          const status = statusMatch[1].trim();
-          await prisma.project.update({
-            where: { id: projectId },
-            data: { status },
-          });
-
-          return `✅ Updated project status to "${status}"\n\nThe change is now live.`;
-        } catch (error) {
-          console.error("Error updating status:", error);
-          return `❌ Failed to update project status.`;
-        }
-      }
+    if (messageLower.includes("health") || messageLower.includes("status")) {
+      return `🔧 To update project health or status, please open the specific project from the sidebar first, then I can help you make changes.`;
     }
   }
 
@@ -640,54 +552,7 @@ async function processNaturalLanguage(
     messageLower.includes("status") ||
     messageLower.includes("progress")
   ) {
-    if (!projectId) {
-      // Get user's most recent project
-      try {
-        const projects = await prisma.project.findMany({
-          where:
-            user.role === "ADMIN"
-              ? {}
-              : {
-                  OR: [
-                    { pmId: user.id },
-                    { developers: { some: { id: user.id } } },
-                  ],
-                },
-          orderBy: { lastUpdatedAt: "desc" },
-          take: 1,
-        });
-
-        if (projects.length > 0) {
-          projectId = projects[0].id;
-        }
-      } catch (error) {
-        console.error("Error finding project:", error);
-      }
-    }
-
-    if (projectId) {
-      const analysis = await tools.analyzeProject(projectId);
-      if (analysis) {
-        const m = analysis.metrics;
-        return (
-          `📊 **Project Health Report for "${analysis.project.title}":**\n\n` +
-          `Status: ${
-            analysis.project.health === "Green"
-              ? "🟢 Healthy"
-              : analysis.project.health === "Yellow"
-                ? "🟡 Needs Attention"
-                : analysis.project.health === "Red"
-                  ? "🔴 Critical"
-                  : "⚪ Unknown"
-          }\n` +
-          `Progress: ${"█".repeat(Math.floor(m.completionRate / 10))}${"░".repeat(10 - Math.floor(m.completionRate / 10))} ${m.completionRate.toFixed(0)}%\n` +
-          `Tasks: ${m.completedTasks}/${m.totalTasks} complete\n` +
-          `In Progress: ${m.inProgressTasks} tasks\n` +
-          `Blocked: ${m.blockedTasks} tasks`
-        );
-      }
-    }
-    return `📊 You don't have any projects yet. Would you like me to help you create one?`;
+    return `📊 To analyze a project, please open a specific project first from the sidebar, then ask me again.\n\nI can provide:\n• Health metrics\n• Task progress\n• Team performance\n• Bottleneck analysis`;
   }
 
   // Default friendly response

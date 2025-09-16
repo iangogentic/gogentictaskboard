@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { X, Send, Loader2, Maximize2, Minimize2 } from "lucide-react";
+import { X, Send, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface Message {
@@ -25,7 +25,6 @@ export function AgentChatPanel({
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [isFullscreen, setIsFullscreen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -98,29 +97,12 @@ export function AgentChatPanel({
           animate={{ x: 0 }}
           exit={{ x: "100%" }}
           transition={{ type: "spring", damping: 25, stiffness: 200 }}
-          className={`fixed top-0 right-0 z-50 bg-white shadow-2xl flex flex-col ${
-            isFullscreen
-              ? "w-full h-full"
-              : "w-96 h-full sm:h-[600px] sm:top-auto sm:bottom-6 sm:right-6 sm:rounded-lg"
-          }`}
+          className="fixed top-0 right-0 z-50 h-full w-[400px] bg-white shadow-2xl flex flex-col"
         >
           {/* Header */}
-          <div className="flex items-center justify-between border-b px-4 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-t-lg">
+          <div className="flex items-center justify-between border-b px-4 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white">
             <h2 className="text-lg font-semibold">AI Assistant</h2>
             <div className="flex items-center gap-2">
-              <button
-                onClick={() => setIsFullscreen(!isFullscreen)}
-                className="p-1 hover:bg-white/20 rounded transition-colors"
-                aria-label={
-                  isFullscreen ? "Exit fullscreen" : "Enter fullscreen"
-                }
-              >
-                {isFullscreen ? (
-                  <Minimize2 className="h-4 w-4" />
-                ) : (
-                  <Maximize2 className="h-4 w-4" />
-                )}
-              </button>
               <button
                 onClick={onClose}
                 className="p-1 hover:bg-white/20 rounded transition-colors"
