@@ -10,7 +10,9 @@ export default auth((req) => {
   const isAuthRoute =
     nextUrl.pathname.startsWith("/login") ||
     nextUrl.pathname.startsWith("/register");
-  const isPublicRoute = nextUrl.pathname.startsWith("/api/auth");
+  const isPublicRoute =
+    nextUrl.pathname.startsWith("/api/auth") ||
+    nextUrl.pathname.startsWith("/api/agent/chat"); // Allow public access to chat API
   const isAdminRoute = nextUrl.pathname.startsWith("/api/admin");
   const isProbeRoute = nextUrl.pathname.startsWith("/api/probe");
   const isTestRoute =
