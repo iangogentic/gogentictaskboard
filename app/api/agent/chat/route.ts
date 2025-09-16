@@ -152,22 +152,37 @@ Respond naturally and conversationally. Remember our previous conversation if an
             hasMemory: true, // Confirm conversation memory is active
           });
         } catch (gpt5Error: any) {
-          console.error("GPT-5 API error details:", {
+          console.error("GPT-4o API error details:", {
             message: gpt5Error?.message,
             response: gpt5Error?.response?.data,
             status: gpt5Error?.response?.status,
           });
 
-          // Return error details for debugging
-          return NextResponse.json(
-            {
-              error: "GPT API Error",
-              details: gpt5Error?.response?.data || gpt5Error?.message,
-              response: `I encountered an error with the AI API. Error: ${gpt5Error?.message || "Unknown error"}`,
-              model: "gpt-error",
-            },
-            { status: 500 }
+          // If OpenAI fails, fall back to pattern matching
+          console.log("Falling back to pattern matching due to OpenAI error");
+          const fallbackResponse = await processNaturalLanguage(
+            message,
+            tools,
+            user,
+            projectId
           );
+
+          // Save assistant response to conversation
+          await conversationManager.addMessage(
+            conversationContext.conversation.id,
+            "assistant",
+            fallbackResponse
+          );
+
+          return NextResponse.json({
+            response: fallbackResponse,
+            conversationId: conversationContext.conversation.id,
+            toolsUsed: ["pattern-matching-fallback"],
+            model: "fallback",
+            error: "OpenAI API unavailable, using fallback",
+            apiKeyDetected: true,
+            hasMemory: true,
+          });
         }
       } else {
         // Fallback to enhanced pattern matching with better natural language
