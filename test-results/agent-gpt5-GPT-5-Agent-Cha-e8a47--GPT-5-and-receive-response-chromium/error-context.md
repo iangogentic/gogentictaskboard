@@ -1,0 +1,86 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+    - generic [ref=e2]:
+        - navigation [ref=e3]:
+            - generic [ref=e5]:
+                - link "Gogentic AI Gogentic Portal" [ref=e7] [cursor=pointer]:
+                    - /url: /
+                    - img "Gogentic AI" [ref=e8] [cursor=pointer]
+                    - generic [ref=e9] [cursor=pointer]: Gogentic Portal
+                - generic [ref=e10]:
+                    - link "Mission Control" [ref=e11] [cursor=pointer]:
+                        - /url: /
+                        - img [ref=e12] [cursor=pointer]
+                        - text: Mission Control
+                    - link "Projects" [ref=e17] [cursor=pointer]:
+                        - /url: /projects
+                        - img [ref=e18] [cursor=pointer]
+                        - text: Projects
+                    - link "My Work" [ref=e20] [cursor=pointer]:
+                        - /url: /my-work
+                        - img [ref=e21] [cursor=pointer]
+                        - text: My Work
+                    - link "Dashboard" [ref=e24] [cursor=pointer]:
+                        - /url: /dashboard
+                        - img [ref=e25] [cursor=pointer]
+                        - text: Dashboard
+                    - link "Reports" [ref=e27] [cursor=pointer]:
+                        - /url: /reports
+                        - img [ref=e28] [cursor=pointer]
+                        - text: Reports
+                    - link "Activity" [ref=e31] [cursor=pointer]:
+                        - /url: /activity
+                        - img [ref=e32] [cursor=pointer]
+                        - text: Activity
+                    - link "Team" [ref=e34] [cursor=pointer]:
+                        - /url: /team
+                        - img [ref=e35] [cursor=pointer]
+                        - text: Team
+                - button "Search... ⌘K" [ref=e42]:
+                    - img [ref=e43]
+                    - generic [ref=e46]: Search...
+                    - generic [ref=e47]: ⌘K
+        - main [ref=e48]:
+            - generic [ref=e50]:
+                - generic [ref=e51]:
+                    - heading "Welcome to Gogentic Portal" [level=1] [ref=e52]
+                    - paragraph [ref=e53]: Sign in to your account
+                - button "Continue with Google" [ref=e56]:
+                    - img [ref=e57]
+                    - text: Continue with Google
+        - button "Open AI Assistant" [ref=e62]:
+            - img [ref=e63]
+        - generic [ref=e65]:
+            - generic [ref=e66]:
+                - heading "AI Assistant" [level=2] [ref=e67]
+                - generic [ref=e68]:
+                    - button "Enter fullscreen" [ref=e69]:
+                        - img [ref=e70]
+                    - button "Close chat" [ref=e75]:
+                        - img [ref=e76]
+            - generic [ref=e79]:
+                - generic [ref=e81]:
+                    - paragraph [ref=e82]: Hello GPT-5, what model are you using?
+                    - paragraph [ref=e83]: 03:33 PM
+                - generic [ref=e85]:
+                    - paragraph [ref=e86]: Sorry, I encountered an error. Please try again.
+                    - paragraph [ref=e87]: 03:33 PM
+            - generic [ref=e89]:
+                - textbox "Type your message..." [ref=e90]
+                - button [disabled] [ref=e91]:
+                    - img [ref=e92]
+    - generic [ref=e99] [cursor=pointer]:
+        - button "Open Next.js Dev Tools" [ref=e100] [cursor=pointer]:
+            - img [ref=e101] [cursor=pointer]
+        - generic [ref=e104] [cursor=pointer]:
+            - button "Open issues overlay" [ref=e105] [cursor=pointer]:
+                - generic [ref=e106] [cursor=pointer]:
+                    - generic [ref=e107] [cursor=pointer]: "0"
+                    - generic [ref=e108] [cursor=pointer]: "1"
+                - generic [ref=e109] [cursor=pointer]: Issue
+            - button "Collapse issues badge" [ref=e110] [cursor=pointer]:
+                - img [ref=e111] [cursor=pointer]
+    - alert [ref=e113]
+```

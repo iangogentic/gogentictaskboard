@@ -1,0 +1,83 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e1]:
+    - generic [ref=e2]:
+        - navigation [ref=e3]:
+            - generic [ref=e5]:
+                - link "Gogentic AI Gogentic Portal" [ref=e7] [cursor=pointer]:
+                    - /url: /
+                    - img "Gogentic AI" [ref=e8] [cursor=pointer]
+                    - generic [ref=e9] [cursor=pointer]: Gogentic Portal
+                - generic [ref=e10]:
+                    - link "Mission Control" [ref=e11] [cursor=pointer]:
+                        - /url: /
+                        - img [ref=e12] [cursor=pointer]
+                        - text: Mission Control
+                    - link "Projects" [ref=e17] [cursor=pointer]:
+                        - /url: /projects
+                        - img [ref=e18] [cursor=pointer]
+                        - text: Projects
+                    - link "My Work" [ref=e20] [cursor=pointer]:
+                        - /url: /my-work
+                        - img [ref=e21] [cursor=pointer]
+                        - text: My Work
+                    - link "Dashboard" [ref=e24] [cursor=pointer]:
+                        - /url: /dashboard
+                        - img [ref=e25] [cursor=pointer]
+                        - text: Dashboard
+                    - link "Reports" [ref=e27] [cursor=pointer]:
+                        - /url: /reports
+                        - img [ref=e28] [cursor=pointer]
+                        - text: Reports
+                    - link "Activity" [ref=e31] [cursor=pointer]:
+                        - /url: /activity
+                        - img [ref=e32] [cursor=pointer]
+                        - text: Activity
+                    - link "Team" [ref=e34] [cursor=pointer]:
+                        - /url: /team
+                        - img [ref=e35] [cursor=pointer]
+                        - text: Team
+                - button "Search... ⌘K" [ref=e42]:
+                    - img [ref=e43]
+                    - generic [ref=e46]: Search...
+                    - generic [ref=e47]: ⌘K
+        - main [ref=e48]:
+            - generic [ref=e50]:
+                - generic [ref=e51]:
+                    - heading "Welcome to Gogentic Portal" [level=1] [ref=e52]
+                    - paragraph [ref=e53]: Sign in to your account
+                - button "Continue with Google" [ref=e56]:
+                    - img [ref=e57]
+                    - text: Continue with Google
+        - button "Open AI Assistant" [active] [ref=e62]:
+            - img [ref=e63]
+            - generic [ref=e65]: AI Assistant
+        - generic [ref=e67]:
+            - generic [ref=e68]:
+                - heading "AI Assistant" [level=2] [ref=e69]
+                - generic [ref=e70]:
+                    - button "Enter fullscreen" [ref=e71]:
+                        - img [ref=e72]
+                    - button "Close chat" [ref=e77]:
+                        - img [ref=e78]
+            - generic [ref=e82]:
+                - paragraph [ref=e83]: Hello! I'm your AI assistant.
+                - paragraph [ref=e84]: I can help you with project management, answer questions, and provide insights.
+            - generic [ref=e86]:
+                - textbox "Type your message..." [ref=e87]
+                - button [disabled] [ref=e88]:
+                    - img [ref=e89]
+    - generic [ref=e96] [cursor=pointer]:
+        - button "Open Next.js Dev Tools" [ref=e97] [cursor=pointer]:
+            - img [ref=e98] [cursor=pointer]
+        - generic [ref=e101] [cursor=pointer]:
+            - button "Open issues overlay" [ref=e102] [cursor=pointer]:
+                - generic [ref=e103] [cursor=pointer]:
+                    - generic [ref=e104] [cursor=pointer]: "0"
+                    - generic [ref=e105] [cursor=pointer]: "1"
+                - generic [ref=e106] [cursor=pointer]: Issue
+            - button "Collapse issues badge" [ref=e107] [cursor=pointer]:
+                - img [ref=e108] [cursor=pointer]
+    - alert [ref=e110]
+```
