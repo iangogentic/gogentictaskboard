@@ -99,10 +99,9 @@ export async function POST(req: Request) {
 
       if (hasOpenAI) {
         try {
-          // Use GPT-5 for natural language understanding (Released August 2025)
-          // GPT-5 ONLY supports: model, messages, temperature (must be 1), max_completion_tokens
+          // Use GPT-4o-mini for natural language understanding
           const completion = await openai.chat.completions.create({
-            model: "gpt-5", // Using GPT-5 standard model
+            model: "gpt-4o-mini", // Using GPT-4o-mini for efficient responses
             messages: [
               {
                 role: "system",
@@ -120,9 +119,8 @@ Context:
 Respond naturally and conversationally. Remember our previous conversation if any. If the user greets you, respond with a personalized greeting using their name and offer help. Do NOT include any analysis steps or debug information in your response - just give a direct, friendly answer.`,
               },
             ],
-            temperature: 1, // GPT-5 ONLY supports temperature=1 (default)
-            max_completion_tokens: 1000, // GPT-5 uses max_completion_tokens, NOT max_tokens
-            // NO OTHER PARAMETERS ALLOWED for GPT-5
+            temperature: 0.7,
+            max_tokens: 1000,
           });
 
           const aiResponse = completion.choices[0].message?.content || "";
