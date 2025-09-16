@@ -10,8 +10,8 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY || "sk-demo",
 });
 
-// GPT-5 System Prompt for Operations Agent (Released August 7, 2025)
-const SYSTEM_PROMPT = `You are an advanced Operations Agent powered by GPT-5 (Released August 2025) with access to Sprint 1-6 features:
+// GPT-4o System Prompt for Operations Agent
+const SYSTEM_PROMPT = `You are an advanced Operations Agent powered by GPT-4o with access to Sprint 1-6 features:
 
 Sprint 1 - RBAC: Role-based access control for tasks and permissions
 Sprint 2 - Slack: Send messages and create channels  
@@ -99,9 +99,9 @@ export async function POST(req: Request) {
 
       if (hasOpenAI) {
         try {
-          // Use GPT-5 with reasoning capabilities
+          // Use GPT-4o for natural language understanding
           const completion = await openai.chat.completions.create({
-            model: "gpt-5", // Using GPT-5 (Released August 2025)
+            model: "gpt-4o", // Using GPT-4o for advanced capabilities
             messages: [
               {
                 role: "system",
@@ -119,9 +119,8 @@ Context:
 Respond naturally and conversationally. Remember our previous conversation if any. If the user greets you, respond with a personalized greeting using their name and offer help. Do NOT include any analysis steps or debug information in your response - just give a direct, friendly answer.`,
               },
             ],
-            // GPT-5 specific parameters
-            reasoning_effort: "medium", // Control reasoning depth
-            max_completion_tokens: 1000, // GPT-5 uses max_completion_tokens instead of max_tokens
+            temperature: 0.7,
+            max_tokens: 1000,
           });
 
           const aiResponse = completion.choices[0].message?.content || "";
@@ -145,11 +144,11 @@ Respond naturally and conversationally. Remember our previous conversation if an
           return NextResponse.json({
             response,
             conversationId: conversationContext.conversation.id, // Return actual conversation ID
-            toolsUsed: ["gpt-5"],
-            model: "gpt-5", // GPT-5 standard model
-            modelVersion: "August 2025 Release",
+            toolsUsed: ["gpt-4o"],
+            model: "gpt-4o", // GPT-4o model
+            modelVersion: "Latest",
             apiKeyDetected: true,
-            usingGPT5: true, // Confirm we're using GPT-5
+            usingGPT4o: true, // Confirm we're using GPT-4o
             hasMemory: true, // Confirm conversation memory is active
           });
         } catch (gpt5Error: any) {
@@ -162,10 +161,10 @@ Respond naturally and conversationally. Remember our previous conversation if an
           // Return error details for debugging
           return NextResponse.json(
             {
-              error: "GPT-5 API Error",
+              error: "GPT API Error",
               details: gpt5Error?.response?.data || gpt5Error?.message,
-              response: `I encountered an error with GPT-5. Error: ${gpt5Error?.message || "Unknown error"}`,
-              model: "gpt-5-error",
+              response: `I encountered an error with the AI API. Error: ${gpt5Error?.message || "Unknown error"}`,
+              model: "gpt-error",
             },
             { status: 500 }
           );
