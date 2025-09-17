@@ -1,5 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
+import { prisma } from "@/lib/prisma";
+import {
+  ragSearchTool,
+  getMemoryContextTool,
+} from "@/lib/agent/tools/rag-tools";
+import { searchTool } from "@/lib/agent/tools/search-tools";
 
 // Use Node.js runtime to avoid Edge Function size limits
 export const runtime = "nodejs";
@@ -90,53 +96,317 @@ const functions = [
   },
 ];
 
-// Function to call our data APIs
+// Direct function implementations
 async function callFunction(name: string, args: any) {
-  const baseUrl = process.env.NEXT_PUBLIC_URL || "http://localhost:3000";
-
   try {
-    let url = "";
-    let params = new URLSearchParams();
-
     switch (name) {
-      case "get_projects":
-        url = `${baseUrl}/api/agent/data/projects`;
-        if (args.status) params.append("status", args.status);
-        if (args.limit) params.append("limit", args.limit.toString());
-        break;
+      case "get_projects": {
+        const where: any = {};
+        if (args.status) where.status = args.status;
+        const limit = args.limit || 10;
 
-      case "get_site_overview":
-        url = `${baseUrl}/api/agent/data/overview`;
-        break;
+        const projects = await prisma.project.findMany({
+          where,
+          take: limit,
+          include: {
+            pm: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+              },
+            },
+            portfolio: true,
+            tasks: {
+              select: {
+                id: true,
+                title: true,
+                status: true,
+                estimatedHours: true,
+                actualHours: true,
+              },
+            },
+            developers: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+              },
+            },
+            updates: {
+              take: 5,
+              orderBy: { createdAt: "desc" },
+              include: {
+                author: {
+                  select: {
+                    name: true,
+                    email: true,
+                  },
+                },
+              },
+            },
+          },
+          orderBy: {
+            lastUpdatedAt: "desc",
+          },
+        });
 
-      case "get_tasks":
-        url = `${baseUrl}/api/agent/data/tasks`;
-        if (args.projectId) params.append("projectId", args.projectId);
-        if (args.status) params.append("status", args.status);
-        if (args.assigneeId) params.append("assigneeId", args.assigneeId);
-        if (args.limit) params.append("limit", args.limit.toString());
-        break;
+        const projectData = projects.map((project) => {
+          const totalEstimated = project.tasks.reduce(
+            (sum, task) => sum + (task.estimatedHours || 0),
+            0
+          );
+          const totalActual = project.tasks.reduce(
+            (sum, task) => sum + task.actualHours,
+            0
+          );
+          const completedTasks = project.tasks.filter(
+            (t) => t.status === "completed"
+          ).length;
+          const progress =
+            project.tasks.length > 0
+              ? Math.round((completedTasks / project.tasks.length) * 100)
+              : 0;
 
-      case "search_content":
-        url = `${baseUrl}/api/agent/data/search`;
-        params.append("query", args.query);
-        if (args.projectId) params.append("projectId", args.projectId);
-        if (args.type) params.append("type", args.type);
-        break;
+          return {
+            id: project.id,
+            title: project.title,
+            clientName: project.clientName,
+            clientEmail: project.clientEmail,
+            status: project.status,
+            stage: project.stage,
+            health: project.health,
+            startDate: project.startDate,
+            targetDelivery: project.targetDelivery,
+            notes: project.notes,
+            portfolio: project.portfolio,
+            pm: project.pm,
+            developers: project.developers,
+            progress,
+            taskStats: {
+              total: project.tasks.length,
+              completed: completedTasks,
+              totalEstimatedHours: totalEstimated,
+              totalActualHours: totalActual,
+            },
+            recentUpdates: project.updates.slice(0, 3),
+            createdAt: project.createdAt,
+            lastUpdatedAt: project.lastUpdatedAt,
+          };
+        });
+
+        return JSON.stringify({
+          success: true,
+          data: projectData,
+          count: projectData.length,
+        });
+      }
+
+      case "get_site_overview": {
+        const [
+          totalProjects,
+          activeProjects,
+          totalTasks,
+          completedTasks,
+          totalUsers,
+          totalDocuments,
+          recentUpdates,
+          portfolios,
+        ] = await Promise.all([
+          prisma.project.count(),
+          prisma.project.count({
+            where: { status: { not: "completed" }, archived: false },
+          }),
+          prisma.task.count(),
+          prisma.task.count({ where: { status: "completed" } }),
+          prisma.user.count(),
+          prisma.document.count(),
+          prisma.update.findMany({
+            take: 10,
+            orderBy: { createdAt: "desc" },
+            include: {
+              author: {
+                select: { name: true, email: true },
+              },
+              project: {
+                select: { title: true, clientName: true },
+              },
+            },
+          }),
+          prisma.portfolio.findMany({
+            include: {
+              _count: {
+                select: { projects: true },
+              },
+            },
+          }),
+        ]);
+
+        const overview = {
+          projects: {
+            total: totalProjects,
+            active: activeProjects,
+          },
+          tasks: {
+            total: totalTasks,
+            completed: completedTasks,
+            completionRate:
+              totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0,
+          },
+          portfolios: portfolios.map((p) => ({
+            id: p.id,
+            name: p.name,
+            key: p.key,
+            projectCount: p._count.projects,
+            color: p.color,
+          })),
+          users: {
+            total: totalUsers,
+          },
+          documents: {
+            total: totalDocuments,
+          },
+          recentActivity: recentUpdates.map((update) => ({
+            id: update.id,
+            type: "update",
+            content: update.body,
+            project: update.project.title,
+            client: update.project.clientName,
+            author: update.author.name || update.author.email,
+            timestamp: update.createdAt,
+          })),
+        };
+
+        return JSON.stringify({
+          success: true,
+          data: overview,
+          timestamp: new Date().toISOString(),
+        });
+      }
+
+      case "get_tasks": {
+        const where: any = {};
+        if (args.projectId) where.projectId = args.projectId;
+        if (args.status) where.status = args.status;
+        if (args.assigneeId) where.assigneeId = args.assigneeId;
+        const limit = args.limit || 20;
+
+        const tasks = await prisma.task.findMany({
+          where,
+          take: limit,
+          include: {
+            project: {
+              select: {
+                id: true,
+                title: true,
+                clientName: true,
+              },
+            },
+            assignee: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+              },
+            },
+            timeEntries: {
+              select: {
+                hours: true,
+                date: true,
+              },
+            },
+          },
+          orderBy: [{ status: "asc" }, { dueDate: "asc" }, { order: "asc" }],
+        });
+
+        const taskData = tasks.map((task) => ({
+          id: task.id,
+          title: task.title,
+          status: task.status,
+          project: task.project,
+          assignee: task.assignee,
+          dueDate: task.dueDate,
+          notes: task.notes,
+          estimatedHours: task.estimatedHours,
+          actualHours: task.actualHours,
+          timeEntries: task.timeEntries,
+          createdAt: task.createdAt,
+          updatedAt: task.updatedAt,
+        }));
+
+        return JSON.stringify({
+          success: true,
+          data: taskData,
+          count: taskData.length,
+        });
+      }
+
+      case "search_content": {
+        const { query, projectId, type = "all" } = args;
+
+        const results: any = {
+          semantic: null,
+          database: null,
+          memory: null,
+        };
+
+        // Perform semantic search using RAG
+        if (type === "all" || type === "rag") {
+          const ragResult = await ragSearchTool.execute({
+            query,
+            projectId,
+            limit: 5,
+          });
+
+          if (ragResult.success) {
+            results.semantic = ragResult.data;
+          }
+        }
+
+        // Perform database search
+        if (type === "all" || type === "database") {
+          const dbResult = await searchTool.execute({
+            query,
+            projectId,
+            types: ["projects", "tasks", "updates", "documents"],
+            limit: 10,
+          });
+
+          if (dbResult.success) {
+            results.database = dbResult.data;
+          }
+        }
+
+        // Get memory context
+        if (type === "all" || type === "rag") {
+          const memoryResult = await getMemoryContextTool.execute({
+            query,
+            projectId,
+          });
+
+          if (memoryResult.success) {
+            results.memory = memoryResult.data;
+          }
+        }
+
+        return JSON.stringify({
+          success: true,
+          data: {
+            query,
+            projectId,
+            searchType: type,
+            results: {
+              semantic: results.semantic?.results || [],
+              database: results.database || {},
+              memory: results.memory?.memory || null,
+            },
+          },
+        });
+      }
 
       default:
         throw new Error(`Unknown function: ${name}`);
     }
-
-    const fullUrl = params.toString() ? `${url}?${params.toString()}` : url;
-    const response = await fetch(fullUrl);
-
-    if (!response.ok) {
-      throw new Error(`API call failed: ${response.statusText}`);
-    }
-
-    const data = await response.json();
-    return JSON.stringify(data);
   } catch (error: any) {
     return JSON.stringify({ error: error.message });
   }
