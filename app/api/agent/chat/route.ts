@@ -79,28 +79,21 @@ export async function POST(req: Request) {
     );
 
     // Get or create conversation (skip for guest users)
+    // TEMPORARY: Use in-memory conversations for all users due to Edge Runtime limitations
     let conversationContext;
-    if (user.id.startsWith("guest-")) {
-      conversationContext = {
-        conversation: { id: "guest-conversation-" + Date.now() },
-        messages: [],
-      };
-    } else {
-      conversationContext = await conversationManager.getOrCreateConversation(
-        user.id,
-        projectId,
-        conversationId
-      );
-    }
 
-    // Add user message to conversation (skip for guest users)
-    if (!user.id.startsWith("guest-")) {
-      await conversationManager.addMessage(
-        conversationContext.conversation.id,
-        "user",
-        message
-      );
-    }
+    // For now, treat all users like guest users to avoid Prisma in Edge Runtime
+    conversationContext = {
+      conversation: {
+        id: user.id.startsWith("guest-")
+          ? "guest-conversation-" + Date.now()
+          : `user-${user.id}-conversation-${Date.now()}`,
+      },
+      messages: [],
+    };
+
+    // Skip database operations in Edge Runtime
+    // TODO: Move conversation persistence to a separate API route or use KV storage
 
     // Build conversation history for context
     const conversationHistory = conversationManager.buildContextFromHistory(
@@ -162,14 +155,8 @@ Respond naturally and conversationally. Remember our previous conversation if an
             projectId
           );
 
-          // Save assistant response to conversation (skip for guest users)
-          if (!user.id.startsWith("guest-")) {
-            await conversationManager.addMessage(
-              conversationContext.conversation.id,
-              "assistant",
-              response
-            );
-          }
+          // Skip saving to database in Edge Runtime
+          // TODO: Move conversation persistence to a separate API route or use KV storage
 
           return NextResponse.json({
             response,
@@ -199,12 +186,8 @@ Respond naturally and conversationally. Remember our previous conversation if an
             projectId
           );
 
-          // Save assistant response to conversation
-          await conversationManager.addMessage(
-            conversationContext.conversation.id,
-            "assistant",
-            fallbackResponse
-          );
+          // Skip saving to database in Edge Runtime
+          // TODO: Move conversation persistence to a separate API route or use KV storage
 
           return NextResponse.json({
             response: fallbackResponse,
@@ -226,12 +209,8 @@ Respond naturally and conversationally. Remember our previous conversation if an
           projectId
         );
 
-        // Save assistant response to conversation
-        await conversationManager.addMessage(
-          conversationContext.conversation.id,
-          "assistant",
-          response
-        );
+        // Skip saving to database in Edge Runtime
+        // TODO: Move conversation persistence to a separate API route or use KV storage
 
         return NextResponse.json({
           response,
