@@ -50,7 +50,8 @@ export function AgentChatPanel({
     setIsLoading(true);
 
     try {
-      const response = await fetch("/api/agent/chat", {
+      // Try the new chat-v2 endpoint first with function calling
+      const response = await fetch("/api/agent/chat-v2", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -63,18 +64,50 @@ export function AgentChatPanel({
         }),
       });
 
-      if (!response.ok) throw new Error("Failed to get response");
+      if (!response.ok) {
+        // Fallback to original chat endpoint if v2 fails
+        const fallbackResponse = await fetch("/api/agent/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            message: userMessage.content,
+            projectId,
+            history: messages.map((m) => ({
+              role: m.role,
+              content: m.content,
+            })),
+          }),
+        });
 
-      const data = await response.json();
+        if (!fallbackResponse.ok) throw new Error("Failed to get response");
+        const fallbackData = await fallbackResponse.json();
 
-      const assistantMessage: Message = {
-        id: `msg_${Date.now()}_assistant`,
-        role: "assistant",
-        content: data.response,
-        timestamp: new Date(),
-      };
+        const assistantMessage: Message = {
+          id: `msg_${Date.now()}_assistant`,
+          role: "assistant",
+          content: fallbackData.response,
+          timestamp: new Date(),
+        };
 
-      setMessages((prev) => [...prev, assistantMessage]);
+        setMessages((prev) => [...prev, assistantMessage]);
+      } else {
+        const data = await response.json();
+
+        // Add function usage indicator if functions were called
+        let content = data.response;
+        if (data.functionsUsed && data.functionsUsed.length > 0) {
+          content = `${data.response}\n\n[Used: ${data.functionsUsed.join(", ")}]`;
+        }
+
+        const assistantMessage: Message = {
+          id: `msg_${Date.now()}_assistant`,
+          role: "assistant",
+          content: content,
+          timestamp: new Date(),
+        };
+
+        setMessages((prev) => [...prev, assistantMessage]);
+      }
     } catch (error) {
       console.error("Error sending message:", error);
       const errorMessage: Message = {

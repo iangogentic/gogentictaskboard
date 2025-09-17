@@ -49,21 +49,13 @@ export async function POST(req: Request) {
 
     let user;
     if (session?.user?.email) {
-      // Get authenticated user
-      user = await prisma.user.findUnique({
-        where: { email: session.user.email },
-      });
-
-      if (!user) {
-        // Create user if doesn't exist (first time login)
-        user = await prisma.user.create({
-          data: {
-            email: session.user.email,
-            name: session.user.name || session.user.email.split("@")[0],
-            role: "DEVELOPER",
-          },
-        });
-      }
+      // Create user object from session for Edge Runtime
+      user = {
+        id: session.user.id || `user-${Date.now()}`,
+        email: session.user.email,
+        name: session.user.name || session.user.email.split("@")[0],
+        role: "DEVELOPER" as any,
+      };
     } else {
       // Allow anonymous access with a guest user
       user = {
