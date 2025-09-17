@@ -10,8 +10,11 @@ import {
   AgentContext,
 } from "./types";
 import { getTool } from "./tools";
+import { toolRegistry } from "./tool-registry";
 import { prisma } from "@/lib/prisma";
 import { AuditLogger } from "@/lib/audit";
+import { checkPermissions } from "@/lib/rbac";
+import { z } from "zod";
 import { v4 as uuidv4 } from "uuid";
 
 export class AgentEngine {
@@ -125,7 +128,7 @@ export class AgentEngine {
     }
   }
 
-  // Execute a single step
+  // Execute a single step with guardrails
   private async executeStep(step: PlanStep): Promise<StepResult> {
     const startTime = Date.now();
 
@@ -135,41 +138,149 @@ export class AgentEngine {
       step.startedAt = new Date();
       await this.saveSession();
 
-      // Get the tool
-      const tool = getTool(step.tool);
+      // Get the tool from registry
+      const tool = toolRegistry.get(step.tool);
       if (!tool) {
+        // Fallback to old tool system
+        const legacyTool = getTool(step.tool);
+        if (legacyTool) {
+          // Execute legacy tool
+          const params = {
+            ...step.parameters,
+            executorId: this.session.userId,
+            sessionId: this.session.id,
+            context: this.session.context,
+          };
+          const result = await legacyTool.execute(params);
+
+          step.status = result.success ? "completed" : "failed";
+          step.result = result;
+          step.completedAt = new Date();
+          await this.saveSession();
+
+          return {
+            stepId: step.id,
+            tool: step.tool,
+            status: step.status,
+            output: result.data,
+            error: result.error,
+            duration: Date.now() - startTime,
+          };
+        }
         throw new Error(`Tool not found: ${step.tool}`);
       }
 
-      // Add execution context to parameters
-      const params = {
-        ...step.parameters,
-        executorId: this.session.userId,
-        sessionId: this.session.id,
-        context: this.session.context,
+      // GUARDRAIL 1: Validate input schema
+      let validatedParams;
+      try {
+        validatedParams = tool.schema.parse(step.parameters);
+      } catch (validationError: any) {
+        throw new Error(
+          `Invalid parameters for ${step.tool}: ${validationError.message}`
+        );
+      }
+
+      // GUARDRAIL 2: Check permissions
+      const user = await prisma.user.findUnique({
+        where: { id: this.session.userId },
+      });
+
+      if (!user) {
+        throw new Error("User not found");
+      }
+
+      const hasPermission = await checkPermissions(user, tool.scopes);
+      if (!hasPermission) {
+        throw new Error(
+          `Insufficient permissions for tool ${step.tool}. Required scopes: ${tool.scopes.join(", ")}`
+        );
+      }
+
+      // GUARDRAIL 3: Check if mutation requires approval
+      if (tool.mutates && !this.session.plan?.approved) {
+        throw new Error(
+          `NEEDS_APPROVAL: Tool ${step.tool} requires plan approval before execution`
+        );
+      }
+
+      // Build context for tool execution
+      const toolContext = {
+        userId: this.session.userId,
+        projectId: this.session.projectId,
+        session: this.session,
+        permissions: tool.scopes,
+        traceId: `${this.session.id}_${step.id}`,
       };
 
+      // Redact sensitive data for logging
+      const redactedParams = this.redactSensitiveData(validatedParams);
+
+      // Log tool call to audit (before execution)
+      await AuditLogger.logSuccess(
+        this.session.userId,
+        "tool_execution_start",
+        "tool",
+        step.tool,
+        {
+          sessionId: this.session.id,
+          stepId: step.id,
+          parameters: redactedParams,
+          scopes: tool.scopes,
+          mutates: tool.mutates,
+        }
+      );
+
       // Execute the tool
-      const result = await tool.execute(params);
+      const result = await toolRegistry.execute(
+        step.tool,
+        toolContext,
+        validatedParams
+      );
 
       // Update step with result
-      step.status = result.success ? "completed" : "failed";
-      step.result = result;
+      step.status = "completed";
+      step.result = { success: true, data: result };
       step.completedAt = new Date();
       await this.saveSession();
+
+      // Log successful execution
+      await AuditLogger.logSuccess(
+        this.session.userId,
+        "tool_execution_complete",
+        "tool",
+        step.tool,
+        {
+          sessionId: this.session.id,
+          stepId: step.id,
+          duration: Date.now() - startTime,
+        }
+      );
 
       return {
         stepId: step.id,
         tool: step.tool,
-        status: step.status,
-        output: result.data,
-        error: result.error,
+        status: "completed",
+        output: result,
         duration: Date.now() - startTime,
       };
     } catch (error: any) {
       step.status = "failed";
       step.completedAt = new Date();
       await this.saveSession();
+
+      // Log failure
+      await AuditLogger.logFailure(
+        this.session.userId,
+        "tool_execution_failed",
+        "tool",
+        error.message,
+        step.tool,
+        {
+          sessionId: this.session.id,
+          stepId: step.id,
+          duration: Date.now() - startTime,
+        }
+      );
 
       return {
         stepId: step.id,
@@ -179,6 +290,31 @@ export class AgentEngine {
         duration: Date.now() - startTime,
       };
     }
+  }
+
+  // Redact sensitive data from parameters
+  private redactSensitiveData(params: any): any {
+    const sensitiveKeys = [
+      "password",
+      "token",
+      "apiKey",
+      "secret",
+      "credential",
+      "auth",
+    ];
+    const redacted = { ...params };
+
+    for (const key of Object.keys(redacted)) {
+      if (
+        sensitiveKeys.some((sensitive) => key.toLowerCase().includes(sensitive))
+      ) {
+        redacted[key] = "[REDACTED]";
+      } else if (typeof redacted[key] === "object" && redacted[key] !== null) {
+        redacted[key] = this.redactSensitiveData(redacted[key]);
+      }
+    }
+
+    return redacted;
   }
 
   // Generate execution summary

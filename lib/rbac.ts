@@ -107,17 +107,37 @@ export async function canUserModifyProject(
 }
 
 export async function checkPermissions(
-  userId: string,
-  resource: string,
-  action: string
+  userOrId: string | { id: string; role: string } | null,
+  requiredScopes: string[] | string
 ): Promise<boolean> {
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: { role: true },
-  });
+  // Handle different input types
+  let user: { role: string } | null = null;
+
+  if (!userOrId) return false;
+
+  if (typeof userOrId === "string") {
+    const dbUser = await prisma.user.findUnique({
+      where: { id: userOrId },
+      select: { role: true },
+    });
+    user = dbUser;
+  } else {
+    user = userOrId;
+  }
 
   if (!user) return false;
 
-  const permission = `${resource}:${action}`;
-  return hasPermission(user.role as Role, permission);
+  // Convert single scope to array
+  const scopes = Array.isArray(requiredScopes)
+    ? requiredScopes
+    : [requiredScopes];
+
+  // Check each required scope
+  for (const scope of scopes) {
+    const permission = scope.includes(":") ? scope : `${scope}:*`;
+    const hasIt = await hasPermission(user.role as Role, permission);
+    if (!hasIt) return false;
+  }
+
+  return true;
 }

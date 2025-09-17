@@ -33,6 +33,7 @@ export interface AgentPlan {
   risks?: string[];
   dependencies?: string[];
   createdAt: Date;
+  approved?: boolean;
   approvedAt?: Date;
   approvedBy?: string;
 }
