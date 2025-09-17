@@ -1,6 +1,7 @@
 import { AgentPlan, PlanStep, AgentContext } from "./types";
 import { getAllTools } from "./tools";
 import { agentMemory } from "./memory";
+import { embeddingService } from "@/lib/embeddings";
 import OpenAI from "openai";
 import { v4 as uuidv4 } from "uuid";
 
@@ -32,25 +33,42 @@ export class AgentPlanner {
       );
       const memoryContext = agentMemory.buildContextString(memory);
 
+      // PHASE 5: Fetch RAG context for better planning
+      let ragContext = "";
+      if (this.context.project?.id) {
+        try {
+          ragContext = await embeddingService.getContextForQuery(
+            request,
+            this.context.project.id,
+            2000 // Max tokens for context
+          );
+        } catch (error) {
+          console.error("Failed to fetch RAG context:", error);
+          // Continue without RAG context if it fails
+        }
+      }
+
       // Generate plan using AI
       const response = await openai.chat.completions.create({
         model: "gpt-4-turbo-preview",
         messages: [
           {
             role: "system",
-            content: `You are an AI agent planner for a project management system. 
+            content: `You are an AI agent planner for a project management system.
             Create a step-by-step plan to fulfill the user's request.
-            
+
             Available tools:
             ${toolDescriptions}
-            
+
             Context:
             - User: ${this.context.user.name} (${this.context.user.role})
             ${this.context.project ? `- Project: ${this.context.project.title}` : ""}
             - Integrations: Slack=${this.context.integrations.slack}, Drive=${this.context.integrations.googleDrive}
-            
+
             ${memoryContext ? `Relevant Information from Memory:\n${memoryContext}\n` : ""}
-            
+
+            ${ragContext ? `Relevant Project Documents:\n${ragContext}\n` : ""}
+
             Return a JSON object with:
             {
               "title": "Brief title of the plan",

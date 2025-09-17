@@ -1,0 +1,65 @@
+// STEP 1: Add this to the functions array after search_content (around line 96):
+
+  {
+    name: "get_users",
+    description: "Get list of users in the system",
+    parameters: {
+      type: "object",
+      properties: {
+        role: {
+          type: "string",
+          description: "Filter by user role",
+          enum: ["admin", "manager", "developer", "viewer"],
+        },
+        limit: {
+          type: "number",
+          description: "Maximum number of users to return",
+        },
+      },
+    },
+  },
+
+// STEP 2: Add this case to the callFunction switch statement (before search_content case, around line 344):
+
+      case "get_users": {
+        const where: any = {};
+        if (args.role) where.role = args.role;
+        const limit = args.limit || 20;
+
+        const users = await prisma.user.findMany({
+          where,
+          take: limit,
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            role: true,
+            createdAt: true,
+            _count: {
+              select: {
+                projects: true,
+                pmProjects: true,
+                tasks: true,
+              },
+            },
+          },
+          orderBy: { name: "asc" },
+        });
+
+        return JSON.stringify({
+          success: true,
+          data: users.map((user) => ({
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            stats: {
+              projectsInvolved: user._count.projects,
+              projectsManaging: user._count.pmProjects,
+              tasksAssigned: user._count.tasks,
+            },
+            joinedAt: user.createdAt,
+          })),
+          count: users.length,
+        });
+      }

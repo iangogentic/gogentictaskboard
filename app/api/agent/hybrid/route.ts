@@ -489,6 +489,182 @@ async function getOrCreateThread(userId: string, conversationId?: string) {
 }
 
 /**
+ * PHASE 6: Intent router for fast path
+ */
+async function detectIntent(message: string): Promise<{
+  intent: "read" | "write" | "complex";
+  confidence: number;
+}> {
+  // Simple heuristic-based intent detection
+  const readKeywords = [
+    "show",
+    "list",
+    "get",
+    "find",
+    "search",
+    "what",
+    "how many",
+    "status",
+    "overview",
+    "summary",
+    "report",
+    "view",
+    "check",
+  ];
+
+  const writeKeywords = [
+    "create",
+    "add",
+    "update",
+    "modify",
+    "change",
+    "delete",
+    "remove",
+    "assign",
+    "complete",
+    "start",
+    "finish",
+    "set",
+  ];
+
+  const messageLower = message.toLowerCase();
+
+  const hasReadKeyword = readKeywords.some((kw) => messageLower.includes(kw));
+  const hasWriteKeyword = writeKeywords.some((kw) => messageLower.includes(kw));
+
+  // Check for complex patterns
+  const hasMultipleActions =
+    (messageLower.match(/\b(then|and then|after|next)\b/g) || []).length > 0;
+  const hasConditional = /\b(if|when|unless|while)\b/.test(messageLower);
+
+  if (
+    hasMultipleActions ||
+    hasConditional ||
+    (hasReadKeyword && hasWriteKeyword)
+  ) {
+    return { intent: "complex", confidence: 0.9 };
+  }
+
+  if (hasWriteKeyword) {
+    return { intent: "write", confidence: 0.85 };
+  }
+
+  if (hasReadKeyword) {
+    return { intent: "read", confidence: 0.95 };
+  }
+
+  // Default to complex for uncertain cases
+  return { intent: "complex", confidence: 0.5 };
+}
+
+/**
+ * Fast path for read-only operations
+ */
+async function handleFastPath(message: string, userId: string) {
+  const messageLower = message.toLowerCase();
+
+  // Direct function mapping for common queries
+  if (messageLower.includes("overview") || messageLower.includes("summary")) {
+    const result = await commonFunctions.get_site_overview({});
+    return {
+      response: formatOverviewResponse(result),
+      fastPath: true,
+      executionTime: Date.now(),
+    };
+  }
+
+  if (messageLower.includes("project")) {
+    const statusMatch = messageLower.match(
+      /\b(active|completed|on-hold|cancelled)\b/
+    );
+    const result = await commonFunctions.get_projects({
+      status: statusMatch?.[1],
+      limit: 10,
+    });
+    return {
+      response: formatProjectsResponse(result),
+      fastPath: true,
+      executionTime: Date.now(),
+    };
+  }
+
+  if (messageLower.includes("task")) {
+    const statusMatch = messageLower.match(
+      /\b(todo|in-progress|completed|blocked)\b/
+    );
+    const result = await commonFunctions.get_tasks({
+      status: statusMatch?.[1],
+      limit: 20,
+    });
+    return {
+      response: formatTasksResponse(result),
+      fastPath: true,
+      executionTime: Date.now(),
+    };
+  }
+
+  if (messageLower.includes("user") || messageLower.includes("team")) {
+    const result = await commonFunctions.get_users({ limit: 20 });
+    return {
+      response: formatUsersResponse(result),
+      fastPath: true,
+      executionTime: Date.now(),
+    };
+  }
+
+  // If no direct match, return null to use full assistant
+  return null;
+}
+
+function formatOverviewResponse(data: any): string {
+  return `**Site Overview:**\n
+- **Projects:** ${data.projects.active} active / ${data.projects.total} total
+- **Tasks:** ${data.tasks.completed} completed / ${data.tasks.total} total (${Math.round(data.tasks.completionRate)}% completion rate)
+- **Team:** ${data.users.total} members
+${
+  data.recentActivity.length > 0
+    ? `\n**Recent Activity:**\n${data.recentActivity
+        .slice(0, 3)
+        .map((u: any) => `- ${u.author.name} updated ${u.project.title}`)
+        .join("\n")}`
+    : ""
+}`;
+}
+
+function formatProjectsResponse(projects: any[]): string {
+  if (projects.length === 0) return "No projects found matching your criteria.";
+
+  return `**Found ${projects.length} project(s):**\n\n${projects
+    .map(
+      (p) =>
+        `- **${p.title}** (${p.status})\n  PM: ${p.pm?.name || "Unassigned"} | Progress: ${p.progress}% | Tasks: ${p._count.tasks}`
+    )
+    .join("\n")}`;
+}
+
+function formatTasksResponse(tasks: any[]): string {
+  if (tasks.length === 0) return "No tasks found matching your criteria.";
+
+  return `**Found ${tasks.length} task(s):**\n\n${tasks
+    .map(
+      (t) =>
+        `- **${t.title}** (${t.status})\n  Project: ${t.project?.title || "Unknown"} | Assignee: ${t.assignee?.name || "Unassigned"}`
+    )
+    .join("\n")}`;
+}
+
+function formatUsersResponse(users: any[]): string {
+  if (users.length === 0) return "No users found.";
+
+  return `**Team Members (${users.length}):**\n\n${users
+    .map(
+      (u) =>
+        `- **${u.name}** (${u.role})\n  Email: ${u.email} | Tasks: ${u._count.tasks}`
+    )
+    .join("\n")}`;
+}
+
+/**
  * Main handler
  */
 export async function POST(req: NextRequest) {
@@ -497,7 +673,51 @@ export async function POST(req: NextRequest) {
     const { message, userId, conversationId } = body;
 
     const effectiveUserId = userId || "hybrid-user";
+    const startTime = Date.now();
 
+    // PHASE 6: Intent detection and fast path routing
+    const { intent, confidence } = await detectIntent(message);
+
+    // Use fast path for high-confidence read operations
+    if (intent === "read" && confidence > 0.8) {
+      const fastResult = await handleFastPath(message, effectiveUserId);
+      if (fastResult) {
+        // Store in conversation if needed
+        if (conversationId) {
+          await prisma.message.create({
+            data: {
+              id: `msg_${Date.now()}_fast`,
+              conversationId,
+              content: message,
+              role: "user",
+            },
+          });
+          await prisma.message.create({
+            data: {
+              id: `msg_${Date.now()}_fast_response`,
+              conversationId,
+              content: fastResult.response,
+              role: "assistant",
+              metadata: {
+                fastPath: true,
+                executionTime: Date.now() - startTime,
+              },
+            },
+          });
+        }
+
+        return NextResponse.json({
+          response: fastResult.response,
+          conversationId,
+          fastPath: true,
+          executionTime: Date.now() - startTime,
+          intent,
+          confidence,
+        });
+      }
+    }
+
+    // Fall back to full assistant for complex queries or mutations
     // Get or create assistant
     const assistant = await getOrCreateAssistant();
 
@@ -509,9 +729,10 @@ export async function POST(req: NextRequest) {
     if (!conversation) {
       conversation = await prisma.conversation.create({
         data: {
+          id: `conv_${Date.now()}`,
           userId: effectiveUserId,
           title: message.substring(0, 100),
-          lastMessageAt: new Date(),
+          updatedAt: new Date(),
         },
       });
     }
@@ -522,6 +743,7 @@ export async function POST(req: NextRequest) {
     // Store user message
     await prisma.message.create({
       data: {
+        id: `msg_${Date.now()}_user`,
         conversationId: conversation.id,
         content: message,
         role: "user",
@@ -619,6 +841,7 @@ export async function POST(req: NextRequest) {
       if (content.type === "text") {
         await prisma.message.create({
           data: {
+            id: `msg_${Date.now()}_assistant`,
             conversationId: conversation.id,
             content: content.text.value,
             role: "assistant",
@@ -628,7 +851,7 @@ export async function POST(req: NextRequest) {
         await prisma.conversation.update({
           where: { id: conversation.id },
           data: {
-            lastMessageAt: new Date(),
+            updatedAt: new Date(),
             metadata: { threadId: thread.id },
           },
         });
@@ -665,10 +888,10 @@ export async function GET(req: NextRequest) {
 
   if (!conversationId) {
     const conversations = await prisma.conversation.findMany({
-      orderBy: { lastMessageAt: "desc" },
+      orderBy: { updatedAt: "desc" },
       take: 20,
       include: {
-        messages: {
+        Message: {
           take: 1,
           orderBy: { createdAt: "desc" },
         },
@@ -680,7 +903,7 @@ export async function GET(req: NextRequest) {
   const conversation = await prisma.conversation.findUnique({
     where: { id: conversationId },
     include: {
-      messages: {
+      Message: {
         orderBy: { createdAt: "asc" },
       },
     },
