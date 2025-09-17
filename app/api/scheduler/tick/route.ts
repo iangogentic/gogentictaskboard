@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
     // 1. Process scheduled tasks
     const dueTasks = await prisma.scheduledTask.findMany({
       where: {
-        nextRunAt: { lte: new Date() },
+        nextRun: { lte: new Date() },
         status: "active",
       },
       take: 10, // Process max 10 per tick
@@ -42,25 +42,30 @@ export async function POST(req: NextRequest) {
         results.scheduledTasks++;
 
         // Update next run time based on schedule
-        const nextRun = calculateNextRun(task.schedule);
+        const nextRun = calculateNextRun(task.cron);
         await prisma.scheduledTask.update({
           where: { id: task.id },
           data: {
-            lastRunAt: new Date(),
-            nextRunAt: nextRun,
-            runCount: { increment: 1 },
+            lastRun: new Date(),
+            nextRun: nextRun,
           },
         });
       } catch (error: any) {
         results.errors.push(`Task ${task.id}: ${error.message}`);
 
-        // Mark task as failed after 3 consecutive failures
+        // Track failures in metadata
+        const metadata = (task.metadata as any) || {};
+        const failureCount = (metadata.failureCount || 0) + 1;
+
         await prisma.scheduledTask.update({
           where: { id: task.id },
           data: {
-            failureCount: { increment: 1 },
-            status: task.failureCount >= 2 ? "failed" : task.status,
-            lastError: error.message,
+            status: failureCount >= 3 ? "failed" : task.status,
+            metadata: {
+              ...metadata,
+              failureCount,
+              lastError: error.message,
+            },
           },
         });
       }
@@ -73,8 +78,7 @@ export async function POST(req: NextRequest) {
       },
       take: 5,
       include: {
-        workflow: true,
-        currentStep: true,
+        Workflow: true,
       },
     });
 
@@ -200,7 +204,7 @@ async function advanceWorkflow(execution: any) {
   // This is simplified - in production, use a proper workflow engine
   if (execution.status === "waiting") {
     // Check if wait condition is met
-    const waitUntil = execution.metadata?.waitUntil;
+    const waitUntil = (execution.context as any)?.waitUntil;
     if (waitUntil && new Date(waitUntil) > new Date()) {
       return; // Still waiting
     }
@@ -210,53 +214,60 @@ async function advanceWorkflow(execution: any) {
       where: { id: execution.id },
       data: {
         status: "running",
-        updatedAt: new Date(),
       },
     });
   }
 
-  // Execute current step
-  if (execution.currentStep) {
+  // Execute current step - currentStep is just an integer index
+  if (execution.currentStep >= 0 && execution.Workflow) {
     const { toolRegistry } = await import("@/lib/agent/tool-registry");
-    const step = execution.currentStep;
 
-    try {
-      const result = await toolRegistry.execute(
-        step.tool,
-        {
-          userId: execution.userId,
-          projectId: execution.projectId,
-          permissions: [],
-          traceId: `workflow_${execution.id}_${step.id}`,
-        },
-        step.parameters || {}
-      );
+    // Get workflow steps from the JSON field
+    const steps = (execution.Workflow.steps as any[]) || [];
 
-      // Mark step complete and advance
-      await prisma.workflowStep.update({
-        where: { id: step.id },
+    // Get the current step
+    const currentStep = steps[execution.currentStep];
+
+    if (!currentStep) {
+      // No step at this index, mark workflow complete
+      await prisma.workflowExecution.update({
+        where: { id: execution.id },
         data: {
           status: "completed",
-          result: result as any,
           completedAt: new Date(),
         },
       });
+      return;
+    }
 
-      // Find next step
-      const nextStep = await prisma.workflowStep.findFirst({
-        where: {
-          workflowId: execution.workflowId,
-          order: { gt: step.order },
+    try {
+      const result = await toolRegistry.execute(
+        currentStep.tool || currentStep.name,
+        {
+          userId: (execution.context as any)?.userId || "",
+          projectId: (execution.context as any)?.projectId || "",
+          permissions: [],
+          traceId: `workflow_${execution.id}_step_${execution.currentStep}`,
         },
-        orderBy: { order: "asc" },
-      });
+        currentStep.parameters || currentStep.params || {}
+      );
 
-      if (nextStep) {
+      // Store result in context for next steps
+      const updatedContext = {
+        ...(execution.context as any),
+        [`step_${execution.currentStep}_result`]: result,
+      };
+
+      // Check if there's a next step
+      const nextStepIndex = execution.currentStep + 1;
+      const hasNextStep = nextStepIndex < steps.length;
+
+      if (hasNextStep) {
         await prisma.workflowExecution.update({
           where: { id: execution.id },
           data: {
-            currentStepId: nextStep.id,
-            updatedAt: new Date(),
+            currentStep: nextStepIndex,
+            context: updatedContext,
           },
         });
       } else {
@@ -266,20 +277,16 @@ async function advanceWorkflow(execution: any) {
           data: {
             status: "completed",
             completedAt: new Date(),
-            updatedAt: new Date(),
+            result: updatedContext,
           },
         });
       }
     } catch (error: any) {
-      // Mark step as failed
-      await prisma.workflowStep.update({
-        where: { id: step.id },
-        data: {
-          status: "failed",
-          error: error.message,
-          completedAt: new Date(),
-        },
-      });
+      // Store error in context
+      const errorContext = {
+        ...(execution.context as any),
+        [`step_${execution.currentStep}_error`]: error.message,
+      };
 
       // Fail the workflow
       await prisma.workflowExecution.update({
@@ -287,6 +294,7 @@ async function advanceWorkflow(execution: any) {
         data: {
           status: "failed",
           error: error.message,
+          context: errorContext,
           completedAt: new Date(),
         },
       });
@@ -300,8 +308,8 @@ async function advanceWorkflow(execution: any) {
 async function sendDailySummaries() {
   const users = await prisma.user.findMany({
     where: {
-      role: { in: ["developer", "pm", "admin"] },
-      active: true,
+      role: { in: ["developer", "manager", "admin"] },
+      // No active field in User model, all users with roles are considered active
     },
   });
 
@@ -322,11 +330,25 @@ async function sendDailySummaries() {
 
       if (tasks.length === 0) continue;
 
-      // Calculate summary
+      // Calculate summary with proper types
       const summary = {
         userId: user.id,
-        tasks: tasks.filter((t) => t.status !== "blocked"),
-        blockedTasks: tasks.filter((t) => t.status === "blocked"),
+        tasks: tasks
+          .filter((t) => t.status !== "blocked")
+          .map((t) => ({
+            id: t.id,
+            title: t.title,
+            status: t.status,
+            projectTitle: t.project?.title || "No Project",
+            dueDate: t.dueDate || undefined,
+          })),
+        blockedTasks: tasks
+          .filter((t) => t.status === "blocked")
+          .map((t) => ({
+            id: t.id,
+            title: t.title,
+            projectTitle: t.project?.title || "No Project",
+          })),
         completedToday: 0, // Would need to query completed tasks today
         inProgress: tasks.filter((t) => t.status === "in-progress").length,
       };
@@ -374,7 +396,7 @@ async function cleanupOldData() {
   await prisma.scheduledTask.deleteMany({
     where: {
       status: "completed",
-      completedAt: { lt: thirtyDaysAgo },
+      lastRun: { lt: thirtyDaysAgo },
     },
   });
 
@@ -399,7 +421,7 @@ export async function GET(req: NextRequest) {
       }),
       prisma.scheduledTask.count({
         where: {
-          nextRunAt: { lte: new Date() },
+          nextRun: { lte: new Date() },
           status: "active",
         },
       }),

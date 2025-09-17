@@ -331,7 +331,10 @@ export async function POST(req: NextRequest) {
     });
 
     // Poll for completion with timeout
-    let runStatus = await openai.beta.threads.runs.retrieve(thread.id, run.id);
+    let runStatus = await openai.beta.threads.runs.retrieve(
+      thread.id,
+      run.id as any
+    );
     let attempts = 0;
     const maxAttempts = 60; // 60 seconds timeout
 
@@ -341,7 +344,10 @@ export async function POST(req: NextRequest) {
       attempts < maxAttempts
     ) {
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      runStatus = await openai.beta.threads.runs.retrieve(thread.id, run.id);
+      runStatus = await openai.beta.threads.runs.retrieve(
+        thread.id,
+        run.id as any
+      );
       attempts++;
 
       // Handle function calls
@@ -401,9 +407,13 @@ export async function POST(req: NextRequest) {
         }
 
         // Submit tool outputs
-        await openai.beta.threads.runs.submitToolOutputs(thread.id, run.id, {
-          tool_outputs: toolOutputs,
-        });
+        await openai.beta.threads.runs.submitToolOutputs(
+          thread.id,
+          run.id as any,
+          {
+            tool_outputs: toolOutputs,
+          } as any
+        );
       }
     }
 
@@ -501,7 +511,7 @@ export async function GET(req: NextRequest) {
       orderBy: { updatedAt: "desc" },
       take: 20,
       include: {
-        messages: {
+        Message: {
           take: 1,
           orderBy: { createdAt: "desc" },
         },
@@ -513,7 +523,7 @@ export async function GET(req: NextRequest) {
   const conversation = await prisma.conversation.findUnique({
     where: { id: conversationId },
     include: {
-      messages: {
+      Message: {
         orderBy: { createdAt: "asc" },
       },
     },

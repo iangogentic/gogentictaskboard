@@ -88,8 +88,7 @@ const commonFunctions = {
         role: true,
         _count: {
           select: {
-            projects: true,
-            pmProjects: true,
+            projectsAsPM: true,
             tasks: true,
           },
         },
@@ -102,12 +101,13 @@ const commonFunctions = {
     // Find available PM
     const pm = await prisma.user.findFirst({
       where: { role: { in: ["admin", "manager"] } },
-      orderBy: { pmProjects: { _count: "asc" } },
+      orderBy: { projectsAsPM: { _count: "asc" } },
     });
 
     return prisma.project.create({
       data: {
         title: args.title,
+        branch: "main",
         clientName: args.clientName,
         clientEmail: args.clientEmail || "",
         startDate: args.startDate ? new Date(args.startDate) : new Date(),
@@ -565,7 +565,7 @@ async function handleFastPath(message: string, userId: string) {
 
   // Direct function mapping for common queries
   if (messageLower.includes("overview") || messageLower.includes("summary")) {
-    const result = await commonFunctions.get_site_overview({});
+    const result = await commonFunctions.get_site_overview();
     return {
       response: formatOverviewResponse(result),
       fastPath: true,
@@ -762,7 +762,10 @@ export async function POST(req: NextRequest) {
     });
 
     // Poll for completion
-    let runStatus = await openai.beta.threads.runs.retrieve(thread.id, run.id);
+    let runStatus = await openai.beta.threads.runs.retrieve(
+      thread.id,
+      run.id as any
+    );
     let attempts = 0;
     const maxAttempts = 30; // 30 seconds timeout
 
@@ -772,7 +775,10 @@ export async function POST(req: NextRequest) {
       attempts < maxAttempts
     ) {
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      runStatus = await openai.beta.threads.runs.retrieve(thread.id, run.id);
+      runStatus = await openai.beta.threads.runs.retrieve(
+        thread.id,
+        run.id as any
+      );
       attempts++;
 
       // Handle function calls
@@ -826,9 +832,13 @@ export async function POST(req: NextRequest) {
           });
         }
 
-        await openai.beta.threads.runs.submitToolOutputs(thread.id, run.id, {
-          tool_outputs: toolOutputs,
-        });
+        await openai.beta.threads.runs.submitToolOutputs(
+          thread.id,
+          run.id as any,
+          {
+            tool_outputs: toolOutputs,
+          } as any
+        );
       }
     }
 

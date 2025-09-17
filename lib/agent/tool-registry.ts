@@ -107,8 +107,7 @@ const getUsers: ToolDefinition = {
         name: true,
         email: true,
         role: true,
-        department: true,
-        _count: { select: { tasks: true, pmProjects: true } },
+        _count: { select: { tasks: true, projectsAsPM: true } },
       },
       orderBy: { name: "asc" },
     });
@@ -141,7 +140,7 @@ const createProject: ToolDefinition = {
     if (!pmId) {
       const pm = await prisma.user.findFirst({
         where: { role: { in: ["admin", "manager"] } },
-        orderBy: { pmProjects: { _count: "asc" } },
+        orderBy: { projectsAsPM: { _count: "asc" } },
       });
       pmId = pm?.id;
     }
@@ -149,6 +148,7 @@ const createProject: ToolDefinition = {
     return prisma.project.create({
       data: {
         title: input.title,
+        branch: "main",
         clientName: input.clientName,
         clientEmail: input.clientEmail || "",
         startDate: input.startDate ? new Date(input.startDate) : new Date(),
@@ -176,7 +176,6 @@ const createTask: ToolDefinition = {
     status: z
       .enum(["todo", "in-progress", "completed", "blocked"])
       .default("todo"),
-    priority: z.enum(["low", "medium", "high", "urgent"]).default("medium"),
     estimatedHours: z.number().positive().optional(),
     dueDate: z.string().datetime().optional(),
     assigneeId: z.string().optional(),
@@ -188,9 +187,8 @@ const createTask: ToolDefinition = {
       data: {
         projectId: input.projectId,
         title: input.title,
-        description: input.description || "",
+        notes: input.description || "",
         status: input.status,
-        priority: input.priority,
         estimatedHours: input.estimatedHours || 0,
         dueDate: input.dueDate ? new Date(input.dueDate) : null,
         assigneeId: input.assigneeId || null,

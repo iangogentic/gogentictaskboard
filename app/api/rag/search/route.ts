@@ -21,11 +21,9 @@ export async function POST(request: NextRequest) {
 
     // Check permissions if searching within a project
     if (projectId) {
-      const hasAccess = await checkPermissions(
-        session.user.id,
-        `project:${projectId}`,
-        "read"
-      );
+      const hasAccess = await checkPermissions(session.user.id, [
+        `project:${projectId}:read`,
+      ]);
 
       if (!hasAccess) {
         return new NextResponse("Forbidden", { status: 403 });
@@ -97,11 +95,9 @@ export async function GET(request: NextRequest) {
 
     // Check permissions if searching within a project
     if (projectId) {
-      const hasAccess = await checkPermissions(
-        session.user.id,
-        `project:${projectId}`,
-        "read"
-      );
+      const hasAccess = await checkPermissions(session.user.id, [
+        `project:${projectId}:read`,
+      ]);
 
       if (!hasAccess) {
         return new NextResponse("Forbidden", { status: 403 });

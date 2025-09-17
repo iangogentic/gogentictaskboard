@@ -106,12 +106,13 @@ export const databaseTools: UnifiedTool[] = [
       // Find available PM
       const pm = await prisma.user.findFirst({
         where: { role: { in: ["admin", "manager"] } },
-        orderBy: { pmProjects: { _count: "asc" } },
+        orderBy: { projectsAsPM: { _count: "asc" } },
       });
 
       return prisma.project.create({
         data: {
           title: params.title,
+          branch: "main",
           clientName: params.clientName,
           clientEmail: params.clientEmail || "",
           startDate: params.startDate ? new Date(params.startDate) : new Date(),

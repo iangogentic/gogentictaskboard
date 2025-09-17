@@ -25,11 +25,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Check permissions
-    const hasAccess = await checkPermissions(
-      session.user.id,
-      `project:${projectId}`,
-      "write"
-    );
+    const hasAccess = await checkPermissions(session.user.id, [
+      `project:${projectId}:write`,
+    ]);
 
     if (!hasAccess) {
       return new NextResponse("Forbidden", { status: 403 });
@@ -119,11 +117,9 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Check permissions
-    const hasAccess = await checkPermissions(
-      session.user.id,
-      `project:${projectId}`,
-      "admin"
-    );
+    const hasAccess = await checkPermissions(session.user.id, [
+      `project:${projectId}:admin`,
+    ]);
 
     if (!hasAccess) {
       return new NextResponse("Forbidden", { status: 403 });
