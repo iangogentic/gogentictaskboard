@@ -1,48 +1,28 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
-// import prisma from "@/lib/prisma"; // Disabled for Edge Runtime
-import { AgentTools } from "@/lib/agent/tools";
-// import { conversationManager } from "@/lib/agent/conversation"; // Disabled for Edge Runtime
 import OpenAI from "openai";
 
-// Initialize OpenAI
+// Edge Runtime compatible
+export const runtime = "edge";
+
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY || "",
 });
 
-// GPT-4o System Prompt for Operations Agent
-const SYSTEM_PROMPT = `You are an advanced Operations Agent powered by GPT-4o with access to Sprint 1-6 features:
+// Simple in-memory conversation storage (resets on deployment)
+// In production, consider using a database or external storage
+const conversationStore = new Map<string, any[]>();
 
-Sprint 1 - RBAC: Role-based access control for tasks and permissions
-Sprint 2 - Slack: Send messages and create channels  
-Sprint 3 - Google Drive: Search and upload files
-Sprint 4 - RAG Memory: Semantic search and context awareness
-Sprint 5 - Workflows: Automation and process orchestration
-Sprint 6 - Scheduling: Cron jobs and task scheduling
-
-You have access to these tools:
-- listTasks: View tasks filtered by role
-- createTask: Create new tasks
-- analyzeProject: Get project health metrics
-- sendSlackMessage: Send to Slack
-- searchGoogleDrive: Search files
-- getUserPermissions: Check access rights
-
-Respond naturally to any input. Be conversational, helpful, and proactive.
-When users say things like "yo" or "hey", respond casually and offer help.
-Understand context and intent, not just keywords.`;
-
-export async function POST(req: Request) {
+export async function POST(request: Request) {
   try {
-    const { message, projectId, conversationId } = await req.json();
+    const { message, projectId } = await request.json();
 
-    // Log environment info for debugging
-    console.log("[Agent] Environment check:", {
-      hasOpenAIKey: !!process.env.OPENAI_API_KEY,
-      keyLength: process.env.OPENAI_API_KEY?.length,
-      keyPrefix: process.env.OPENAI_API_KEY?.substring(0, 7),
-      nodeEnv: process.env.NODE_ENV,
-    });
+    if (!message) {
+      return NextResponse.json(
+        { error: "Message is required" },
+        { status: 400 }
+      );
+    }
 
     // Get authenticated user from session (optional for public chat)
     const session = await auth();
@@ -66,472 +46,72 @@ export async function POST(req: Request) {
       };
     }
 
-    console.log(
-      `Agent request from ${user.name} (${user.email}): "${message}"`
-    );
+    const conversationId = user.id.startsWith("guest-")
+      ? "guest-conversation"
+      : `user-${user.id}-conversation`;
 
-    // Get or create conversation (skip for guest users)
-    // TEMPORARY: Use in-memory conversations for all users due to Edge Runtime limitations
-    let conversationContext;
+    // Get or create conversation history
+    let messages = conversationStore.get(conversationId) || [];
 
-    // For now, treat all users like guest users to avoid Prisma in Edge Runtime
-    conversationContext = {
-      conversation: {
-        id: user.id.startsWith("guest-")
-          ? "guest-conversation-" + Date.now()
-          : `user-${user.id}-conversation-${Date.now()}`,
-      },
-      messages: [],
-    };
-
-    // Skip database operations in Edge Runtime
-    // TODO: Move conversation persistence to a separate API route or use KV storage
-
-    // Build conversation history for context
-    // For now, skip conversation history in Edge Runtime
-    const conversationHistory = "";
-
-    // Initialize agent tools
-    const tools = new AgentTools();
-
-    try {
-      // Check if OpenAI API key is configured
-      const hasOpenAI =
-        process.env.OPENAI_API_KEY &&
-        process.env.OPENAI_API_KEY !== "sk-demo" &&
-        process.env.OPENAI_API_KEY !== "sk-demo-key-replace-with-real-key" &&
-        process.env.OPENAI_API_KEY.startsWith("sk-");
-
-      console.log("[Agent] OpenAI check:", {
-        hasOpenAI,
-        keySet: !!process.env.OPENAI_API_KEY,
-        keyValid: process.env.OPENAI_API_KEY?.startsWith("sk-"),
-      });
-
-      if (hasOpenAI) {
-        try {
-          // Use GPT-4o for natural language understanding
-          const completion = await openai.chat.completions.create({
-            model: "gpt-4o", // Using GPT-4o for advanced capabilities
-            messages: [
-              {
-                role: "system",
-                content: SYSTEM_PROMPT,
-              },
-              {
-                role: "user",
-                content: `${conversationHistory ? `Previous conversation:\n${conversationHistory}\n\n` : ""}User message: "${message}"
-              
-Context: 
-- User Name: ${user.name}
-- User Role: ${user.role}
-- Project ID: ${projectId || "none"}
-
-Respond naturally and conversationally. Remember our previous conversation if any. If the user greets you, respond with a personalized greeting using their name and offer help. Do NOT include any analysis steps or debug information in your response - just give a direct, friendly answer.`,
-              },
-            ],
-            temperature: 0.7,
-            max_tokens: 1000,
-          });
-
-          const aiResponse = completion.choices[0].message?.content || "";
-
-          // Parse AI response to determine actions
-          const response = await processAIResponse(
-            aiResponse,
-            message,
-            tools,
-            user,
-            projectId
-          );
-
-          // Skip saving to database in Edge Runtime
-          // TODO: Move conversation persistence to a separate API route or use KV storage
-
-          return NextResponse.json({
-            response,
-            conversationId: conversationContext.conversation.id, // Return actual conversation ID
-            toolsUsed: ["gpt-4o"],
-            model: "gpt-4o", // GPT-4o model
-            modelVersion: "Latest",
-            apiKeyDetected: true,
-            usingGPT4o: true, // Confirm we're using GPT-4o
-            hasMemory: true, // Confirm conversation memory is active
-          });
-        } catch (gpt5Error: any) {
-          console.error("[Agent] GPT-4o API error:", {
-            message: gpt5Error?.message,
-            error: gpt5Error?.error?.message || gpt5Error?.message,
-            code: gpt5Error?.error?.code || gpt5Error?.code,
-            status: gpt5Error?.status,
-            type: gpt5Error?.error?.type,
-          });
-
-          // If OpenAI fails, fall back to pattern matching
-          console.log("Falling back to pattern matching due to OpenAI error");
-          const fallbackResponse = await processNaturalLanguage(
-            message,
-            tools,
-            user,
-            projectId
-          );
-
-          // Skip saving to database in Edge Runtime
-          // TODO: Move conversation persistence to a separate API route or use KV storage
-
-          return NextResponse.json({
-            response: fallbackResponse,
-            conversationId: conversationContext.conversation.id,
-            toolsUsed: ["pattern-matching-fallback"],
-            model: "fallback",
-            error: "OpenAI API unavailable, using fallback",
-            apiKeyDetected: true,
-            hasMemory: true,
-          });
-        }
-      } else {
-        // Fallback to enhanced pattern matching with better natural language
-        console.log("[Agent] Using fallback pattern matching (no OpenAI key)");
-        const response = await processNaturalLanguage(
-          message,
-          tools,
-          user,
-          projectId
-        );
-
-        // Skip saving to database in Edge Runtime
-        // TODO: Move conversation persistence to a separate API route or use KV storage
-
-        return NextResponse.json({
-          response,
-          conversationId: conversationContext.conversation.id,
-          toolsUsed: ["pattern-matching"],
-          model: "local",
-          hasMemory: true,
-        });
-      }
-    } catch (aiError) {
-      console.error("AI processing error:", aiError);
-      // Fallback to pattern matching
-      const response = await processNaturalLanguage(
-        message,
-        tools,
-        user,
-        projectId
-      );
-
-      return NextResponse.json({
-        response,
-        conversationId: "fallback-" + Date.now(),
-        toolsUsed: ["fallback"],
-      });
+    // Keep only last 10 messages to prevent context overflow
+    if (messages.length > 20) {
+      messages = messages.slice(-20);
     }
-  } catch (error: any) {
-    console.error("[Agent] Fatal error:", {
-      message: error?.message,
-      stack: error?.stack,
-      name: error?.name,
+
+    // Build the system prompt
+    const systemPrompt = `You are an AI assistant for a project management platform.
+    
+Current user:
+- Name: ${user.name}
+- Email: ${user.email}
+- Role: ${user.role}
+${projectId ? `- Current Project: ${projectId}` : ""}
+
+You help users with:
+- Managing projects and tasks
+- Answering questions about project progress
+- Providing insights and suggestions
+- General assistance with the platform
+
+Be helpful, concise, and professional. If you don't have specific information about projects or tasks, suggest that the user can ask specific questions or navigate to the relevant sections of the app.
+
+For detailed project and task information, users should use the chat panel which has access to real-time data through the enhanced chat-v2 endpoint.`;
+
+    // Add user message to history
+    messages.push({
+      role: "user",
+      content: message,
     });
 
-    // More specific error messages
-    let errorMessage = "Failed to process your message.";
+    // Create the completion
+    const completion = await openai.chat.completions.create({
+      model: "gpt-3.5-turbo",
+      messages: [{ role: "system", content: systemPrompt }, ...messages],
+      temperature: 0.7,
+      max_tokens: 500,
+    });
 
-    if (error.message?.includes("auth") || error.message?.includes("session")) {
-      errorMessage = "Please log in to use the agent.";
-    } else if (
-      error.message?.includes("database") ||
-      error.message?.includes("prisma")
-    ) {
-      errorMessage =
-        "Having trouble connecting to the database. Please try again in a moment.";
-    } else if (
-      error.message?.includes("GPT") ||
-      error.message?.includes("OpenAI")
-    ) {
-      errorMessage = "AI service temporarily unavailable. Please try again.";
-    }
+    const assistantMessage = completion.choices[0].message;
 
-    return NextResponse.json(
-      {
-        error: errorMessage,
-        details:
-          process.env.NODE_ENV === "development" ? error.message : undefined,
+    // Add assistant response to history
+    messages.push(assistantMessage);
+
+    // Store updated conversation
+    conversationStore.set(conversationId, messages);
+
+    return NextResponse.json({
+      response: assistantMessage.content,
+      user: {
+        id: user.id,
+        name: user.name,
+        role: user.role,
       },
+    });
+  } catch (error) {
+    console.error("Chat error:", error);
+    return NextResponse.json(
+      { error: "Failed to process message" },
       { status: 500 }
     );
   }
 }
-
-// Process AI response and execute tools
-async function processAIResponse(
-  aiResponse: string,
-  originalMessage: string,
-  tools: AgentTools,
-  user: any,
-  projectId?: string
-): Promise<string> {
-  const messageLower = originalMessage.toLowerCase();
-
-  // Check if asking to analyze project
-  if (
-    (messageLower.includes("analyze") ||
-      messageLower.includes("health") ||
-      messageLower.includes("status")) &&
-    (messageLower.includes("project") || messageLower.includes("progress"))
-  ) {
-    // If no projectId provided, get the user's most recent project
-    if (!projectId) {
-      try {
-        const projects = await prisma.project.findMany({
-          where:
-            user.role === "ADMIN"
-              ? {}
-              : {
-                  OR: [
-                    { pmId: user.id },
-                    { developers: { some: { id: user.id } } },
-                  ],
-                },
-          orderBy: { lastUpdatedAt: "desc" },
-          take: 1,
-        });
-
-        if (projects.length > 0) {
-          projectId = projects[0].id;
-          const analysis = await tools.analyzeProject(projectId);
-          if (analysis) {
-            const m = analysis.metrics;
-            return (
-              `📊 **Analysis for "${analysis.project.title}":**\n\n` +
-              `Health: ${
-                analysis.project.health === "Green"
-                  ? "🟢 Healthy"
-                  : analysis.project.health === "Yellow"
-                    ? "🟡 Needs Attention"
-                    : analysis.project.health === "Red"
-                      ? "🔴 Critical"
-                      : "⚪ Unknown"
-              }\n` +
-              `Progress: ${"█".repeat(Math.floor(m.completionRate / 10))}${"░".repeat(10 - Math.floor(m.completionRate / 10))} ${m.completionRate.toFixed(0)}%\n` +
-              `Tasks: ${m.completedTasks}/${m.totalTasks} complete\n` +
-              `In Progress: ${m.inProgressTasks} tasks\n` +
-              `Blocked: ${m.blockedTasks} tasks\n\n` +
-              `Would you like me to help with any specific tasks?`
-            );
-          }
-        } else {
-          return `📂 I couldn't find any projects assigned to you. Would you like me to help you create a new project?`;
-        }
-      } catch (error) {
-        console.error("Error analyzing project:", error);
-        return `I encountered an error while analyzing the project. Please try again.`;
-      }
-    } else {
-      // Use provided projectId
-      try {
-        const analysis = await tools.analyzeProject(projectId);
-        if (analysis) {
-          const m = analysis.metrics;
-          return (
-            `📊 **Analysis for "${analysis.project.title}":**\n\n` +
-            `Health: ${
-              analysis.project.health === "Green"
-                ? "🟢 Healthy"
-                : analysis.project.health === "Yellow"
-                  ? "🟡 Needs Attention"
-                  : analysis.project.health === "Red"
-                    ? "🔴 Critical"
-                    : "⚪ Unknown"
-            }\n` +
-            `Progress: ${"█".repeat(Math.floor(m.completionRate / 10))}${"░".repeat(10 - Math.floor(m.completionRate / 10))} ${m.completionRate.toFixed(0)}%\n` +
-            `Tasks: ${m.completedTasks}/${m.totalTasks} complete\n` +
-            `In Progress: ${m.inProgressTasks} tasks\n` +
-            `Blocked: ${m.blockedTasks} tasks\n\n` +
-            `Would you like me to help with any specific tasks?`
-          );
-        }
-      } catch (error) {
-        console.error("Error analyzing project:", error);
-        return `I couldn't analyze that project. It might not exist or you might not have access to it.`;
-      }
-    }
-  }
-
-  // Check if AI suggests creating a task
-  if (aiResponse.includes("create") && aiResponse.includes("task")) {
-    // Extract task details from the message
-    const taskMatch = originalMessage.match(
-      /(?:create|add|new)\s+(?:a\s+)?task\s+(?:to\s+)?(.+)/i
-    );
-    if (taskMatch) {
-      if (!projectId) {
-        // Get user's most recent project for task creation
-        try {
-          const projects = await prisma.project.findMany({
-            where:
-              user.role === "ADMIN"
-                ? {}
-                : {
-                    OR: [
-                      { pmId: user.id },
-                      { developers: { some: { id: user.id } } },
-                    ],
-                  },
-            orderBy: { lastUpdatedAt: "desc" },
-            take: 1,
-          });
-
-          if (projects.length > 0) {
-            projectId = projects[0].id;
-          } else {
-            return `📂 I need a project to create tasks. You don't have any projects yet. Would you like me to help you create one?`;
-          }
-        } catch (error) {
-          console.error("Error finding project:", error);
-          return `I couldn't find a project to add the task to. Please open a project first.`;
-        }
-      }
-
-      try {
-        const task = await tools.createTask({
-          projectId,
-          title: taskMatch[1].trim(),
-          status: "To Do",
-          assigneeId: user.id,
-        });
-        return `✅ Created task: "${task.title}"\n\nAnything else I can help with?`;
-      } catch (error) {
-        console.error("Error creating task:", error);
-        return `I tried to create the task but encountered an error. ${aiResponse}`;
-      }
-    }
-  }
-
-  // Check if asking to update project
-  if (messageLower.includes("update") && messageLower.includes("project")) {
-    return `To update a project, I need more specific details. You can say things like:\n• "Set project health to yellow"\n• "Update project status to in progress"\n• "Change project name to [new name]"`;
-  }
-
-  // Default: return AI response as-is
-  return aiResponse;
-}
-
-// Enhanced natural language processing without GPT-5
-async function processNaturalLanguage(
-  message: string,
-  tools: AgentTools,
-  user: any,
-  projectId?: string
-): Promise<string> {
-  const messageLower = message.toLowerCase();
-
-  // Handle casual greetings naturally - personalized with user's name
-  if (
-    ["yo", "hey", "sup", "hello", "hi", "howdy", "hola"].some((greeting) =>
-      messageLower.includes(greeting)
-    )
-  ) {
-    const firstName = user.name?.split(" ")[0] || "there";
-    const greetings = [
-      `Hey ${firstName}! 👋 I'm your Operations Agent with full Sprint 1-6 capabilities. What can I help you with today?`,
-      `Yo ${firstName}! 🚀 Ready to help with tasks, Slack, Google Drive, or project analysis. What's up?`,
-      `Hey ${firstName}! I'm here to help. Need to manage tasks, send a Slack message, or analyze a project?`,
-      `Hi ${firstName}! I can help you with:\n• Managing tasks\n• Slack messaging\n• Google Drive files\n• Project analysis\n\nWhat would you like to do?`,
-    ];
-    return greetings[Math.floor(Math.random() * greetings.length)];
-  }
-
-  // Handle questions about capabilities
-  if (
-    messageLower.includes("what can you do") ||
-    messageLower.includes("help")
-  ) {
-    return (
-      `I'm your Operations Agent with these superpowers:\n\n` +
-      `🎯 **Task Management** - Create, list, and manage tasks\n` +
-      `💬 **Slack Integration** - Send messages and create channels\n` +
-      `📁 **Google Drive** - Search and upload files\n` +
-      `📊 **Project Analysis** - Health metrics and progress tracking\n` +
-      `🔐 **RBAC** - Role-based permissions and access control\n` +
-      `🧠 **RAG Memory** - Semantic search and context awareness\n\n` +
-      `Just tell me what you need in natural language!`
-    );
-  }
-
-  // Handle project queries
-  if (
-    messageLower.includes("project") ||
-    messageLower.includes("what do we have")
-  ) {
-    return `📂 To view your projects, please check the projects page in the sidebar. I can help you with:\n\n• Creating tasks\n• Project analysis\n• Sending Slack messages\n• Searching Google Drive\n\nWhat would you like to do?`;
-  }
-
-  // Handle frustration or confusion
-  if (
-    messageLower.includes("not working") ||
-    messageLower.includes("broken") ||
-    messageLower.includes("fix")
-  ) {
-    return (
-      `I hear you're having trouble! 🔧 Let me help:\n\n` +
-      `To use my features, try saying things like:\n` +
-      `• "Show me my tasks"\n` +
-      `• "Create a task to fix the login bug"\n` +
-      `• "Send a message to Slack"\n` +
-      `• "Search Drive for quarterly reports"\n` +
-      `• "Analyze the current project"\n\n` +
-      `What would you like me to help with?`
-    );
-  }
-
-  // Task management with natural language
-  if (messageLower.includes("task") || messageLower.includes("todo")) {
-    if (
-      messageLower.includes("list") ||
-      messageLower.includes("show") ||
-      messageLower.includes("what")
-    ) {
-      return `📋 To view your tasks, please open a project from the sidebar first. Then I can show you all tasks for that project.`;
-    }
-
-    if (
-      messageLower.includes("create") ||
-      messageLower.includes("add") ||
-      messageLower.includes("new")
-    ) {
-      return `⚠️ Please open a project first to create tasks. You can click on any project in the sidebar.`;
-    }
-  }
-
-  // Update project health or status
-  if (
-    messageLower.includes("set") ||
-    messageLower.includes("change") ||
-    messageLower.includes("update")
-  ) {
-    if (messageLower.includes("health") || messageLower.includes("status")) {
-      return `🔧 To update project health or status, please open the specific project from the sidebar first, then I can help you make changes.`;
-    }
-  }
-
-  // Project analysis
-  if (
-    messageLower.includes("analyze") ||
-    messageLower.includes("health") ||
-    messageLower.includes("status") ||
-    messageLower.includes("progress")
-  ) {
-    return `📊 To analyze a project, please open a specific project first from the sidebar, then ask me again.\n\nI can provide:\n• Health metrics\n• Task progress\n• Team performance\n• Bottleneck analysis`;
-  }
-
-  // Default friendly response
-  return (
-    `I understand you said: "${message}"\n\n` +
-    `I'm still learning to understand everything naturally! Try:\n` +
-    `• "Show my tasks"\n` +
-    `• "Analyze project"\n` +
-    `• "Send to Slack: [message]"\n` +
-    `• "Search Drive for [query]"\n` +
-    `• Or just say "help" to see all features!`
-  );
-} // Trigger recompile
