@@ -2,8 +2,8 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import OpenAI from "openai";
 
-// Edge Runtime compatible
-export const runtime = "edge";
+// Use Node.js runtime to avoid Edge Function size limits
+export const runtime = "nodejs";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY || "",
