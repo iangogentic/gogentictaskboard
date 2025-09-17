@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
-import prisma from "@/lib/prisma";
+// import prisma from "@/lib/prisma"; // Disabled for Edge Runtime
 import { AgentTools } from "@/lib/agent/tools";
-import { conversationManager } from "@/lib/agent/conversation";
+// import { conversationManager } from "@/lib/agent/conversation"; // Disabled for Edge Runtime
 import OpenAI from "openai";
 
 // Initialize OpenAI
@@ -96,10 +96,8 @@ export async function POST(req: Request) {
     // TODO: Move conversation persistence to a separate API route or use KV storage
 
     // Build conversation history for context
-    const conversationHistory = conversationManager.buildContextFromHistory(
-      conversationContext.messages,
-      1500 // Use last 1500 tokens of history
-    );
+    // For now, skip conversation history in Edge Runtime
+    const conversationHistory = "";
 
     // Initialize agent tools
     const tools = new AgentTools();
