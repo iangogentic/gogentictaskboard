@@ -50,7 +50,8 @@ export function AgentChatPanel({
     setIsLoading(true);
 
     try {
-      const response = await fetch("/api/agent/chat", {
+      // Try enhanced endpoint first
+      let response = await fetch("/api/agent/chat-v2", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -62,6 +63,23 @@ export function AgentChatPanel({
           })),
         }),
       });
+
+      // Fallback to simple chat if enhanced endpoint fails
+      if (!response.ok) {
+        console.log("Falling back to simple chat endpoint");
+        response = await fetch("/api/agent/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            message: userMessage.content,
+            projectId,
+            history: messages.map((m) => ({
+              role: m.role,
+              content: m.content,
+            })),
+          }),
+        });
+      }
 
       if (!response.ok) throw new Error("Failed to get response");
       const data = await response.json();
