@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { MessageCircle, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -10,6 +10,24 @@ interface AgentChatButtonProps {
 
 export function AgentChatButton({ onClick }: AgentChatButtonProps) {
   const [isHovered, setIsHovered] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  // Don't render with animations until client-side mounted
+  if (!isMounted) {
+    return (
+      <button
+        onClick={onClick}
+        className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg hover:shadow-xl transition-shadow"
+        aria-label="Open AI Assistant"
+      >
+        <MessageCircle className="h-6 w-6" />
+      </button>
+    );
+  }
 
   return (
     <motion.button
