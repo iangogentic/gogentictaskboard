@@ -175,25 +175,38 @@ export async function POST(req: NextRequest) {
  */
 async function processScheduledTask(task: any) {
   const { toolRegistry } = await import("@/lib/agent/tool-registry");
-  const payload = task.payload as any;
+
+  // Extract task details from metadata
+  const metadata = (task.metadata as any) || {};
+  const { tool, parameters, userId, projectId } = metadata;
 
   // Execute the task's tool
-  if (payload.tool) {
-    const tool = toolRegistry.get(payload.tool);
-    if (!tool) {
-      throw new Error(`Tool ${payload.tool} not found`);
+  if (tool) {
+    const toolDef = toolRegistry.get(tool);
+    if (!toolDef) {
+      throw new Error(`Tool ${tool} not found`);
     }
 
     await toolRegistry.execute(
-      payload.tool,
+      tool,
       {
-        userId: task.userId,
-        projectId: task.projectId,
-        permissions: tool.scopes,
+        userId: userId || "scheduler",
+        projectId: projectId,
+        permissions: toolDef.scopes,
         traceId: `scheduled_${task.id}_${Date.now()}`,
       },
-      payload.parameters || {}
+      parameters || {}
     );
+  } else {
+    // Legacy: check if task type indicates a specific action
+    if (task.type === "slack_reminder" && metadata.channel) {
+      // Send Slack reminder
+      const { slackService } = await import("@/lib/slack");
+      await slackService.sendMessage(
+        metadata.channel,
+        metadata.message || "Scheduled reminder"
+      );
+    }
   }
 }
 

@@ -255,7 +255,7 @@ const slackSendDM: ToolDefinition = {
     message: z.string().min(1).max(4000),
   }),
   mutates: false,
-  scopes: ["slack:write"],
+  scopes: ["slack:send"],
   handler: async (ctx, input) => {
     const user = await prisma.user.findUnique({
       where: { email: input.email },
@@ -282,9 +282,21 @@ const slackSendDM: ToolDefinition = {
       throw new Error(`User ${input.email} does not have Slack user ID`);
     }
 
-    // Use sendDailyWorkDM which properly handles DMs
+    // Open a DM channel with the user
+    const { WebClient } = await import("@slack/web-api");
+    const slackClient = new WebClient(process.env.SLACK_BOT_TOKEN);
+
+    const dmChannel = await slackClient.conversations.open({
+      users: slackUserId,
+    });
+
+    if (!dmChannel.channel?.id) {
+      throw new Error("Failed to open DM channel");
+    }
+
+    // Send message to the DM channel
     await slackService.sendMessage({
-      channel: slackUserId,
+      channel: dmChannel.channel.id,
       text: input.message,
     });
 
@@ -301,7 +313,7 @@ const slackSendChannelMessage: ToolDefinition = {
     threadTs: z.string().optional(),
   }),
   mutates: false,
-  scopes: ["slack:write"],
+  scopes: ["slack:send"],
   handler: async (ctx, input) => {
     await slackService.sendMessage({
       channel: input.channel,
@@ -322,7 +334,7 @@ const slackLinkProject: ToolDefinition = {
     channelName: z.string(),
   }),
   mutates: true,
-  scopes: ["slack:write", "write:projects"],
+  scopes: ["slack:manage", "write:projects"],
   handler: async (ctx, input) => {
     await slackService.linkProjectToChannel(
       input.projectId,
