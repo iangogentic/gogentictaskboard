@@ -259,19 +259,20 @@ const slackSendDM: ToolDefinition = {
   handler: async (ctx, input) => {
     const user = await prisma.user.findUnique({
       where: { email: input.email },
-      include: {
-        integrations: {
-          where: { type: "slack" },
-        },
-      },
     });
 
     if (!user) {
       throw new Error(`User ${input.email} not found`);
     }
 
-    // Get Slack user ID from integration credentials
-    const slackIntegration = user.integrations?.[0];
+    // Get Slack integration separately
+    const slackIntegration = await prisma.integrationCredential.findFirst({
+      where: {
+        userId: user.id,
+        type: "slack",
+      },
+    });
+
     if (!slackIntegration?.metadata) {
       throw new Error(`User ${input.email} does not have Slack integration`);
     }
