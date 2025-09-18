@@ -24,6 +24,7 @@ export interface ToolContext {
   session?: any;
   permissions?: string[];
   traceId?: string;
+  user?: { id: string; role: string; email: string };
 }
 
 /**
@@ -259,7 +260,7 @@ const slackSendDM: ToolDefinition = {
     const user = await prisma.user.findUnique({
       where: { email: input.email },
       include: {
-        IntegrationCredential: {
+        integrations: {
           where: { type: "slack" },
         },
       },
@@ -270,7 +271,7 @@ const slackSendDM: ToolDefinition = {
     }
 
     // Get Slack user ID from integration credentials
-    const slackIntegration = user.IntegrationCredential?.[0];
+    const slackIntegration = user.integrations?.[0];
     if (!slackIntegration?.metadata) {
       throw new Error(`User ${input.email} does not have Slack integration`);
     }
@@ -527,6 +528,11 @@ export class ToolRegistry {
         parameters: zodToJsonSchema(tool.schema),
       },
     }));
+  }
+
+  // Get all tools
+  getAllTools(): ToolDefinition[] {
+    return Array.from(this.tools.values());
   }
 }
 
