@@ -143,6 +143,21 @@ const createProject: ToolDefinition = {
         orderBy: { projectsAsPM: { _count: "asc" } },
       });
       pmId = pm?.id;
+
+      // If still no PM found, use the creating user if they have permission
+      if (!pmId && ctx.user) {
+        const userRole = ctx.user.role;
+        if (userRole === "admin" || userRole === "manager") {
+          pmId = ctx.userId;
+        }
+      }
+
+      // If still no PM, throw error
+      if (!pmId) {
+        throw new Error(
+          "No project manager available. Please specify a PM ID."
+        );
+      }
     }
 
     return prisma.project.create({
@@ -157,7 +172,7 @@ const createProject: ToolDefinition = {
           : null,
         status: input.status,
         notes: input.notes || "",
-        pmId: pmId || "",
+        pmId: pmId,
         health: "green",
         stage: "discovery",
       },
@@ -243,18 +258,35 @@ const slackSendDM: ToolDefinition = {
   handler: async (ctx, input) => {
     const user = await prisma.user.findUnique({
       where: { email: input.email },
+      include: {
+        IntegrationCredential: {
+          where: { type: "slack" },
+        },
+      },
     });
 
     if (!user) {
       throw new Error(`User ${input.email} not found`);
     }
 
+    // Get Slack user ID from integration credentials
+    const slackIntegration = user.IntegrationCredential?.[0];
+    if (!slackIntegration?.metadata) {
+      throw new Error(`User ${input.email} does not have Slack integration`);
+    }
+
+    const slackUserId = (slackIntegration.metadata as any).slackUserId;
+    if (!slackUserId) {
+      throw new Error(`User ${input.email} does not have Slack user ID`);
+    }
+
+    // Use sendDailyWorkDM which properly handles DMs
     await slackService.sendMessage({
-      channel: input.email,
+      channel: slackUserId,
       text: input.message,
     });
 
-    return { success: true, sentTo: input.email };
+    return { success: true, sentTo: input.email, slackUserId };
   },
 };
 
@@ -461,13 +493,20 @@ export class ToolRegistry {
       throw new Error(`Tool ${name} not found`);
     }
 
-    // Check permissions
-    if (ctx.permissions) {
-      const hasPermission = tool.scopes.some((scope) =>
-        ctx.permissions!.includes(scope)
+    // Check permissions - verify against user's actual permissions
+    // Don't trust what's passed in ctx.permissions
+    if (tool.scopes.length > 0) {
+      const { hasPermission } = await import("@/lib/rbac");
+      const userRole = ctx.user?.role || "user";
+
+      const hasRequiredPermission = await Promise.all(
+        tool.scopes.map((scope) => hasPermission(userRole as any, scope))
       );
-      if (!hasPermission) {
-        throw new Error(`Insufficient permissions for tool ${name}`);
+
+      if (!hasRequiredPermission.some((p) => p)) {
+        throw new Error(
+          `Insufficient permissions for tool ${name}. Required: ${tool.scopes.join(", ")}`
+        );
       }
     }
 

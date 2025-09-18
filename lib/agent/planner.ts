@@ -1,5 +1,5 @@
 import { AgentPlan, PlanStep, AgentContext } from "./types";
-import { getAllTools } from "./tools";
+import { toolRegistry } from "./tool-registry";
 import { agentMemory } from "./memory";
 import { embeddingService } from "@/lib/embeddings";
 import OpenAI from "openai";
@@ -19,10 +19,10 @@ export class AgentPlanner {
   // Generate a plan based on user request
   async generatePlan(request: string): Promise<AgentPlan> {
     try {
-      // Get available tools
-      const tools = getAllTools();
+      // Get available tools from registry
+      const tools = toolRegistry.getAllTools();
       const toolDescriptions = tools
-        .map((toolName) => `- ${toolName}`)
+        .map((tool) => `- ${tool.name}: ${tool.description}`)
         .join("\n");
 
       // Retrieve relevant memory/context

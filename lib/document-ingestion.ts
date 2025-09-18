@@ -83,9 +83,25 @@ export class DocumentIngestionService {
         throw new Error("User has not connected Slack");
       }
 
-      // Fetch recent messages
-      // TODO: Implement getChannelMessages method in SlackService
-      const messages: any[] = []; // Placeholder
+      // Fetch recent messages using Slack Web API
+      const { WebClient } = await import("@slack/web-api");
+      const slackToken =
+        (userIntegration.metadata as any)?.accessToken ||
+        process.env.SLACK_BOT_TOKEN;
+
+      if (!slackToken) {
+        throw new Error("No Slack token available");
+      }
+
+      const slack = new WebClient(slackToken);
+
+      // Fetch last 100 messages from channel
+      const result = await slack.conversations.history({
+        channel: channelId,
+        limit: 100,
+      });
+
+      const messages = result.messages || [];
 
       let ingestedCount = 0;
 
