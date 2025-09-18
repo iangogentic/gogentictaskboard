@@ -202,10 +202,10 @@ async function processScheduledTask(task: any) {
     if (task.type === "slack_reminder" && metadata.channel) {
       // Send Slack reminder
       const { slackService } = await import("@/lib/slack");
-      await slackService.sendMessage(
-        metadata.channel,
-        metadata.message || "Scheduled reminder"
-      );
+      await slackService.sendMessage({
+        channel: metadata.channel,
+        text: metadata.message || "Scheduled reminder",
+      });
     }
   }
 }

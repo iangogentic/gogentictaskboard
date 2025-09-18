@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { Workflow, WorkflowExecution } from "@prisma/client";
-import { getTool } from "./tools";
+import { toolRegistry } from "./tool-registry";
 import { AgentContext } from "./types";
 import { logAction } from "@/lib/audit";
 import { v4 as uuidv4 } from "uuid";
@@ -245,7 +245,7 @@ export class WorkflowEngine {
     context: Record<string, any>,
     results: Record<string, any>
   ): Promise<any> {
-    const tool = getTool(step.tool);
+    const tool = toolRegistry.get(step.tool);
     if (!tool) {
       throw new Error(`Tool ${step.tool} not found`);
     }
@@ -262,13 +262,21 @@ export class WorkflowEngine {
 
     for (let attempt = 0; attempt < maxRetries; attempt++) {
       try {
-        const result = await tool.execute(resolvedParams, this.context);
+        // Use toolRegistry.execute with proper ToolContext
+        const result = await toolRegistry.execute(
+          step.tool,
+          {
+            userId: this.context.user.id,
+            projectId: this.context.project?.id,
+            session: this.context.session,
+            permissions: this.context.permissions,
+            traceId: `workflow_${step.id}_${attempt}`,
+            user: this.context.user,
+          },
+          resolvedParams
+        );
 
-        if (result.success) {
-          return result.data;
-        } else {
-          lastError = new Error(result.error || "Step execution failed");
-        }
+        return result;
       } catch (error) {
         lastError = error;
       }
