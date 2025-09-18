@@ -187,11 +187,33 @@ async function processScheduledTask(task: any) {
       throw new Error(`Tool ${tool} not found`);
     }
 
+    // Fetch user to include full context if userId is provided
+    let userContext = null;
+    if (userId) {
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+      });
+      if (user) {
+        userContext = {
+          id: user.id,
+          email: user.email,
+          name: user.name || "",
+          role: user.role,
+        };
+      }
+    }
+
     await toolRegistry.execute(
       tool,
       {
         userId: userId || "scheduler",
         projectId: projectId,
+        user: userContext || {
+          id: "scheduler",
+          email: "scheduler@system",
+          name: "Scheduler",
+          role: "admin", // Scheduler runs with admin privileges
+        },
         permissions: toolDef.scopes,
         traceId: `scheduled_${task.id}_${Date.now()}`,
       },
@@ -254,11 +276,34 @@ async function advanceWorkflow(execution: any) {
     }
 
     try {
+      // Get user context if userId is provided
+      const userId = (execution.context as any)?.userId;
+      let userContext = null;
+      if (userId) {
+        const user = await prisma.user.findUnique({
+          where: { id: userId },
+        });
+        if (user) {
+          userContext = {
+            id: user.id,
+            email: user.email,
+            name: user.name || "",
+            role: user.role,
+          };
+        }
+      }
+
       const result = await toolRegistry.execute(
         currentStep.tool || currentStep.name,
         {
-          userId: (execution.context as any)?.userId || "",
+          userId: userId || "workflow",
           projectId: (execution.context as any)?.projectId || "",
+          user: userContext || {
+            id: "workflow",
+            email: "workflow@system",
+            name: "Workflow Engine",
+            role: "admin", // Workflows run with admin privileges
+          },
           permissions: [],
           traceId: `workflow_${execution.id}_step_${execution.currentStep}`,
         },

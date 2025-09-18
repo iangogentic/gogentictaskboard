@@ -203,10 +203,16 @@ export class AgentEngine {
         );
       }
 
-      // Build context for tool execution
+      // Build context for tool execution with full user object
       const toolContext = {
         userId: this.session.userId,
         projectId: this.session.projectId,
+        user: {
+          id: user.id,
+          email: user.email,
+          name: user.name || "",
+          role: user.role,
+        },
         session: this.session,
         permissions: tool.scopes,
         traceId: `${this.session.id}_${step.id}`,

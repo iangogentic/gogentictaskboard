@@ -24,7 +24,7 @@ export interface ToolContext {
   session?: any;
   permissions?: string[];
   traceId?: string;
-  user?: { id: string; role: string; email: string };
+  user?: { id: string; role: string; email: string; name?: string };
 }
 
 /**

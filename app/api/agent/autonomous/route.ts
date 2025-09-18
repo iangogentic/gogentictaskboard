@@ -11,9 +11,19 @@ import {
 // Use Node.js runtime for better performance and features
 export const runtime = "nodejs";
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY!,
-});
+// Lazy initialize OpenAI client to prevent build-time errors
+let openai: OpenAI | null = null;
+
+function getOpenAIClient() {
+  if (!openai) {
+    const apiKey = process.env.OPENAI_API_KEY;
+    if (!apiKey) {
+      throw new Error("OPENAI_API_KEY environment variable is not set");
+    }
+    openai = new OpenAI({ apiKey });
+  }
+  return openai;
+}
 
 // Store assistant ID (in production, use env variable)
 let ASSISTANT_ID = process.env.OPENAI_ASSISTANT_ID;
@@ -70,7 +80,8 @@ Use execute_complex_operation with useTransaction: true
 async function getOrCreateAssistant() {
   if (ASSISTANT_ID) {
     try {
-      const assistant = await openai.beta.assistants.retrieve(ASSISTANT_ID);
+      const assistant =
+        await getOpenAIClient().beta.assistants.retrieve(ASSISTANT_ID);
       return assistant;
     } catch (error) {
       console.log("Assistant not found, creating new one...");
@@ -101,7 +112,7 @@ async function getOrCreateAssistant() {
     .join("\n");
 
   // Create the assistant with full autonomous capabilities
-  const assistant = await openai.beta.assistants.create({
+  const assistant = await getOpenAIClient().beta.assistants.create({
     name: "GoGentic Autonomous Project Manager",
     instructions: `You are an autonomous project management AI with FULL direct database access through Prisma.
 
@@ -245,7 +256,9 @@ async function getOrCreateThread(userId: string, conversationId?: string) {
     const metadata = conversation?.metadata as any;
     if (metadata?.threadId) {
       try {
-        const thread = await openai.beta.threads.retrieve(metadata.threadId);
+        const thread = await getOpenAIClient().beta.threads.retrieve(
+          metadata.threadId
+        );
         return thread;
       } catch (error) {
         console.log("Thread not found, creating new one...");
@@ -254,7 +267,7 @@ async function getOrCreateThread(userId: string, conversationId?: string) {
   }
 
   // Create a new thread
-  const thread = await openai.beta.threads.create({
+  const thread = await getOpenAIClient().beta.threads.create({
     metadata: {
       userId,
       conversationId: conversationId || "new",
@@ -320,18 +333,18 @@ export async function POST(req: NextRequest) {
     });
 
     // Add message to thread
-    await openai.beta.threads.messages.create(thread.id, {
+    await getOpenAIClient().beta.threads.messages.create(thread.id, {
       role: "user",
       content: message,
     });
 
     // Run the assistant
-    const run = await openai.beta.threads.runs.create(thread.id, {
+    const run = await getOpenAIClient().beta.threads.runs.create(thread.id, {
       assistant_id: assistant.id,
     });
 
     // Poll for completion with timeout
-    let runStatus = await openai.beta.threads.runs.retrieve(
+    let runStatus = await getOpenAIClient().beta.threads.runs.retrieve(
       thread.id,
       run.id as any
     );
@@ -344,7 +357,7 @@ export async function POST(req: NextRequest) {
       attempts < maxAttempts
     ) {
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      runStatus = await openai.beta.threads.runs.retrieve(
+      runStatus = await getOpenAIClient().beta.threads.runs.retrieve(
         thread.id,
         run.id as any
       );
@@ -407,7 +420,7 @@ export async function POST(req: NextRequest) {
         }
 
         // Submit tool outputs
-        await openai.beta.threads.runs.submitToolOutputs(
+        await getOpenAIClient().beta.threads.runs.submitToolOutputs(
           thread.id,
           run.id as any,
           {
@@ -431,7 +444,9 @@ export async function POST(req: NextRequest) {
     }
 
     // Get messages
-    const messages = await openai.beta.threads.messages.list(thread.id);
+    const messages = await getOpenAIClient().beta.threads.messages.list(
+      thread.id
+    );
     const lastMessage = messages.data[0];
 
     // Store and return assistant response

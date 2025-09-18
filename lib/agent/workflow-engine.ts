@@ -271,7 +271,7 @@ export class WorkflowEngine {
             session: this.context.session,
             permissions: this.context.permissions,
             traceId: `workflow_${step.id}_${attempt}`,
-            user: this.context.user,
+            user: this.context.user, // Already has full user object
           },
           resolvedParams
         );
