@@ -22,7 +22,7 @@ export class AgentPlanner {
       // Get available tools from registry
       const tools = toolRegistry.getAllTools();
       const toolDescriptions = tools
-        .map((tool) => `- ${tool.name}: ${tool.description}`)
+        .map((tool: any) => `- ${tool.name}: ${tool.description}`)
         .join("\n");
 
       // Retrieve relevant memory/context
@@ -238,8 +238,8 @@ export class AgentPlanner {
     // Validate each step
     plan.steps.forEach((step, index) => {
       // Check tool exists
-      const tools = getAllTools();
-      if (!tools.find((toolName) => toolName === step.tool)) {
+      const tools = toolRegistry.getAllTools();
+      if (!tools.find((tool: any) => tool.name === step.tool)) {
         errors.push(`Step ${index + 1}: Unknown tool '${step.tool}'`);
       }
 

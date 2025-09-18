@@ -111,7 +111,7 @@ export class DocumentIngestionService {
           await this.ingestDocument(
             projectId,
             "slack",
-            `Slack: ${message.user} at ${new Date(parseFloat(message.ts) * 1000).toISOString()}`,
+            `Slack: ${message.user} at ${new Date(parseFloat(message.ts!) * 1000).toISOString()}`,
             message.text,
             message.ts,
             undefined,
