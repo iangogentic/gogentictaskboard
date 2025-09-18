@@ -110,6 +110,7 @@ export interface AgentContext {
     title: string;
     description?: string;
   };
+  session?: any;
   integrations: {
     slack: boolean;
     googleDrive: boolean;
