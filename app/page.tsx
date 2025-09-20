@@ -2,7 +2,9 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import { ThemeProvider } from "@/lib/themes/provider";
 import ModernPage from "./(modern)/page";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 export default function HomePage() {
   const router = useRouter();
@@ -15,9 +17,23 @@ export default function HomePage() {
   }, [useModernUI, router]);
 
   if (!useModernUI) {
-    return null; // While redirecting
+    // Show loading state while redirecting
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-100">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
+          <p className="text-gray-600">Redirecting to dashboard...</p>
+        </div>
+      </div>
+    );
   }
 
-  // Render the modern page directly
-  return <ModernPage />;
+  // Wrap ModernPage with ThemeProvider and ErrorBoundary to prevent crashes
+  return (
+    <ErrorBoundary>
+      <ThemeProvider>
+        <ModernPage />
+      </ThemeProvider>
+    </ErrorBoundary>
+  );
 }

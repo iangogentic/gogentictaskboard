@@ -21,7 +21,7 @@ const nextConfig: NextConfig = {
     return [{ source: "/(.*)", headers: securityHeaders }];
   },
   eslint: {
-    // TODO: Set to false once ESLint is properly configured
+    // Disable ESLint during builds for Vercel deployment
     ignoreDuringBuilds: true,
   },
   poweredByHeader: false,
