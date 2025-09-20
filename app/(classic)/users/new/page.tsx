@@ -1,44 +1,44 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import Link from 'next/link'
-import { ArrowLeft } from 'lucide-react'
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 
 export default function NewUserPage() {
-  const router = useRouter()
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-  
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
   const [formData, setFormData] = useState({
-    name: '',
-    email: ''
-  })
+    name: "",
+    email: "",
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError('')
-    setLoading(true)
+    e.preventDefault();
+    setError("");
+    setLoading(true);
 
     try {
-      const response = await fetch('/api/users', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
-      })
+      const response = await fetch("/api/users", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
 
       if (!response.ok) {
-        const data = await response.json()
-        throw new Error(data.error || 'Failed to create user')
+        const data = await response.json();
+        throw new Error(data.error || "Failed to create user");
       }
 
-      router.push('/users')
-      router.refresh()
+      router.push("/users");
+      router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create user')
-      setLoading(false)
+      setError(err instanceof Error ? err.message : "Failed to create user");
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <div className="min-h-screen bg-surface">
@@ -62,7 +62,10 @@ export default function NewUserPage() {
       </div>
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-sm border p-6 space-y-6">
+        <form
+          onSubmit={handleSubmit}
+          className="bg-white rounded-lg shadow-sm border p-6 space-y-6"
+        >
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
               {error}
@@ -77,7 +80,9 @@ export default function NewUserPage() {
               type="text"
               required
               value={formData.name}
-              onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, name: e.target.value }))
+              }
               className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
               placeholder="John Smith"
             />
@@ -91,7 +96,9 @@ export default function NewUserPage() {
               type="email"
               required
               value={formData.email}
-              onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, email: e.target.value }))
+              }
               className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
               placeholder="john@gogentic.com"
             />
@@ -109,11 +116,11 @@ export default function NewUserPage() {
               disabled={loading}
               className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? 'Creating...' : 'Create User'}
+              {loading ? "Creating..." : "Create User"}
             </button>
           </div>
         </form>
       </div>
     </div>
-  )
+  );
 }

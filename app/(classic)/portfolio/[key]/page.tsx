@@ -1,122 +1,155 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { ArrowLeft, Plus, Filter, Search, MoreVertical, Activity, AlertCircle, CheckCircle, Clock, Users, TrendingUp, Target } from 'lucide-react'
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import {
+  ArrowLeft,
+  Plus,
+  Filter,
+  Search,
+  MoreVertical,
+  Activity,
+  AlertCircle,
+  CheckCircle,
+  Clock,
+  Users,
+  TrendingUp,
+  Target,
+} from "lucide-react";
 
 interface Portfolio {
-  id: string
-  key: string
-  name: string
-  color: string
-  description: string
+  id: string;
+  key: string;
+  name: string;
+  color: string;
+  description: string;
 }
 
 interface Project {
-  id: string
-  title: string
-  stage: string
-  health: string
-  status: string
-  pmId: string
-  pm: { name: string; email: string }
-  developers: { id: string; name: string }[]
-  targetDelivery: string | null
-  clientName: string
-  _count: { tasks: number }
+  id: string;
+  title: string;
+  stage: string;
+  health: string;
+  status: string;
+  pmId: string;
+  pm: { name: string; email: string };
+  developers: { id: string; name: string }[];
+  targetDelivery: string | null;
+  clientName: string;
+  _count: { tasks: number };
 }
 
-export default function PortfolioDashboard({ params }: { params: Promise<{ key: string }> }) {
-  const router = useRouter()
-  const [portfolioKey, setPortfolioKey] = useState<string | null>(null)
-  const [portfolio, setPortfolio] = useState<Portfolio | null>(null)
-  const [projects, setProjects] = useState<Project[]>([])
-  const [filteredProjects, setFilteredProjects] = useState<Project[]>([])
-  const [loading, setLoading] = useState(true)
-  const [searchTerm, setSearchTerm] = useState('')
-  const [stageFilter, setStageFilter] = useState<string>('all')
-  const [statusFilter, setStatusFilter] = useState<string>('all')
+export default function PortfolioDashboard({
+  params,
+}: {
+  params: Promise<{ key: string }>;
+}) {
+  const router = useRouter();
+  const [portfolioKey, setPortfolioKey] = useState<string | null>(null);
+  const [portfolio, setPortfolio] = useState<Portfolio | null>(null);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [filteredProjects, setFilteredProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [stageFilter, setStageFilter] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
 
   useEffect(() => {
-    params.then(p => setPortfolioKey(p.key))
-  }, [params])
+    params.then((p) => setPortfolioKey(p.key));
+  }, [params]);
 
   useEffect(() => {
     if (portfolioKey) {
-      fetchPortfolioData()
+      fetchPortfolioData();
     }
-  }, [portfolioKey])
+  }, [portfolioKey]);
 
   useEffect(() => {
-    filterProjects()
-  }, [projects, searchTerm, stageFilter, statusFilter])
+    filterProjects();
+  }, [projects, searchTerm, stageFilter, statusFilter]);
 
   const fetchPortfolioData = async () => {
-    if (!portfolioKey) return
+    if (!portfolioKey) return;
     try {
-      const response = await fetch(`/api/portfolio/${portfolioKey}`)
-      const data = await response.json()
-      setPortfolio(data.portfolio)
-      setProjects(data.projects)
-      setFilteredProjects(data.projects)
+      const response = await fetch(`/api/portfolio/${portfolioKey}`);
+      const data = await response.json();
+      setPortfolio(data.portfolio);
+      setProjects(data.projects);
+      setFilteredProjects(data.projects);
     } catch (error) {
-      console.error('Failed to fetch portfolio data:', error)
+      console.error("Failed to fetch portfolio data:", error);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const filterProjects = () => {
-    let filtered = [...projects]
+    let filtered = [...projects];
 
     if (searchTerm) {
-      filtered = filtered.filter(p => 
-        p.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        p.clientName.toLowerCase().includes(searchTerm.toLowerCase())
-      )
+      filtered = filtered.filter(
+        (p) =>
+          p.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          p.clientName.toLowerCase().includes(searchTerm.toLowerCase())
+      );
     }
 
-    if (stageFilter !== 'all') {
-      filtered = filtered.filter(p => p.stage === stageFilter)
+    if (stageFilter !== "all") {
+      filtered = filtered.filter((p) => p.stage === stageFilter);
     }
 
-    if (statusFilter !== 'all') {
-      filtered = filtered.filter(p => p.status === statusFilter)
+    if (statusFilter !== "all") {
+      filtered = filtered.filter((p) => p.status === statusFilter);
     }
 
-    setFilteredProjects(filtered)
-  }
+    setFilteredProjects(filtered);
+  };
 
   const getStageColor = (stage: string) => {
     switch (stage) {
-      case 'Discovery': return 'bg-info-bg text-info'
-      case 'Build': return 'bg-portfolio-fisher/10 text-portfolio-fisher'
-      case 'Launch': return 'bg-warn-bg text-warn'
-      case 'Live': return 'bg-success-bg text-success'
-      default: return 'bg-surface text-fg'
+      case "Discovery":
+        return "bg-info-bg text-info";
+      case "Build":
+        return "bg-portfolio-fisher/10 text-portfolio-fisher";
+      case "Launch":
+        return "bg-warn-bg text-warn";
+      case "Live":
+        return "bg-success-bg text-success";
+      default:
+        return "bg-surface text-fg";
     }
-  }
+  };
 
   const getHealthIcon = (health: string) => {
     switch (health) {
-      case 'Green': return <CheckCircle className="w-4 h-4 text-success" />
-      case 'Amber': return <AlertCircle className="w-4 h-4 text-warn" />
-      case 'Red': return <AlertCircle className="w-4 h-4 text-danger" />
-      default: return <Activity className="w-4 h-4 text-muted" />
+      case "Green":
+        return <CheckCircle className="w-4 h-4 text-success" />;
+      case "Amber":
+        return <AlertCircle className="w-4 h-4 text-warn" />;
+      case "Red":
+        return <AlertCircle className="w-4 h-4 text-danger" />;
+      default:
+        return <Activity className="w-4 h-4 text-muted" />;
     }
-  }
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'Not Started': return 'text-muted'
-      case 'In Progress': return 'text-brand'
-      case 'Review': return 'text-portfolio-fisher'
-      case 'Blocked': return 'text-danger'
-      case 'Done': return 'text-success'
-      default: return 'text-muted'
+      case "Not Started":
+        return "text-muted";
+      case "In Progress":
+        return "text-brand";
+      case "Review":
+        return "text-portfolio-fisher";
+      case "Blocked":
+        return "text-danger";
+      case "Done":
+        return "text-success";
+      default:
+        return "text-muted";
     }
-  }
+  };
 
   if (loading) {
     return (
@@ -126,7 +159,7 @@ export default function PortfolioDashboard({ params }: { params: Promise<{ key: 
           <p className="mt-4 text-muted">Loading portfolio...</p>
         </div>
       </div>
-    )
+    );
   }
 
   if (!portfolio) {
@@ -139,19 +172,19 @@ export default function PortfolioDashboard({ params }: { params: Promise<{ key: 
           </Link>
         </div>
       </div>
-    )
+    );
   }
 
   // Calculate stats
   const stats = {
     total: projects.length,
-    discovery: projects.filter(p => p.stage === 'Discovery').length,
-    build: projects.filter(p => p.stage === 'Build').length,
-    launch: projects.filter(p => p.stage === 'Launch').length,
-    live: projects.filter(p => p.stage === 'Live').length,
-    blocked: projects.filter(p => p.status === 'Blocked').length,
-    tasksTotal: projects.reduce((sum, p) => sum + p._count.tasks, 0)
-  }
+    discovery: projects.filter((p) => p.stage === "Discovery").length,
+    build: projects.filter((p) => p.stage === "Build").length,
+    launch: projects.filter((p) => p.stage === "Launch").length,
+    live: projects.filter((p) => p.stage === "Live").length,
+    blocked: projects.filter((p) => p.status === "Blocked").length,
+    tasksTotal: projects.reduce((sum, p) => sum + p._count.tasks, 0),
+  };
 
   return (
     <div className="min-h-screen bg-bg">
@@ -168,13 +201,17 @@ export default function PortfolioDashboard({ params }: { params: Promise<{ key: 
                 Mission Control
               </Link>
               <div className="flex items-center">
-                <div 
+                <div
                   className="w-2 h-8 rounded-full mr-3"
                   style={{ backgroundColor: portfolio.color }}
                 />
                 <div>
-                  <h1 className="text-2xl font-bold text-fg">{portfolio.name}</h1>
-                  <p className="text-sm text-muted mt-1">{portfolio.description}</p>
+                  <h1 className="text-2xl font-bold text-fg">
+                    {portfolio.name}
+                  </h1>
+                  <p className="text-sm text-muted mt-1">
+                    {portfolio.description}
+                  </p>
                 </div>
               </div>
             </div>
@@ -197,11 +234,15 @@ export default function PortfolioDashboard({ params }: { params: Promise<{ key: 
           </div>
           <div className="bg-bg rounded-lg shadow-sm p-4">
             <div className="text-sm text-muted">Discovery</div>
-            <div className="text-2xl font-bold text-brand">{stats.discovery}</div>
+            <div className="text-2xl font-bold text-brand">
+              {stats.discovery}
+            </div>
           </div>
           <div className="bg-bg rounded-lg shadow-sm p-4">
             <div className="text-sm text-muted">Build</div>
-            <div className="text-2xl font-bold text-portfolio-fisher">{stats.build}</div>
+            <div className="text-2xl font-bold text-portfolio-fisher">
+              {stats.build}
+            </div>
           </div>
           <div className="bg-bg rounded-lg shadow-sm p-4">
             <div className="text-sm text-muted">Launch</div>
@@ -213,7 +254,9 @@ export default function PortfolioDashboard({ params }: { params: Promise<{ key: 
           </div>
           <div className="bg-bg rounded-lg shadow-sm p-4">
             <div className="text-sm text-muted">Blocked</div>
-            <div className="text-2xl font-bold text-danger">{stats.blocked}</div>
+            <div className="text-2xl font-bold text-danger">
+              {stats.blocked}
+            </div>
           </div>
           <div className="bg-bg rounded-lg shadow-sm p-4">
             <div className="text-sm text-muted">Tasks</div>
@@ -283,12 +326,16 @@ export default function PortfolioDashboard({ params }: { params: Promise<{ key: 
                     {getHealthIcon(project.health)}
                   </div>
                 </div>
-                
+
                 <div className="flex items-center gap-2 mb-3">
-                  <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStageColor(project.stage)}`}>
+                  <span
+                    className={`px-2 py-1 text-xs font-medium rounded-full ${getStageColor(project.stage)}`}
+                  >
                     {project.stage}
                   </span>
-                  <span className={`text-xs font-medium ${getStatusColor(project.status)}`}>
+                  <span
+                    className={`text-xs font-medium ${getStatusColor(project.status)}`}
+                  >
                     {project.status}
                   </span>
                 </div>
@@ -304,7 +351,9 @@ export default function PortfolioDashboard({ params }: { params: Promise<{ key: 
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted">Team</span>
-                    <span className="text-fg">{project.developers.length} devs</span>
+                    <span className="text-fg">
+                      {project.developers.length} devs
+                    </span>
                   </div>
                   {project.targetDelivery && (
                     <div className="flex justify-between">
@@ -323,7 +372,7 @@ export default function PortfolioDashboard({ params }: { params: Promise<{ key: 
                   </div>
                   <button
                     onClick={(e) => {
-                      e.preventDefault()
+                      e.preventDefault();
                       // Handle more actions
                     }}
                     className="p-1 hover:bg-surface rounded"
@@ -338,10 +387,12 @@ export default function PortfolioDashboard({ params }: { params: Promise<{ key: 
 
         {filteredProjects.length === 0 && (
           <div className="bg-bg rounded-lg shadow-sm p-12 text-center">
-            <p className="text-muted">No projects found matching your filters</p>
+            <p className="text-muted">
+              No projects found matching your filters
+            </p>
           </div>
         )}
       </div>
     </div>
-  )
+  );
 }
