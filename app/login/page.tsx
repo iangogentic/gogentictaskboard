@@ -5,8 +5,8 @@ import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
-// Check if credentials auth is enabled (only for dev/staging)
-const enableCredentials = true; // Enabled for Claude testing
+// Check if credentials auth is enabled
+const enableCredentials = true; // Always enabled for Claude testing
 
 export default function LoginPage() {
   const router = useRouter();
