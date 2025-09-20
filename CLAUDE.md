@@ -423,6 +423,32 @@ node fix-slack-integration-prod.js # Fix production integrations
 - **Health Checks**: `/api/health`, `/api/probe/db`, `/api/probe/whoami`
 - **Debug Endpoints**: `/api/auth/_debug`, `/api/auth/_cookiecheck`
 
+## Claude Test Account
+
+For automated testing and verification, a dedicated test account has been created:
+
+- **Email**: `claude.test@gogentic.ai`
+- **Password**: `claude-test-2025`
+- **User ID**: `claude_test_user_2025`
+- **Features**: Full access to Slack and Drive integrations
+- **Purpose**: Enables Claude to test production deployment via Playwright MCP
+
+### Testing Workflow with Playwright
+
+```javascript
+// Navigate to login
+await page.goto("https://gogentic-portal-real.vercel.app/login");
+
+// Fill credentials
+await page.fill('input[type="email"]', "claude.test@gogentic.ai");
+await page.fill('input[type="password"]', "claude-test-2025");
+
+// Submit form
+await page.click('button[type="submit"]');
+
+// Now authenticated and can test all features
+```
+
 ## Recent Changes (2025-01-20)
 
 - Added 33 new agent tools (Slack, Drive, RAG, Workflow integrations)
@@ -431,3 +457,6 @@ node fix-slack-integration-prod.js # Fix production integrations
 - Resolved compilation errors in tool definitions
 - Documented actual project structure (57 API routes, 24 pages)
 - Updated CLAUDE.md to reflect true project state
+- Added Credentials provider for email/password authentication
+- Created Claude test account for automated testing
+- Enabled email/password login alongside Google OAuth
