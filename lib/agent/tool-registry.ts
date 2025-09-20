@@ -9,6 +9,12 @@ import { GoogleDriveService } from "@/lib/google-drive";
 import { embeddingService } from "@/lib/embeddings";
 import { prisma } from "@/lib/prisma";
 
+// Import integration tool collections
+import { slackTools } from "./tools/slack-tools";
+import { driveTools } from "./tools/drive-tools";
+import { ragTools } from "./tools/rag-tools";
+import { workflowTools } from "./tools/workflow-tools";
+
 export interface ToolDefinition<T = any> {
   name: string;
   description: string;
@@ -463,17 +469,21 @@ export class ToolRegistry {
       createProject,
       createTask,
       updateTask,
-      // Slack
+      // Legacy individual tools (kept for backward compatibility)
       slackSendDM,
       slackSendChannelMessage,
       slackLinkProject,
-      // Drive
       driveCreateFolder,
       driveCreateProjectStructure,
       driveSearchFiles,
-      // RAG
       ragSearch,
       ragIndexDocument,
+
+      // New comprehensive integration tools
+      ...slackTools, // 5 Slack tools: sendMessage, linkProject, dailySummary, listChannels, getUserInfo
+      ...driveTools, // 8 Drive tools: upload, download, create, share, search, list, move, delete
+      ...ragTools, // 3 RAG tools: sync, search, index
+      ...workflowTools, // 5 Workflow tools: create, execute, schedule, list, templates
     ]);
   }
 

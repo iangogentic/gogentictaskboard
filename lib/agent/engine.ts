@@ -9,7 +9,6 @@ import {
   ExecutionMetrics,
   AgentContext,
 } from "./types";
-import { getTool } from "./tools";
 import { toolRegistry } from "./tool-registry";
 import { prisma } from "@/lib/prisma";
 import { AuditLogger } from "@/lib/audit";
@@ -141,32 +140,6 @@ export class AgentEngine {
       // Get the tool from registry
       const tool = toolRegistry.get(step.tool);
       if (!tool) {
-        // Fallback to old tool system
-        const legacyTool = getTool(step.tool);
-        if (legacyTool) {
-          // Execute legacy tool
-          const params = {
-            ...step.parameters,
-            executorId: this.session.userId,
-            sessionId: this.session.id,
-            context: this.session.context,
-          };
-          const result = await legacyTool.execute(params);
-
-          step.status = result.success ? "completed" : "failed";
-          step.result = result;
-          step.completedAt = new Date();
-          await this.saveSession();
-
-          return {
-            stepId: step.id,
-            tool: step.tool,
-            status: step.status,
-            output: result.data,
-            error: result.error,
-            duration: Date.now() - startTime,
-          };
-        }
         throw new Error(`Tool not found: ${step.tool}`);
       }
 

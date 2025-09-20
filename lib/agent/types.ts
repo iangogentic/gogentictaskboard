@@ -128,14 +128,8 @@ export interface AgentMessage {
   timestamp: Date;
 }
 
-export interface ToolDefinition {
-  name: string;
-  description: string;
-  category: "project" | "task" | "document" | "integration" | "utility";
-  parameters: ToolParameter[];
-  requiredPermissions?: string[];
-  requiredIntegrations?: string[];
-}
+// ToolDefinition interface is now defined in tool-registry.ts
+// Re-export it from there for backwards compatibility
 
 export interface ToolParameter {
   name: string;

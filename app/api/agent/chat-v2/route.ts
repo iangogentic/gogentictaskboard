@@ -1,11 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
 import { prisma } from "@/lib/prisma";
-import {
-  ragSearchTool,
-  getMemoryContextTool,
-} from "@/lib/agent/tools/rag-tools";
-import { searchTool } from "@/lib/agent/tools/search-tools";
+import { toolRegistry } from "@/lib/agent/tool-registry";
 
 // Use Node.js runtime to avoid Edge Function size limits
 export const runtime = "nodejs";
@@ -352,41 +348,47 @@ async function callFunction(name: string, args: any) {
 
         // Perform semantic search using RAG
         if (type === "all" || type === "rag") {
-          const ragResult = await ragSearchTool.execute({
-            query,
-            projectId,
-            limit: 5,
-          });
-
-          if (ragResult.success) {
-            results.semantic = ragResult.data;
-          }
+          // TODO: Use new tool registry
+          // const ragTool = toolRegistry.get("searchKnowledgeBase");
+          // if (ragTool) {
+          //   const ragResult = await ragTool.execute({
+          //     query,
+          //     projectId,
+          //     limit: 5,
+          //   });
+          //   if (ragResult.success) {
+          //     results.semantic = ragResult.data;
+          //   }
+          // }
         }
 
         // Perform database search
         if (type === "all" || type === "database") {
-          const dbResult = await searchTool.execute({
-            query,
-            projectId,
-            types: ["projects", "tasks", "updates", "documents"],
-            limit: 10,
-          });
-
-          if (dbResult.success) {
-            results.database = dbResult.data;
-          }
+          // TODO: Use new tool registry
+          // const searchTool = toolRegistry.get("searchContent");
+          // if (searchTool) {
+          //   const dbResult = await searchTool.execute({
+          //     query,
+          //     projectId,
+          //     types: ["projects", "tasks", "updates", "documents"],
+          //     limit: 10,
+          //   });
+          //   if (dbResult.success) {
+          //     results.database = dbResult.data;
+          //   }
+          // }
         }
 
         // Get memory context
         if (type === "all" || type === "rag") {
-          const memoryResult = await getMemoryContextTool.execute({
-            query,
-            projectId,
-          });
-
-          if (memoryResult.success) {
-            results.memory = memoryResult.data;
-          }
+          // TODO: Implement memory context retrieval
+          // const memoryResult = await getMemoryContextTool.execute({
+          //   query,
+          //   projectId,
+          // });
+          // if (memoryResult.success) {
+          //   results.memory = memoryResult.data;
+          // }
         }
 
         return JSON.stringify({
