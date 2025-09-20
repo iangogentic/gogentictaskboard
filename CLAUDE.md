@@ -449,7 +449,7 @@ await page.click('button[type="submit"]');
 // Now authenticated and can test all features
 ```
 
-## Recent Changes (2025-01-20)
+## Recent Changes (2025-09-20)
 
 - Added 33 new agent tools (Slack, Drive, RAG, Workflow integrations)
 - Fixed IntegrationCredential records for all 16 production users
