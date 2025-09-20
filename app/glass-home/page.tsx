@@ -77,7 +77,7 @@ async function getPageData(userId: string) {
     take: 3,
   });
 
-  // Get user's projects for quick stats
+  // Get user's projects for quick stats and display
   const projects = await prisma.project.findMany({
     where: {
       ProjectMember: {
@@ -85,8 +85,20 @@ async function getPageData(userId: string) {
       },
     },
     include: {
-      tasks: true,
+      tasks: {
+        where: {
+          status: {
+            not: "COMPLETED",
+          },
+        },
+      },
+      ProjectMember: {
+        include: {
+          user: true,
+        },
+      },
     },
+    orderBy: { updatedAt: "desc" },
   });
 
   return {
@@ -129,6 +141,14 @@ async function getPageData(userId: string) {
       completedTasks: tasks.filter((t) => t.status === "COMPLETED").length,
       activeProjects: projects.length,
     },
+    projects: projects.map((p) => ({
+      id: p.id,
+      title: p.title,
+      description: p.description,
+      activeTasks: p.tasks.length,
+      teamSize: p.ProjectMember.length,
+      updatedAt: p.updatedAt,
+    })),
   };
 }
 

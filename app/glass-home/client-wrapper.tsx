@@ -50,6 +50,15 @@ interface Meeting {
   link: string;
 }
 
+interface Project {
+  id: string;
+  title: string;
+  description: string | null;
+  activeTasks: number;
+  teamSize: number;
+  updatedAt: Date;
+}
+
 interface ClientWrapperProps {
   initialData: {
     tasks: Task[];
@@ -60,6 +69,7 @@ interface ClientWrapperProps {
       completedTasks: number;
       activeProjects: number;
     };
+    projects: Project[];
   };
   userId: string;
   userName: string;
@@ -220,25 +230,69 @@ export default function ClientWrapper({
           </div>
 
           {/* RIGHT: Navigation Links */}
-          <div className="flex items-center gap-4">
+          <nav className="flex items-center gap-2">
+            <a
+              href="/projects"
+              className={`rounded-xl px-3 py-2 text-sm border transition ${
+                clarity
+                  ? "border-white/25 bg-white/10 hover:bg-white/15"
+                  : "border-white/20 bg-white/5 hover:bg-white/10"
+              } ${focus}`}
+            >
+              Projects
+            </a>
+            <a
+              href="/my-work"
+              className={`rounded-xl px-3 py-2 text-sm border transition ${
+                clarity
+                  ? "border-white/25 bg-white/10 hover:bg-white/15"
+                  : "border-white/20 bg-white/5 hover:bg-white/10"
+              } ${focus}`}
+            >
+              My Work
+            </a>
+            <a
+              href="/team"
+              className={`rounded-xl px-3 py-2 text-sm border transition ${
+                clarity
+                  ? "border-white/25 bg-white/10 hover:bg-white/15"
+                  : "border-white/20 bg-white/5 hover:bg-white/10"
+              } ${focus}`}
+            >
+              Team
+            </a>
+            <a
+              href="/reports"
+              className={`rounded-xl px-3 py-2 text-sm border transition ${
+                clarity
+                  ? "border-white/25 bg-white/10 hover:bg-white/15"
+                  : "border-white/20 bg-white/5 hover:bg-white/10"
+              } ${focus}`}
+            >
+              Reports
+            </a>
             <a
               href="/dashboard"
-              className={`rounded-xl px-3 py-2 text-sm border border-white/25 bg-white/10 hover:bg-white/15 transition ${focus}`}
+              className={`rounded-xl px-3 py-2 text-sm border transition ${
+                clarity
+                  ? "border-white/25 bg-white/10 hover:bg-white/15"
+                  : "border-white/20 bg-white/5 hover:bg-white/10"
+              } ${focus}`}
             >
-              Classic UI
+              Classic
             </a>
             <button
               onClick={() => signOut({ callbackUrl: "/login" })}
-              className={`rounded-xl px-3 py-2 text-sm border flex items-center gap-2 ${
+              className={`rounded-xl px-3 py-2 text-sm border flex items-center gap-2 transition ${
                 clarity
                   ? "bg-white/10 text-white border-white/25 hover:bg-white/15"
                   : "bg-white/5 text-white border-white/20 hover:bg-white/10"
-              } transition ${focus}`}
+              } ${focus}`}
             >
               <LogOut className="h-4 w-4" />
               Sign Out
             </button>
-          </div>
+          </nav>
         </div>
       </div>
 
@@ -391,17 +445,58 @@ export default function ClientWrapper({
               )}
             </div>
 
-            {/* Stats Bar */}
-            <div className="mt-4 pt-4 border-t border-white/10 flex items-center justify-between text-sm">
-              <span className="text-white/70">
-                {initialData.stats.activeProjects} active projects
-              </span>
-              <a
-                href="/projects"
-                className="text-white/90 hover:text-white underline decoration-white/50"
-              >
-                View all projects →
-              </a>
+            {/* Your Projects Section */}
+            <div className="mt-6 pt-4 border-t border-white/10">
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="text-sm font-semibold text-white">
+                  Your Projects
+                </h4>
+                <Badge>{initialData.stats.activeProjects}</Badge>
+              </div>
+              <div className="space-y-2">
+                {initialData.projects && initialData.projects.length > 0 ? (
+                  initialData.projects.slice(0, 3).map((project) => (
+                    <a
+                      key={project.id}
+                      href={`/projects/${project.id}`}
+                      className={`block p-3 rounded-xl border transition ${
+                        clarity
+                          ? "border-white/20 bg-white/10 hover:bg-white/15"
+                          : "border-white/10 bg-white/5 hover:bg-white/10"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="font-medium text-white">
+                            {project.title}
+                          </div>
+                          <div className="text-xs text-white/70 mt-0.5">
+                            {project.activeTasks} active{" "}
+                            {project.activeTasks === 1 ? "task" : "tasks"} •{" "}
+                            {project.teamSize}{" "}
+                            {project.teamSize === 1 ? "member" : "members"}
+                          </div>
+                        </div>
+                        <ChevronRight className="h-4 w-4 text-white/50" />
+                      </div>
+                    </a>
+                  ))
+                ) : (
+                  <div className="text-sm text-white/75">
+                    No projects assigned yet.
+                  </div>
+                )}
+              </div>
+              {initialData.projects && initialData.projects.length > 3 && (
+                <div className="mt-3 text-center">
+                  <a
+                    href="/projects"
+                    className="text-sm text-white/90 hover:text-white underline decoration-white/50"
+                  >
+                    View all {initialData.stats.activeProjects} projects →
+                  </a>
+                </div>
+              )}
             </div>
           </GlassCard>
         </motion.div>
