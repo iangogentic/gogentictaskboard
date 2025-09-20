@@ -435,19 +435,49 @@ For automated testing and verification, a dedicated test account has been create
 
 ### Testing Workflow with Playwright
 
+**IMPORTANT**: Always test like a real user would and monitor console logs for errors during testing.
+
 ```javascript
-// Navigate to login
-await page.goto("https://gogentic-portal-real.vercel.app/login");
+// 1. Navigate to login page
+await browser_navigate("https://gogentic-portal-real.vercel.app/login");
 
-// Fill credentials
-await page.fill('input[type="email"]', "claude.test@gogentic.ai");
-await page.fill('input[type="password"]', "claude-test-2025");
+// 2. Fill in credentials using form fields
+await browser_fill_form([
+  { name: "Email", type: "textbox", value: "claude.test@gogentic.ai" },
+  { name: "Password", type: "textbox", value: "claude-test-2025" },
+]);
 
-// Submit form
-await page.click('button[type="submit"]');
+// 3. Click sign in button
+await browser_click("Sign in button");
 
-// Now authenticated and can test all features
+// 4. Check console for errors after each action
+await browser_console_messages(); // Monitor for any errors
+
+// 5. Verify successful navigation to dashboard
+// Expected URL: https://gogentic-portal-real.vercel.app/dashboard
 ```
+
+### Testing Best Practices
+
+1. **Always check console logs**: Use `browser_console_messages()` to catch JavaScript errors, API failures, and authentication issues
+2. **Test user flows**: Navigate through the application as a real user would
+3. **Monitor network requests**: Check for failed API calls or 401/403 errors
+4. **Verify page transitions**: Ensure successful navigation after login
+5. **Common errors to watch for**:
+   - `Failed to fetch users: SyntaxError` - API endpoint issues
+   - `Failed to load navigation data` - Authentication or session problems
+   - `401 Unauthorized` - Auth token issues
+   - `TypeError` or `ReferenceError` - JavaScript execution errors
+
+### Debugging Authentication Issues
+
+When login fails, check:
+
+1. Console errors immediately after clicking sign in
+2. Network tab for failed `/api/auth/callback/credentials` requests
+3. Verify the user exists in Neon database via MCP
+4. Check if credentials provider is enabled in production
+5. Ensure auth.ts and auth.config.ts are properly configured
 
 ## Recent Changes (2025-09-20)
 
