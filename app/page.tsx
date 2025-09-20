@@ -1,24 +1,13 @@
-"use client";
-
 import { redirect } from "next/navigation";
-import { useEffect } from "react";
+import ModernPage from "./(modern)/page";
 
 export default function HomePage() {
   const useModernUI = process.env.NEXT_PUBLIC_NEW_UI === "true";
 
-  useEffect(() => {
-    if (!useModernUI) {
-      // Redirect to classic dashboard if not using modern UI
-      window.location.href = "/dashboard";
-    }
-  }, [useModernUI]);
-
-  if (useModernUI) {
-    // Import and render the modern page directly
-    const ModernPage = require("./(modern)/page").default;
-    return <ModernPage />;
+  if (!useModernUI) {
+    redirect("/dashboard");
   }
 
-  // Fallback - redirect to dashboard
-  redirect("/dashboard");
+  // Render the modern page directly
+  return <ModernPage />;
 }
