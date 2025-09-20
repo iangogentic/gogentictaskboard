@@ -479,6 +479,162 @@ When login fails, check:
 4. Check if credentials provider is enabled in production
 5. Ensure auth.ts and auth.config.ts are properly configured
 
+## UI Migration: Glassmorphic Design System (2025-09-20)
+
+### Overview
+
+Implementing a modern glassmorphic UI with theme system based on the mockup at `C:\Users\ianig\Desktop\ui for portal\gogentic_portal_landing_page_draft_ui.jsx`. This migration will be done progressively without breaking existing functionality.
+
+### Design System Features
+
+- **Glassmorphic components**: Backdrop blur, transparency layers, glass cards
+- **Theme system**: 4 presets (Aurora, Neon Mint, Sunset, Orchid)
+- **Clarity mode**: Toggle between high/low contrast
+- **Animated gradients**: Conic and radial gradient backgrounds
+- **Framer Motion**: Smooth animations and transitions
+
+### Implementation Plan
+
+#### Phase 1: Foundation Setup
+
+1. **Install dependencies**:
+
+   ```bash
+   npm install framer-motion
+   ```
+
+2. **Create glass components** at `components/glass/`:
+   - `GlassCard.tsx` - Main glass container component
+   - `Badge.tsx` - Glass-style badges
+   - `ProgressRing.tsx` - Circular progress indicators
+   - `ThemeMenu.tsx` - Theme switcher dropdown
+   - `ThemeProvider.tsx` - Context for theme management
+
+3. **Update Tailwind config** for glassmorphism:
+   - Add backdrop blur utilities
+   - Define transparency scales
+   - Add theme color tokens as CSS variables
+
+#### Phase 2: Route Structure
+
+Use Next.js route groups to separate old and new UI:
+
+```
+app/
+├── (classic)/          # Current UI (keep intact)
+│   ├── dashboard/      # Existing dashboard
+│   ├── projects/       # Existing projects pages
+│   └── ...
+├── (modern)/           # New glassmorphic UI
+│   ├── page.tsx        # New landing page
+│   ├── layout.tsx      # Glass layout wrapper
+│   └── dashboard/      # New dashboard design
+```
+
+#### Phase 3: Theme System Implementation
+
+```typescript
+// lib/themes/constants.ts
+export const THEMES = {
+  AURORA: { a: "rgba(120,119,198,.9)", b: "rgba(0,179,255,.6)" },
+  NEON_MINT: { a: "rgba(16,185,129,.9)", b: "rgba(34,211,238,.6)" },
+  SUNSET: { a: "rgba(251,146,60,.9)", b: "rgba(239,68,68,.6)" },
+  ORCHID: { a: "rgba(168,85,247,.9)", b: "rgba(236,72,153,.6)" },
+};
+```
+
+#### Phase 4: Feature Flags
+
+Add to `.env.local`:
+
+```
+NEXT_PUBLIC_NEW_UI=false  # Set to true to enable new UI
+```
+
+### Migration Checklist
+
+- [ ] Install Framer Motion
+- [ ] Create glass component library
+- [ ] Setup theme provider and context
+- [ ] Implement new landing page at `app/(modern)/page.tsx`
+- [ ] Create glass layout wrapper
+- [ ] Add theme persistence (localStorage + database)
+- [ ] Migrate dashboard to new design
+- [ ] Setup feature flag system
+- [ ] Test with Playwright (both UI versions)
+- [ ] Performance testing for blur effects
+- [ ] Gradual rollout to other pages
+
+### Component Migration Map
+
+| Current Component | New Glass Component | Status   |
+| ----------------- | ------------------- | -------- |
+| Card              | GlassCard           | To build |
+| Badge             | Badge (glass)       | To build |
+| Button            | GlassButton         | To build |
+| Navigation        | TopBar (glass)      | To build |
+| Sidebar           | Glass sidebar       | To build |
+
+### API Endpoints (New)
+
+- `POST /api/user/preferences` - Save theme preference
+- `GET /api/user/preferences` - Get user theme settings
+
+### Database Changes
+
+```sql
+-- Add user preferences table (non-breaking)
+CREATE TABLE "UserPreferences" (
+  "id" TEXT PRIMARY KEY DEFAULT gen_random_uuid(),
+  "userId" TEXT NOT NULL UNIQUE REFERENCES "User"("id"),
+  "theme" TEXT DEFAULT 'AURORA',
+  "clarityMode" BOOLEAN DEFAULT true,
+  "createdAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  "updatedAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+### Testing Strategy
+
+1. Keep existing Playwright tests for classic UI
+2. Create parallel tests for modern UI
+3. Test theme switching and persistence
+4. Verify no performance regression
+5. Check accessibility with both clarity modes
+
+### Rollback Plan
+
+- Feature flags allow instant rollback
+- No database migrations that break existing schema
+- Keep both UI versions until fully validated
+- Monitor performance metrics during rollout
+
+### Performance Considerations
+
+- Lazy load glass components
+- Optimize blur effects for mobile
+- Use CSS containment for glass cards
+- Monitor Core Web Vitals
+- Consider reduced motion preferences
+
+### Key Files to Create/Modify
+
+1. `components/glass/*` - New component library
+2. `app/(modern)/layout.tsx` - Glass layout wrapper
+3. `app/(modern)/page.tsx` - New landing page
+4. `lib/themes/provider.tsx` - Theme context
+5. `tailwind.config.js` - Add glass utilities
+6. `middleware.ts` - Route to correct UI version
+
+### IMPORTANT NOTES FOR IMPLEMENTATION
+
+- DO NOT modify existing pages in `app/` directly
+- Use route groups to separate UI versions
+- All new components go in `components/glass/`
+- Test both UIs work simultaneously
+- Preserve all existing functionality
+- Use the mockup at `C:\Users\ianig\Desktop\ui for portal\gogentic_portal_landing_page_draft_ui.jsx` as reference
+
 ## Recent Changes (2025-09-20)
 
 - Added 33 new agent tools (Slack, Drive, RAG, Workflow integrations)
