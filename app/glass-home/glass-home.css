@@ -2,8 +2,9 @@
 
 /* Override default layout background for glass home */
 body:has(.glass-home-page) {
-  background: #0a0a0a !important;
-  color: white !important;
+  background: #000000 !important;
+  color: #ffffff !important;
+  overflow-x: hidden;
 }
 
 body:has(.glass-home-page) .bg-bg {
@@ -12,11 +13,51 @@ body:has(.glass-home-page) .bg-bg {
 
 /* Ensure text is visible on dark background */
 .glass-home-page {
-  color: white !important;
+  color: #ffffff !important;
 }
 
-.glass-home-page * {
-  color: inherit;
+.glass-home-page h1,
+.glass-home-page h2,
+.glass-home-page h3,
+.glass-home-page h4,
+.glass-home-page h5,
+.glass-home-page h6,
+.glass-home-page p,
+.glass-home-page span,
+.glass-home-page div,
+.glass-home-page a,
+.glass-home-page button,
+.glass-home-page input,
+.glass-home-page label {
+  color: #ffffff !important;
+}
+
+/* Fix for any elements that might have dark text */
+.glass-home-page .text-gray-600,
+.glass-home-page .text-gray-700,
+.glass-home-page .text-gray-800,
+.glass-home-page .text-gray-900,
+.glass-home-page .text-black {
+  color: #ffffff !important;
+}
+
+/* Ensure badges and cards have proper text color */
+.glass-home-page [class*="badge"],
+.glass-home-page [class*="card"] {
+  color: #ffffff !important;
+}
+
+/* Glass card styles */
+.glass-card {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+}
+
+.glass-card:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
 }
 
 /* Ensure backdrop filters work properly */
@@ -53,4 +94,118 @@ body:has(.glass-home-page) .bg-bg {
 .backdrop-blur-3xl {
   -webkit-backdrop-filter: blur(64px);
   backdrop-filter: blur(64px);
+}
+
+/* Gradient orb styles */
+.gradient-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(64px);
+  opacity: 0.3;
+  pointer-events: none;
+  mix-blend-mode: screen;
+}
+
+.gradient-orb-1 {
+  width: 52rem;
+  height: 52rem;
+  top: -6rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: conic-gradient(
+    from 0deg at 50% 50%,
+    rgba(120, 119, 198, 0.9),
+    rgba(0, 179, 255, 0.6),
+    rgba(120, 119, 198, 0.9)
+  );
+}
+
+.gradient-orb-2 {
+  width: 40rem;
+  height: 40rem;
+  bottom: -12rem;
+  left: -6rem;
+  background: radial-gradient(
+    circle at center,
+    rgba(0, 179, 255, 0.6),
+    transparent
+  );
+}
+
+.gradient-orb-3 {
+  width: 36rem;
+  height: 36rem;
+  bottom: -5rem;
+  right: -5rem;
+  background: radial-gradient(
+    circle at center,
+    rgba(120, 119, 198, 0.9),
+    transparent
+  );
+}
+
+/* Grid overlay */
+.grid-overlay {
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(
+      rgba(255, 255, 255, 0.05) 1px,
+      transparent 1px
+    ),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  background-size: 64px 64px;
+  mask-image: radial-gradient(80% 60% at 50% 40%, black, transparent);
+  -webkit-mask-image: radial-gradient(80% 60% at 50% 40%, black, transparent);
+  opacity: 0.12;
+  pointer-events: none;
+}
+
+/* Improved text contrast */
+.glass-home-page .text-shadow {
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+/* Badge styles */
+.glass-badge {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  color: #ffffff !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* Button styles */
+.glass-button {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  color: #ffffff !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: all 0.2s ease;
+}
+
+.glass-button:hover {
+  background: rgba(255, 255, 255, 0.15) !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+  transform: translateY(-1px);
+}
+
+/* Input styles */
+.glass-input {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  color: #ffffff !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.glass-input:focus {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.1);
+}
+
+.glass-input::placeholder {
+  color: rgba(255, 255, 255, 0.5) !important;
 }

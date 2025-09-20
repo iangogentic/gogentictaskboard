@@ -14,6 +14,7 @@ export default function LayoutWrapper({
 }) {
   const pathname = usePathname();
   const isSharePage = pathname?.startsWith("/share/");
+  const isGlassHomePage = pathname === "/glass-home";
   const [projects, setProjects] = useState<any[]>([]);
   const [users, setUsers] = useState<any[]>([]);
   const [currentUser, setCurrentUser] = useState<any>(null);
@@ -36,8 +37,15 @@ export default function LayoutWrapper({
     loadData();
   }, []);
 
-  if (isSharePage) {
-    return <ToastProvider>{children}</ToastProvider>;
+  if (isSharePage || isGlassHomePage) {
+    return (
+      <UserProvider>
+        <ToastProvider>
+          {children}
+          {!isSharePage && <AgentChatContainer />}
+        </ToastProvider>
+      </UserProvider>
+    );
   }
 
   return (

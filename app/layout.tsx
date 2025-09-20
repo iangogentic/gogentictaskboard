@@ -1,9 +1,25 @@
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
+import "./globals.css";
 import LayoutWrapper from "@/components/layout-wrapper";
 
-export default function ClassicLayout({
+const inter = Inter({ subsets: ["latin"] });
+
+export const metadata: Metadata = {
+  title: "Gogentic Portal",
+  description: "AI-powered project management platform",
+};
+
+export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  return <LayoutWrapper>{children}</LayoutWrapper>;
+  return (
+    <html lang="en">
+      <body className={inter.className}>
+        <LayoutWrapper>{children}</LayoutWrapper>
+      </body>
+    </html>
+  );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useTransition } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   CalendarDays,
   CheckCircle2,
@@ -13,6 +13,14 @@ import {
   Bell,
   Link as LinkIcon,
   LogOut,
+  Menu,
+  X,
+  Home,
+  Briefcase,
+  Users,
+  FileText,
+  Activity,
+  LayoutDashboard,
 } from "lucide-react";
 import { GlassCard, Badge, ProgressRing, ThemeMenu } from "@/components/glass";
 import { useTheme } from "@/lib/themes/provider";
@@ -85,6 +93,7 @@ export default function ClientWrapper({
   const [tasks, setTasks] = useState(initialData.tasks);
   const [newTaskTitle, setNewTaskTitle] = useState("");
   const [isPending, startTransition] = useTransition();
+  const [menuOpen, setMenuOpen] = useState(false);
   const { theme, clarity } = useTheme();
   const router = useRouter();
 
@@ -252,88 +261,177 @@ export default function ClientWrapper({
 
       {/* TOP BAR */}
       <div
-        className={`sticky top-0 z-20 backdrop-blur-xl ${clarity ? "bg-black/55" : "bg-black/25"} border-b border-white/15`}
+        className={`sticky top-0 z-50 backdrop-blur-xl ${clarity ? "bg-black/55" : "bg-black/25"} border-b border-white/15`}
       >
-        <div className="max-w-7xl mx-auto px-6 py-4 relative flex items-center justify-between">
-          {/* LEFT: Title & User */}
+        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center">
+          {/* LEFT: Hamburger Menu */}
+          <button
+            onClick={() => setMenuOpen(!menuOpen)}
+            className={`rounded-xl p-2 border transition mr-4 ${
+              clarity
+                ? "border-white/25 bg-white/10 hover:bg-white/15"
+                : "border-white/20 bg-white/5 hover:bg-white/10"
+            } ${focus}`}
+          >
+            {menuOpen ? (
+              <X className="h-5 w-5" />
+            ) : (
+              <Menu className="h-5 w-5" />
+            )}
+          </button>
+
+          {/* Title and User */}
           <div className="flex items-center gap-4">
             <span className="font-semibold tracking-tight text-white">
               GoGentic Portal
             </span>
             <Badge>{userName}</Badge>
           </div>
-
-          {/* CENTER: Menu Toggle */}
-          <div className="absolute left-1/2 -translate-x-1/2">
-            <ThemeMenu />
-          </div>
-
-          {/* RIGHT: Navigation Links */}
-          <nav className="flex items-center gap-2">
-            <a
-              href="/projects"
-              className={`rounded-xl px-3 py-2 text-sm border transition ${
-                clarity
-                  ? "border-white/25 bg-white/10 hover:bg-white/15"
-                  : "border-white/20 bg-white/5 hover:bg-white/10"
-              } ${focus}`}
-            >
-              Projects
-            </a>
-            <a
-              href="/my-work"
-              className={`rounded-xl px-3 py-2 text-sm border transition ${
-                clarity
-                  ? "border-white/25 bg-white/10 hover:bg-white/15"
-                  : "border-white/20 bg-white/5 hover:bg-white/10"
-              } ${focus}`}
-            >
-              My Work
-            </a>
-            <a
-              href="/team"
-              className={`rounded-xl px-3 py-2 text-sm border transition ${
-                clarity
-                  ? "border-white/25 bg-white/10 hover:bg-white/15"
-                  : "border-white/20 bg-white/5 hover:bg-white/10"
-              } ${focus}`}
-            >
-              Team
-            </a>
-            <a
-              href="/reports"
-              className={`rounded-xl px-3 py-2 text-sm border transition ${
-                clarity
-                  ? "border-white/25 bg-white/10 hover:bg-white/15"
-                  : "border-white/20 bg-white/5 hover:bg-white/10"
-              } ${focus}`}
-            >
-              Reports
-            </a>
-            <a
-              href="/dashboard"
-              className={`rounded-xl px-3 py-2 text-sm border transition ${
-                clarity
-                  ? "border-white/25 bg-white/10 hover:bg-white/15"
-                  : "border-white/20 bg-white/5 hover:bg-white/10"
-              } ${focus}`}
-            >
-              Classic
-            </a>
-            <button
-              onClick={() => signOut({ callbackUrl: "/login" })}
-              className={`rounded-xl px-3 py-2 text-sm border flex items-center gap-2 transition ${
-                clarity
-                  ? "bg-white/10 text-white border-white/25 hover:bg-white/15"
-                  : "bg-white/5 text-white border-white/20 hover:bg-white/10"
-              } ${focus}`}
-            >
-              <LogOut className="h-4 w-4" />
-              Sign Out
-            </button>
-          </nav>
         </div>
       </div>
+
+      {/* SLIDE-OUT MENU */}
+      <AnimatePresence>
+        {menuOpen && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40"
+              onClick={() => setMenuOpen(false)}
+            />
+
+            {/* Menu Panel */}
+            <motion.div
+              initial={{ x: -320 }}
+              animate={{ x: 0 }}
+              exit={{ x: -320 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className={`fixed left-0 top-0 h-full w-80 z-50 backdrop-blur-2xl ${
+                clarity ? "bg-black/85" : "bg-black/70"
+              } border-r border-white/15`}
+            >
+              <div className="p-6">
+                {/* Menu Header */}
+                <div className="flex items-center justify-between mb-8">
+                  <h2 className="text-xl font-semibold text-white">
+                    Navigation
+                  </h2>
+                  <button
+                    onClick={() => setMenuOpen(false)}
+                    className={`rounded-xl p-2 border transition ${
+                      clarity
+                        ? "border-white/25 bg-white/10 hover:bg-white/15"
+                        : "border-white/20 bg-white/5 hover:bg-white/10"
+                    } ${focus}`}
+                  >
+                    <X className="h-5 w-5" />
+                  </button>
+                </div>
+
+                {/* Theme Selector */}
+                <div className="mb-6">
+                  <ThemeMenu />
+                </div>
+
+                {/* Menu Items */}
+                <nav className="space-y-2">
+                  <a
+                    href="/glass-home"
+                    onClick={() => setMenuOpen(false)}
+                    className={`flex items-center gap-3 rounded-xl px-4 py-3 text-white transition ${
+                      clarity ? "hover:bg-white/10" : "hover:bg-white/5"
+                    } ${focus}`}
+                  >
+                    <Home className="h-5 w-5" />
+                    <span>Home</span>
+                  </a>
+                  <a
+                    href="/projects"
+                    onClick={() => setMenuOpen(false)}
+                    className={`flex items-center gap-3 rounded-xl px-4 py-3 text-white transition ${
+                      clarity ? "hover:bg-white/10" : "hover:bg-white/5"
+                    } ${focus}`}
+                  >
+                    <Briefcase className="h-5 w-5" />
+                    <span>Projects</span>
+                  </a>
+                  <a
+                    href="/my-work"
+                    onClick={() => setMenuOpen(false)}
+                    className={`flex items-center gap-3 rounded-xl px-4 py-3 text-white transition ${
+                      clarity ? "hover:bg-white/10" : "hover:bg-white/5"
+                    } ${focus}`}
+                  >
+                    <CheckCircle2 className="h-5 w-5" />
+                    <span>My Work</span>
+                  </a>
+                  <a
+                    href="/team"
+                    onClick={() => setMenuOpen(false)}
+                    className={`flex items-center gap-3 rounded-xl px-4 py-3 text-white transition ${
+                      clarity ? "hover:bg-white/10" : "hover:bg-white/5"
+                    } ${focus}`}
+                  >
+                    <Users className="h-5 w-5" />
+                    <span>Team</span>
+                  </a>
+                  <a
+                    href="/reports"
+                    onClick={() => setMenuOpen(false)}
+                    className={`flex items-center gap-3 rounded-xl px-4 py-3 text-white transition ${
+                      clarity ? "hover:bg-white/10" : "hover:bg-white/5"
+                    } ${focus}`}
+                  >
+                    <FileText className="h-5 w-5" />
+                    <span>Reports</span>
+                  </a>
+                  <a
+                    href="/activity"
+                    onClick={() => setMenuOpen(false)}
+                    className={`flex items-center gap-3 rounded-xl px-4 py-3 text-white transition ${
+                      clarity ? "hover:bg-white/10" : "hover:bg-white/5"
+                    } ${focus}`}
+                  >
+                    <Activity className="h-5 w-5" />
+                    <span>Activity</span>
+                  </a>
+                  <a
+                    href="/dashboard"
+                    onClick={() => setMenuOpen(false)}
+                    className={`flex items-center gap-3 rounded-xl px-4 py-3 text-white transition ${
+                      clarity ? "hover:bg-white/10" : "hover:bg-white/5"
+                    } ${focus}`}
+                  >
+                    <LayoutDashboard className="h-5 w-5" />
+                    <span>Classic Dashboard</span>
+                  </a>
+
+                  {/* Divider */}
+                  <div className="my-4 border-t border-white/10" />
+
+                  {/* Sign Out */}
+                  <button
+                    onClick={() => {
+                      setMenuOpen(false);
+                      signOut({ callbackUrl: "/login" });
+                    }}
+                    className={`flex items-center gap-3 rounded-xl px-4 py-3 text-white transition w-full ${
+                      clarity ? "hover:bg-red-500/20" : "hover:bg-red-500/10"
+                    } ${focus}`}
+                  >
+                    <LogOut className="h-5 w-5" />
+                    <span>Sign Out</span>
+                  </button>
+                </nav>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
       {/* GRID */}
       <div className="relative max-w-7xl mx-auto px-6 py-8 grid grid-cols-12 gap-6">
