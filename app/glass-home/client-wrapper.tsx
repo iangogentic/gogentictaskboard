@@ -189,7 +189,7 @@ export default function ClientWrapper({
   };
 
   return (
-    <div className="relative min-h-screen text-white">
+    <div className="glass-home-page relative min-h-screen text-white">
       {/* BACKGROUND (theme-driven) */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         <div
