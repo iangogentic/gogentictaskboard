@@ -98,7 +98,7 @@ async function getPageData(userId: string) {
         },
       },
     },
-    orderBy: { updatedAt: "desc" },
+    orderBy: { lastUpdatedAt: "desc" },
   });
 
   return {
@@ -144,10 +144,10 @@ async function getPageData(userId: string) {
     projects: projects.map((p) => ({
       id: p.id,
       title: p.title,
-      description: p.description,
+      description: p.notes,
       activeTasks: p.tasks.length,
       teamSize: p.ProjectMember.length,
-      updatedAt: p.updatedAt,
+      updatedAt: p.lastUpdatedAt,
     })),
   };
 }
