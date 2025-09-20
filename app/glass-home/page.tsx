@@ -94,7 +94,7 @@ async function getPageData(userId: string) {
       },
       ProjectMember: {
         include: {
-          user: true,
+          User: true,
         },
       },
     },
