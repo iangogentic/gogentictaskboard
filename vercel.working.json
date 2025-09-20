@@ -1,0 +1,19 @@
+{
+  "buildCommand": "npm run build",
+  "functions": {
+    "app/api/*/route.ts": {
+      "maxDuration": 30
+    }
+  },
+  "git": {
+    "deploymentEnabled": {
+      "main": true,
+      "staging": true,
+      "experimental": false
+    }
+  },
+  "github": {
+    "enabled": true,
+    "autoAlias": true
+  }
+}

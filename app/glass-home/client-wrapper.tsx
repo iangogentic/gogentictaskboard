@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useTransition } from "react";
 import { motion } from "framer-motion";
 import {
   CalendarDays,
@@ -12,6 +12,7 @@ import {
   Zap,
   Bell,
   Link as LinkIcon,
+  LogOut,
 } from "lucide-react";
 import { GlassCard, Badge, ProgressRing, ThemeMenu } from "@/components/glass";
 import { useTheme } from "@/lib/themes/provider";
@@ -21,93 +22,61 @@ import {
   buildRadial,
   buildGrid,
 } from "@/lib/themes/constants";
+import { signOut } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
-// Sample Data
-const sampleTasks = [
-  {
-    id: 1,
-    title: "Ship SIG Weekender draft",
-    project: "SIG Marketing",
-    due: "10:30 AM",
-    done: false,
-  },
-  {
-    id: 2,
-    title: "Fix agent tool registry bug",
-    project: "GoGentic Portal",
-    due: "1:00 PM",
-    done: false,
-  },
-  {
-    id: 3,
-    title: "Review Fisher AI lesson plan",
-    project: "Fisher — Literacy AI",
-    due: "3:15 PM",
-    done: true,
-  },
-  {
-    id: 4,
-    title: "Sync with Andrew / Launchpad",
-    project: "AI Labs",
-    due: "4:30 PM",
-    done: false,
-  },
-];
+interface Task {
+  id: string;
+  title: string;
+  project: string;
+  due: string;
+  done: boolean;
+}
 
-const sampleEvents = [
-  {
-    id: "e1",
-    title: "Stand‑up: Fisher project",
-    time: "9:00–9:30 AM",
-    location: "Google Meet",
-    link: "#",
-  },
-  {
-    id: "e2",
-    title: "Partner call: Z‑School",
-    time: "12:00–12:45 PM",
-    location: "Zoom",
-    link: "#",
-  },
-  {
-    id: "e3",
-    title: "Internal: Portal UI review",
-    time: "2:00–2:30 PM",
-    location: "Google Meet",
-    link: "#",
-  },
-];
+interface Update {
+  id: string;
+  title: string;
+  detail: string;
+  project: string;
+  time: string;
+  kind: "update" | "commit" | "pr" | "note";
+}
 
-const sampleUpdates = [
-  {
-    id: "u1",
-    kind: "commit",
-    title: "Slack/Drive tools added",
-    detail: "Integration tests passing; need agent registration.",
-    project: "Portal",
-    time: "12m",
-  },
-  {
-    id: "u2",
-    kind: "pr",
-    title: "Email template refactor",
-    detail: "Reduced CLS in TWAS layout.",
-    project: "SIG",
-    time: "1h",
-  },
-  {
-    id: "u3",
-    kind: "note",
-    title: "New speaker confirmed",
-    detail: "NPI webinar bios finalized.",
-    project: "SIG",
-    time: "3h",
-  },
-];
+interface Meeting {
+  id: string;
+  title: string;
+  time: string;
+  location: string;
+  link: string;
+}
 
-export default function ModernLandingPage() {
-  const [tasks, setTasks] = useState(sampleTasks);
+interface ClientWrapperProps {
+  initialData: {
+    tasks: Task[];
+    updates: Update[];
+    meetings: Meeting[];
+    stats: {
+      totalTasks: number;
+      completedTasks: number;
+      activeProjects: number;
+    };
+  };
+  userId: string;
+  userName: string;
+  userEmail: string;
+}
+
+export default function ClientWrapper({
+  initialData,
+  userId,
+  userName,
+  userEmail,
+}: ClientWrapperProps) {
+  const [tasks, setTasks] = useState(initialData.tasks);
+  const [newTaskTitle, setNewTaskTitle] = useState("");
+  const [isPending, startTransition] = useTransition();
   const { theme, clarity } = useTheme();
+  const router = useRouter();
 
   const completed = tasks.filter((t) => t.done).length;
   const pct = Math.round((completed / Math.max(tasks.length, 1)) * 100);
@@ -117,10 +86,76 @@ export default function ModernLandingPage() {
     day: "numeric",
   });
 
-  function toggleTask(id: number) {
+  async function toggleTask(id: string) {
+    // Optimistic update
     setTasks((prev) =>
       prev.map((t) => (t.id === id ? { ...t, done: !t.done } : t))
     );
+
+    // Call API to update task
+    try {
+      const task = tasks.find((t) => t.id === id);
+      const newStatus = !task?.done ? "COMPLETED" : "TODO";
+
+      const response = await fetch(`/api/tasks/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: newStatus }),
+      });
+
+      if (!response.ok) {
+        // Revert on error
+        setTasks((prev) =>
+          prev.map((t) => (t.id === id ? { ...t, done: !t.done } : t))
+        );
+      }
+    } catch (error) {
+      console.error("Failed to update task:", error);
+      // Revert on error
+      setTasks((prev) =>
+        prev.map((t) => (t.id === id ? { ...t, done: !t.done } : t))
+      );
+    }
+  }
+
+  async function addQuickTask() {
+    if (!newTaskTitle.trim()) return;
+
+    startTransition(async () => {
+      try {
+        const response = await fetch("/api/tasks", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            title: newTaskTitle,
+            assigneeId: userId,
+            dueDate: new Date().toISOString(),
+            status: "TODO",
+          }),
+        });
+
+        if (response.ok) {
+          const newTask = await response.json();
+          setTasks((prev) => [
+            ...prev,
+            {
+              id: newTask.id,
+              title: newTask.title,
+              project: newTask.project?.name || "Personal",
+              due: new Date().toLocaleTimeString("en-US", {
+                hour: "numeric",
+                minute: "2-digit",
+                hour12: true,
+              }),
+              done: false,
+            },
+          ]);
+          setNewTaskTitle("");
+        }
+      } catch (error) {
+        console.error("Failed to add task:", error);
+      }
+    });
   }
 
   // Motion tokens
@@ -171,11 +206,12 @@ export default function ModernLandingPage() {
         className={`sticky top-0 z-20 backdrop-blur-xl ${clarity ? "bg-black/55" : "bg-black/25"} border-b border-white/15`}
       >
         <div className="max-w-7xl mx-auto px-6 py-4 relative flex items-center justify-between">
-          {/* LEFT: Title */}
-          <div className="flex items-center gap-3">
+          {/* LEFT: Title & User */}
+          <div className="flex items-center gap-4">
             <span className="font-semibold tracking-tight text-white">
-              Gogentic Portal
+              GoGentic Portal
             </span>
+            <Badge>{userName}</Badge>
           </div>
 
           {/* CENTER: Menu Toggle */}
@@ -191,16 +227,17 @@ export default function ModernLandingPage() {
             >
               Classic UI
             </a>
-            <a
-              href="/dashboard"
-              className={`rounded-xl px-3 py-2 text-sm border ${
+            <button
+              onClick={() => signOut({ callbackUrl: "/login" })}
+              className={`rounded-xl px-3 py-2 text-sm border flex items-center gap-2 ${
                 clarity
-                  ? "bg-white text-black border-white/80 hover:bg-white/90"
-                  : "bg-white/10 text-white border-white/20 hover:bg-white/15"
+                  ? "bg-white/10 text-white border-white/25 hover:bg-white/15"
+                  : "bg-white/5 text-white border-white/20 hover:bg-white/10"
               } transition ${focus}`}
             >
-              Dashboard
-            </a>
+              <LogOut className="h-4 w-4" />
+              Sign Out
+            </button>
           </div>
         </div>
       </div>
@@ -223,10 +260,10 @@ export default function ModernLandingPage() {
               <Badge>Live</Badge>
             </div>
             <div className="space-y-4">
-              {sampleUpdates.length === 0 ? (
+              {initialData.updates.length === 0 ? (
                 <div className="text-sm text-white/70">No recent activity.</div>
               ) : (
-                sampleUpdates.map((u) => (
+                initialData.updates.map((u) => (
                   <div key={u.id} className="flex items-start gap-3">
                     <span className="mt-1 h-2.5 w-2.5 rounded-full bg-white/90 shadow-[0_0_10px_rgba(255,255,255,.5)]" />
                     <div className="min-w-0">
@@ -271,6 +308,7 @@ export default function ModernLandingPage() {
                   </span>
                 </div>
                 <button
+                  onClick={() => router.push("/my-work")}
                   className={`inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm border ${
                     clarity
                       ? "bg-white text-black border-white/80 hover:bg-white/90"
@@ -288,18 +326,23 @@ export default function ModernLandingPage() {
                 <input
                   aria-label="Quick add task"
                   placeholder="Quick add a task and press Enter…"
+                  value={newTaskTitle}
+                  onChange={(e) => setNewTaskTitle(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && addQuickTask()}
                   className={`w-full rounded-xl border px-3 py-2 text-sm outline-none focus:ring-2 ${
                     clarity
-                      ? "border-white/40 bg-white/20 ring-white/40 placeholder:text-white/80"
-                      : "border-white/15 bg-white/10 ring-white/20 placeholder:text-white/60"
+                      ? "border-white/40 bg-white/20 ring-white/40 placeholder:text-white/80 text-white"
+                      : "border-white/15 bg-white/10 ring-white/20 placeholder:text-white/60 text-white"
                   } ${focus}`}
                 />
               </div>
               <button
+                onClick={addQuickTask}
+                disabled={isPending}
                 className={`rounded-xl px-3 py-2 text-sm border flex items-center gap-2 transition ${
                   clarity
-                    ? "border-white/80 bg-white text-black hover:bg-white/90"
-                    : "border-white/15 bg-white/10 hover:bg-white/15 text-white"
+                    ? "border-white/80 bg-white text-black hover:bg-white/90 disabled:opacity-50"
+                    : "border-white/15 bg-white/10 hover:bg-white/15 text-white disabled:opacity-50"
                 } ${focus}`}
               >
                 <Plus className="h-4 w-4" />
@@ -312,7 +355,7 @@ export default function ModernLandingPage() {
             >
               {tasks.length === 0 ? (
                 <div className="py-8 text-center text-white/75 text-sm">
-                  Nothing scheduled — add your first task.
+                  No tasks for today — add your first task above.
                 </div>
               ) : (
                 tasks.map((t) => (
@@ -347,6 +390,19 @@ export default function ModernLandingPage() {
                 ))
               )}
             </div>
+
+            {/* Stats Bar */}
+            <div className="mt-4 pt-4 border-t border-white/10 flex items-center justify-between text-sm">
+              <span className="text-white/70">
+                {initialData.stats.activeProjects} active projects
+              </span>
+              <a
+                href="/projects"
+                className="text-white/90 hover:text-white underline decoration-white/50"
+              >
+                View all projects →
+              </a>
+            </div>
           </GlassCard>
         </motion.div>
 
@@ -361,30 +417,18 @@ export default function ModernLandingPage() {
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
                 <CalendarDays className="h-5 w-5 opacity-95" />
-                <h3 className="font-semibold text-white">Upcoming meetings</h3>
+                <h3 className="font-semibold text-white">Upcoming</h3>
               </div>
-              <Badge>Google Calendar</Badge>
-            </div>
-
-            <div className="mb-4">
-              <button
-                className={`w-full rounded-xl px-3 py-2 text-sm border flex items-center justify-center gap-2 transition ${
-                  clarity
-                    ? "border-white/80 bg-white text-black hover:bg-white/90"
-                    : "border-white/15 bg-white/10 hover:bg-white/15 text-white"
-                } ${focus}`}
-              >
-                <LinkIcon className="h-4 w-4" /> Connect Google Calendar
-              </button>
+              <Badge>Tasks</Badge>
             </div>
 
             <div className="space-y-3">
-              {sampleEvents.length === 0 ? (
+              {initialData.meetings.length === 0 ? (
                 <div className="text-sm text-white/75">
-                  No meetings on the horizon.
+                  No upcoming meetings or tasks.
                 </div>
               ) : (
-                sampleEvents.map((ev) => (
+                initialData.meetings.map((ev) => (
                   <div
                     key={ev.id}
                     className={`p-3 rounded-xl border ${clarity ? "border-white/28 bg-white/18" : "border-white/12 bg-white/10"}`}
@@ -396,17 +440,18 @@ export default function ModernLandingPage() {
                     <div className="text-xs text-white/75 mt-0.5">
                       {ev.location}
                     </div>
-                    <a
-                      href={ev.link}
-                      className={`text-sm mt-2 inline-flex items-center gap-1 underline ${
-                        clarity ? "decoration-white/80" : "decoration-white/60"
-                      } hover:decoration-white ${focus}`}
-                    >
-                      Join <ChevronRight className="h-3 w-3" />
-                    </a>
                   </div>
                 ))
               )}
+            </div>
+
+            <div className="mt-4 pt-4 border-t border-white/10">
+              <a
+                href="/tasks"
+                className="text-sm text-white/90 hover:text-white underline decoration-white/50"
+              >
+                View all tasks →
+              </a>
             </div>
           </GlassCard>
         </motion.div>
@@ -419,7 +464,7 @@ export default function ModernLandingPage() {
               <h3 className="font-semibold text-white">Updates</h3>
             </div>
             <div className="space-y-4">
-              {sampleUpdates.map((u) => (
+              {initialData.updates.map((u) => (
                 <div key={u.id} className="flex items-start gap-3">
                   <span className="mt-1 h-2.5 w-2.5 rounded-full bg-white/90 shadow-[0_0_10px_rgba(255,255,255,.5)]" />
                   <div className="min-w-0">
@@ -439,12 +484,6 @@ export default function ModernLandingPage() {
             </div>
           </GlassCard>
         </div>
-      </div>
-
-      {/* FOOTER HINT */}
-      <div className="max-w-7xl mx-auto px-6 pb-10 text-center text-[11px] text-white/75">
-        Use the menu (top-center) → Themes to switch palettes. Built to preserve
-        contrast in any theme.
       </div>
     </div>
   );

@@ -2,10 +2,10 @@
 
 import { ThemeProvider } from "@/lib/themes/provider";
 
-export default function ModernLayout({
+export default function GlassHomeLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return <ThemeProvider>{children}</ThemeProvider>;
 }
