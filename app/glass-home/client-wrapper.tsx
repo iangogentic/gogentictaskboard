@@ -189,20 +189,59 @@ export default function ClientWrapper({
   };
 
   return (
-    <div className="glass-home-page relative min-h-screen text-white">
+    <div
+      className="glass-home-page relative min-h-screen text-white"
+      style={{ position: "relative" }}
+    >
       {/* BACKGROUND (theme-driven) */}
-      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+      <div
+        className="pointer-events-none absolute inset-0 overflow-hidden"
+        style={{
+          position: "absolute",
+          inset: 0,
+          overflow: "hidden",
+          pointerEvents: "none",
+        }}
+      >
         <div
           className="absolute -top-24 left-1/2 h-[52rem] w-[52rem] -translate-x-1/2 rounded-full blur-3xl"
-          style={{ ...conic, opacity: clarity ? 0.18 : 0.3 }}
+          style={{
+            ...conic,
+            opacity: clarity ? 0.18 : 0.3,
+            position: "absolute",
+            height: "52rem",
+            width: "52rem",
+            top: "-6rem",
+            left: "50%",
+            transform: "translateX(-50%)",
+            filter: "blur(64px)",
+          }}
         />
         <div
           className="absolute -bottom-48 -left-24 h-[40rem] w-[40rem] rounded-full blur-3xl"
-          style={{ ...radialA, opacity: clarity ? 0.14 : 0.25 }}
+          style={{
+            ...radialA,
+            opacity: clarity ? 0.14 : 0.25,
+            position: "absolute",
+            height: "40rem",
+            width: "40rem",
+            bottom: "-12rem",
+            left: "-6rem",
+            filter: "blur(64px)",
+          }}
         />
         <div
           className="absolute -bottom-20 -right-20 h-[36rem] w-[36rem] rounded-full blur-3xl"
-          style={{ ...radialB, opacity: clarity ? 0.14 : 0.25 }}
+          style={{
+            ...radialB,
+            opacity: clarity ? 0.14 : 0.25,
+            position: "absolute",
+            height: "36rem",
+            width: "36rem",
+            bottom: "-5rem",
+            right: "-5rem",
+            filter: "blur(64px)",
+          }}
         />
         <div
           className="absolute inset-0"
