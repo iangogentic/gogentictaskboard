@@ -28,7 +28,7 @@ async function getRecentActivity(userId: string, userRole: string | null) {
             {
               developers: {
                 some: {
-                  userId: userId,
+                  id: userId,
                 },
               },
             },
