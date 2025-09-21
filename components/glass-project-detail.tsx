@@ -18,7 +18,7 @@ import {
   Trash2,
   CheckCircle2,
   Circle,
-  User,
+  User as UserIcon,
   Activity,
   Package,
   ChevronRight,
@@ -226,7 +226,7 @@ export default function GlassProjectDetail({
 
                   <div className="space-y-4">
                     <div className="flex items-start gap-3">
-                      <User className="h-5 w-5 text-white/50 mt-0.5" />
+                      <UserIcon className="h-5 w-5 text-white/50 mt-0.5" />
                       <div>
                         <div className="text-sm text-white/70">
                           Project Manager
@@ -492,7 +492,7 @@ export default function GlassProjectDetail({
                       <div className="flex items-start justify-between mb-2">
                         <div className="flex items-center gap-3">
                           <div className="h-8 w-8 rounded-full bg-purple-500/20 flex items-center justify-center">
-                            <User className="h-4 w-4 text-purple-400" />
+                            <UserIcon className="h-4 w-4 text-purple-400" />
                           </div>
                           <div>
                             <div className="font-medium text-white">
