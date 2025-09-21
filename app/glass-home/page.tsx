@@ -16,24 +16,32 @@ import prisma from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import ClientWrapper from "./client-wrapper";
 
-async function getPageData(userId: string) {
+async function getPageData(userId: string, userRole: string | null) {
   // Get today's tasks
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const tomorrow = new Date(today);
   tomorrow.setDate(tomorrow.getDate() + 1);
 
+  const isAdmin = userRole === "admin";
+
   // Get all incomplete tasks for the user, not just today's
   const tasks = await prisma.task.findMany({
-    where: {
-      OR: [
-        { assigneeId: userId },
-        { project: { ProjectMember: { some: { userId } } } },
-      ],
-      status: {
-        not: "COMPLETED",
-      },
-    },
+    where: isAdmin
+      ? {
+          status: {
+            not: "COMPLETED",
+          },
+        }
+      : {
+          OR: [
+            { assigneeId: userId },
+            { project: { ProjectMember: { some: { userId } } } },
+          ],
+          status: {
+            not: "COMPLETED",
+          },
+        },
     include: {
       project: true,
       assignee: true,
@@ -43,13 +51,15 @@ async function getPageData(userId: string) {
 
   // Get recent updates
   const updates = await prisma.update.findMany({
-    where: {
-      project: {
-        ProjectMember: {
-          some: { userId },
+    where: isAdmin
+      ? {}
+      : {
+          project: {
+            ProjectMember: {
+              some: { userId },
+            },
+          },
         },
-      },
-    },
     include: {
       project: true,
       author: true,
@@ -61,14 +71,19 @@ async function getPageData(userId: string) {
   // Get upcoming meetings (placeholder - would integrate with calendar)
   // For now, we'll use scheduled tasks or project milestones
   const meetings = await prisma.task.findMany({
-    where: {
-      OR: [
-        { assigneeId: userId },
-        { project: { ProjectMember: { some: { userId } } } },
-      ],
-      title: { contains: "meeting", mode: "insensitive" },
-      dueDate: { gte: today },
-    },
+    where: isAdmin
+      ? {
+          title: { contains: "meeting", mode: "insensitive" },
+          dueDate: { gte: today },
+        }
+      : {
+          OR: [
+            { assigneeId: userId },
+            { project: { ProjectMember: { some: { userId } } } },
+          ],
+          title: { contains: "meeting", mode: "insensitive" },
+          dueDate: { gte: today },
+        },
     include: {
       project: true,
     },
@@ -78,11 +93,13 @@ async function getPageData(userId: string) {
 
   // Get user's projects for quick stats and display
   const projects = await prisma.project.findMany({
-    where: {
-      ProjectMember: {
-        some: { userId },
-      },
-    },
+    where: isAdmin
+      ? {}
+      : {
+          ProjectMember: {
+            some: { userId },
+          },
+        },
     include: {
       tasks: {
         where: {
@@ -171,7 +188,13 @@ export default async function GlassHomePage() {
     redirect("/login");
   }
 
-  const data = await getPageData(session.user.id);
+  // Get user's role
+  const currentUser = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { role: true },
+  });
+
+  const data = await getPageData(session.user.id, currentUser?.role || null);
 
   return (
     <ClientWrapper

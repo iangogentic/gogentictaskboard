@@ -14,10 +14,36 @@ import ClientWrapper from "./client-wrapper";
 export const dynamic = "force-dynamic";
 export const revalidate = 60;
 
-async function getRecentActivity() {
+async function getRecentActivity(userId: string, userRole: string | null) {
+  // If admin, show everything. Otherwise, filter by user's projects
+  const isAdmin = userRole === "admin";
+
+  // Get user's projects (where they're PM or member)
+  const userProjects = isAdmin
+    ? []
+    : await prisma.project.findMany({
+        where: {
+          OR: [
+            { pmId: userId },
+            {
+              developers: {
+                some: {
+                  userId: userId,
+                },
+              },
+            },
+          ],
+        },
+        select: { id: true },
+      });
+
+  const projectIds = userProjects.map((p) => p.id);
+  const projectFilter = isAdmin ? {} : { projectId: { in: projectIds } };
+
   const [updates, tasks, projects, timeEntries] = await Promise.all([
     // Get recent updates
     prisma.update.findMany({
+      where: projectFilter,
       include: {
         author: true,
         project: {
@@ -33,6 +59,7 @@ async function getRecentActivity() {
     // Get recently changed tasks
     prisma.task.findMany({
       where: {
+        ...projectFilter,
         updatedAt: {
           gte: subDays(new Date(), 7),
         },
@@ -47,11 +74,18 @@ async function getRecentActivity() {
 
     // Get recently updated projects
     prisma.project.findMany({
-      where: {
-        lastUpdatedAt: {
-          gte: subDays(new Date(), 7),
-        },
-      },
+      where: isAdmin
+        ? {
+            lastUpdatedAt: {
+              gte: subDays(new Date(), 7),
+            },
+          }
+        : {
+            id: { in: projectIds },
+            lastUpdatedAt: {
+              gte: subDays(new Date(), 7),
+            },
+          },
       include: {
         pm: true,
         developers: true,
@@ -68,11 +102,25 @@ async function getRecentActivity() {
 
     // Get time tracking entries
     prisma.timeEntry.findMany({
-      where: {
-        date: {
-          gte: subDays(new Date(), 7),
-        },
-      },
+      where: isAdmin
+        ? {
+            date: {
+              gte: subDays(new Date(), 7),
+            },
+          }
+        : {
+            OR: [
+              { userId: userId },
+              {
+                task: {
+                  projectId: { in: projectIds },
+                },
+              },
+            ],
+            date: {
+              gte: subDays(new Date(), 7),
+            },
+          },
       include: {
         user: true,
         task: {
@@ -139,8 +187,14 @@ export default async function ActivityPage() {
     redirect("/login");
   }
 
+  // Get user's role
+  const currentUser = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { role: true },
+  });
+
   const { activities, updates, tasks, projects, timeEntries } =
-    await getRecentActivity();
+    await getRecentActivity(session.user.id, currentUser?.role || null);
 
   // Group activities by date
   const groupedActivities = activities.reduce(
