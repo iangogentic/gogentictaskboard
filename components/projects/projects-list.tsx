@@ -15,6 +15,7 @@ import {
   AlertCircle,
   Clock,
   CheckCircle,
+  Circle,
   Users,
   Filter,
   Search,
@@ -66,6 +67,11 @@ export function ProjectsList({
       label: "Done",
       value: "status:Done",
       icon: <CheckCircle className="w-3 h-3" />,
+    },
+    {
+      label: "Not Started",
+      value: "status:Not Started",
+      icon: <Circle className="w-3 h-3" />,
     },
     // Stage filters
     {
@@ -182,8 +188,17 @@ export function ProjectsList({
     if (view.filters.branch) {
       newFilters.push(`branch:${view.filters.branch}`);
     }
+    if (view.filters.portfolio) {
+      newFilters.push(`portfolio:${view.filters.portfolio}`);
+    }
+    if (view.filters.stage) {
+      newFilters.push(`stage:${view.filters.stage}`);
+    }
     if (view.filters.assignedToMe) {
       newFilters.push("mine");
+    }
+    if (view.filters.dueThisWeek) {
+      // Handle due this week filter if needed
     }
     setActiveFilters(newFilters);
   };

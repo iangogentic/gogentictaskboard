@@ -55,14 +55,14 @@ const defaultViews: SavedView[] = [
     id: "blocked",
     name: "Blocked",
     icon: <AlertCircle className="w-4 h-4" />,
-    filters: { status: "BLOCKED" },
+    filters: { status: "Blocked" },
     isDefault: true,
   },
   {
-    id: "this-week",
-    name: "This Week",
+    id: "in-progress",
+    name: "In Progress",
     icon: <Clock className="w-4 h-4" />,
-    filters: { dueThisWeek: true },
+    filters: { status: "In Progress" },
     isDefault: true,
   },
 ];
