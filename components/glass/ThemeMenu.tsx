@@ -14,15 +14,18 @@ import {
   LogOut,
   Moon,
   Sun,
+  Shield,
 } from "lucide-react";
 import { useTheme } from "@/lib/themes/provider";
 import { THEMES, ThemeName } from "@/lib/themes/constants";
 import Link from "next/link";
-import { signOut } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import { usePathname } from "next/navigation";
 
 export function ThemeMenu() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const { data: session } = useSession();
+  const [userRole, setUserRole] = useState<string | null>(null);
   const {
     theme,
     setTheme,
@@ -48,6 +51,24 @@ export function ThemeMenu() {
     window.addEventListener("mousedown", onClick);
     return () => window.removeEventListener("mousedown", onClick);
   }, [menuOpen]);
+
+  // Fetch user role
+  useEffect(() => {
+    const fetchUserRole = async () => {
+      if (session?.user?.email) {
+        try {
+          const response = await fetch("/api/auth/role");
+          if (response.ok) {
+            const data = await response.json();
+            setUserRole(data.role);
+          }
+        } catch (error) {
+          console.error("Failed to fetch user role:", error);
+        }
+      }
+    };
+    fetchUserRole();
+  }, [session]);
 
   const focus =
     "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/80";
@@ -98,6 +119,26 @@ export function ThemeMenu() {
               </Link>
             );
           })}
+
+          {/* Admin Section - Only show for admins */}
+          {userRole === "admin" && (
+            <>
+              <div className="my-2 h-px bg-white/10" />
+              <div className="px-3 py-2 text-xs uppercase tracking-wide text-white/70">
+                Admin
+              </div>
+              <Link
+                href="/admin/users"
+                onClick={() => setMenuOpen(false)}
+                className={`w-full text-left px-3 py-2 rounded-xl text-sm hover:bg-white/10 flex items-center gap-3 ${focus} ${
+                  pathname === "/admin/users" ? "bg-white/15" : ""
+                }`}
+              >
+                <Shield className="h-4 w-4 text-red-400" />
+                <span>User Management</span>
+              </Link>
+            </>
+          )}
 
           <div className="my-2 h-px bg-white/10" />
 
