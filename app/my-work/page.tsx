@@ -2,6 +2,8 @@ import { prisma } from "@/lib/prisma";
 import { MyWorkClient } from "./my-work-client";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
+import { GlassNav } from "@/components/glass";
+import { AnimatedBackground } from "@/components/glass/AnimatedBackground";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 60;
@@ -20,12 +22,18 @@ export default async function MyWorkPage() {
 
   if (!currentUser) {
     return (
-      <div className="min-h-screen bg-surface flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-fg mb-2">User Not Found</h2>
-          <p className="text-muted">
-            Your email ({session.user.email}) is not registered in the system
-          </p>
+      <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+        <AnimatedBackground />
+        <GlassNav />
+        <div className="relative z-10 min-h-screen flex items-center justify-center pt-20">
+          <div className="text-center">
+            <h2 className="text-2xl font-bold text-white/90 mb-2">
+              User Not Found
+            </h2>
+            <p className="text-white/70">
+              Your email ({session.user.email}) is not registered in the system
+            </p>
+          </div>
         </div>
       </div>
     );

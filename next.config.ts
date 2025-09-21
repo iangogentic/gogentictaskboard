@@ -25,6 +25,7 @@ const nextConfig: NextConfig = {
     ignoreDuringBuilds: true,
   },
   poweredByHeader: false,
+  transpilePackages: ["framer-motion"],
 };
 
 // Sentry configuration

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { format, subDays } from "date-fns";
+import { motion } from "framer-motion";
 import {
   TrendingUp,
   TrendingDown,
@@ -24,6 +25,8 @@ import {
   Zap,
   Rocket,
 } from "lucide-react";
+import { GlassCard, GlassNav } from "@/components/glass";
+import { AnimatedBackground } from "@/components/glass/AnimatedBackground";
 
 interface Portfolio {
   id: string;
@@ -94,259 +97,318 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-surface flex items-center justify-center">
-        <div className="text-muted">Loading dashboard...</div>
+      <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+        <AnimatedBackground />
+        <GlassNav />
+        <div className="relative z-10 min-h-screen flex items-center justify-center pt-20">
+          <motion.div
+            className="text-white/70 text-lg"
+            animate={{ opacity: [0.5, 1, 0.5] }}
+            transition={{ duration: 2, repeat: Infinity }}
+          >
+            Loading dashboard...
+          </motion.div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-surface">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-fg">Portfolio Dashboard</h1>
-          <p className="text-muted mt-1">
-            Real-time overview of all portfolios and projects
-          </p>
-        </div>
+    <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+      <AnimatedBackground />
+      <GlassNav />
 
-        {/* Global Metrics */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-          <div className="bg-white rounded-xl border border-border p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted">Total Projects</p>
-                <p className="text-2xl font-bold text-fg mt-1">
-                  {totalProjects}
-                </p>
-              </div>
-              <Briefcase className="w-8 h-8 text-blue-500" />
-            </div>
-          </div>
-          <div className="bg-white rounded-xl border border-border p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted">In Progress</p>
-                <p className="text-2xl font-bold text-fg mt-1">
-                  {totalInProgress}
-                </p>
-              </div>
-              <Clock className="w-8 h-8 text-green-500" />
-            </div>
-          </div>
-          <div className="bg-white rounded-xl border border-border p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted">Blocked</p>
-                <p className="text-2xl font-bold text-fg mt-1">
-                  {totalBlocked}
-                </p>
-              </div>
-              <AlertCircle className="w-8 h-8 text-red-500" />
-            </div>
-          </div>
-          <div className="bg-white rounded-xl border border-border p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted">Live</p>
-                <p className="text-2xl font-bold text-fg mt-1">{totalLive}</p>
-              </div>
-              <CheckCircle className="w-8 h-8 text-purple-500" />
-            </div>
-          </div>
-        </div>
+      <div className="relative z-10 pt-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <motion.div
+            className="mb-8"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            <h1 className="text-3xl font-bold text-white/90">
+              Portfolio Dashboard
+            </h1>
+            <p className="text-white/70 mt-1">
+              Real-time overview of all portfolios and projects
+            </p>
+          </motion.div>
 
-        {/* Needs Attention */}
-        {needsAttention.length > 0 && (
-          <div className="bg-red-50 border border-red-200 rounded-xl p-6 mb-8">
-            <h2 className="text-lg font-semibold text-red-900 mb-4 flex items-center gap-2">
-              <AlertCircle className="w-5 h-5" />
-              Needs Immediate Attention
-            </h2>
-            <div className="space-y-3">
-              {needsAttention.map((item) => (
-                <div
-                  key={item.id}
-                  className="bg-white rounded-lg p-4 flex items-center justify-between"
+          {/* Global Metrics */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+            {[
+              {
+                label: "Total Projects",
+                value: totalProjects,
+                icon: Briefcase,
+                color: "text-blue-400",
+              },
+              {
+                label: "In Progress",
+                value: totalInProgress,
+                icon: Clock,
+                color: "text-green-400",
+              },
+              {
+                label: "Blocked",
+                value: totalBlocked,
+                icon: AlertCircle,
+                color: "text-red-400",
+              },
+              {
+                label: "Live",
+                value: totalLive,
+                icon: CheckCircle,
+                color: "text-purple-400",
+              },
+            ].map((metric, index) => {
+              const Icon = metric.icon;
+              return (
+                <motion.div
+                  key={metric.label}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
                 >
-                  <div className="flex items-center gap-3">
-                    <div
-                      className="w-2 h-12 rounded-full"
-                      style={{ backgroundColor: item.portfolioColor }}
-                    />
-                    <div>
-                      <Link
-                        href={`/projects/${item.id}`}
-                        className="font-medium text-fg hover:text-blue-600"
-                      >
-                        {item.title}
-                      </Link>
-                      <p className="text-sm text-muted">
-                        {item.portfolio} • {item.issue}
-                      </p>
+                  <GlassCard className="p-6" hover>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm text-white/50">{metric.label}</p>
+                        <p className="text-2xl font-bold text-white/90 mt-1">
+                          {metric.value}
+                        </p>
+                      </div>
+                      <Icon className={`w-8 h-8 ${metric.color}`} />
                     </div>
-                  </div>
-                  <span
-                    className={`px-2 py-1 text-xs font-medium rounded-full ${
-                      item.severity === "high"
-                        ? "bg-red-100 text-red-700"
-                        : item.severity === "medium"
-                          ? "bg-amber-100 text-amber-700"
-                          : "bg-yellow-100 text-yellow-700"
-                    }`}
-                  >
-                    {item.severity}
-                  </span>
-                </div>
-              ))}
-            </div>
+                  </GlassCard>
+                </motion.div>
+              );
+            })}
           </div>
-        )}
 
-        {/* Portfolio Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-          {portfolios.map((portfolio) => (
-            <div
-              key={portfolio.id}
-              className="bg-white rounded-xl border border-border overflow-hidden"
+          {/* Needs Attention */}
+          {needsAttention.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.5 }}
+              className="mb-8"
             >
-              <div
-                className="h-2"
-                style={{ backgroundColor: portfolio.color }}
-              />
-              <div className="p-6">
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <div
-                      className="w-10 h-10 rounded-lg flex items-center justify-center"
-                      style={{ backgroundColor: `${portfolio.color}20` }}
+              <GlassCard className="p-6 border-red-500/20 bg-red-500/5">
+                <h2 className="text-lg font-semibold text-red-400 mb-4 flex items-center gap-2">
+                  <AlertCircle className="w-5 h-5" />
+                  Needs Immediate Attention
+                </h2>
+                <div className="space-y-3">
+                  {needsAttention.map((item, index) => (
+                    <motion.div
+                      key={item.id}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.3, delay: index * 0.1 }}
+                      className="bg-white/5 rounded-xl p-4 flex items-center justify-between backdrop-blur-xl"
                     >
-                      <div style={{ color: portfolio.color }}>
-                        {getPortfolioIcon(portfolio.key)}
-                      </div>
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-semibold text-fg">
-                        {portfolio.name}
-                      </h3>
-                      <p className="text-sm text-muted">
-                        {portfolio.description}
-                      </p>
-                    </div>
-                  </div>
-                  <Link
-                    href={`/projects?portfolio=${portfolio.key}`}
-                    className="p-2 hover:bg-surface rounded-lg transition-colors"
-                  >
-                    <ArrowUpRight className="w-4 h-4 text-muted" />
-                  </Link>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4 mb-4">
-                  <div>
-                    <p className="text-sm text-muted">Projects</p>
-                    <p className="text-2xl font-bold text-fg">
-                      {portfolio.projectCount}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted">Health</p>
-                    <div className="flex items-center gap-2 mt-1">
-                      <div className="flex-1 bg-border rounded-full h-2">
+                      <div className="flex items-center gap-3">
                         <div
-                          className={`h-2 rounded-full transition-all ${
-                            portfolio.avgHealth >= 80
-                              ? "bg-green-500"
-                              : portfolio.avgHealth >= 60
-                                ? "bg-amber-500"
-                                : "bg-red-500"
-                          }`}
-                          style={{ width: `${portfolio.avgHealth}%` }}
+                          className="w-2 h-12 rounded-full"
+                          style={{ backgroundColor: item.portfolioColor }}
                         />
+                        <div>
+                          <Link
+                            href={`/projects/${item.id}`}
+                            className="font-medium text-white/90 hover:text-white transition-colors"
+                          >
+                            {item.title}
+                          </Link>
+                          <p className="text-sm text-white/50">
+                            {item.portfolio} • {item.issue}
+                          </p>
+                        </div>
                       </div>
-                      <span className="text-sm font-medium text-fg-muted">
-                        {portfolio.avgHealth}%
+                      <span
+                        className={`px-3 py-1 text-xs font-medium rounded-full backdrop-blur-xl ${
+                          item.severity === "high"
+                            ? "bg-red-500/20 text-red-300 border border-red-500/30"
+                            : item.severity === "medium"
+                              ? "bg-amber-500/20 text-amber-300 border border-amber-500/30"
+                              : "bg-yellow-500/20 text-yellow-300 border border-yellow-500/30"
+                        }`}
+                      >
+                        {item.severity}
                       </span>
+                    </motion.div>
+                  ))}
+                </div>
+              </GlassCard>
+            </motion.div>
+          )}
+
+          {/* Portfolio Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            {portfolios.map((portfolio, index) => (
+              <motion.div
+                key={portfolio.id}
+                initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                transition={{ duration: 0.5, delay: 0.6 + index * 0.1 }}
+              >
+                <GlassCard className="overflow-hidden" hover glow>
+                  <div
+                    className="h-1"
+                    style={{
+                      background: `linear-gradient(90deg, ${portfolio.color}, ${portfolio.color}80)`,
+                    }}
+                  />
+                  <div className="p-6">
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex items-center gap-3">
+                        <div
+                          className="w-10 h-10 rounded-xl flex items-center justify-center backdrop-blur-xl"
+                          style={{
+                            backgroundColor: `${portfolio.color}20`,
+                            border: `1px solid ${portfolio.color}30`,
+                          }}
+                        >
+                          <div style={{ color: portfolio.color }}>
+                            {getPortfolioIcon(portfolio.key)}
+                          </div>
+                        </div>
+                        <div>
+                          <h3 className="text-lg font-semibold text-white/90">
+                            {portfolio.name}
+                          </h3>
+                          <p className="text-sm text-white/50 line-clamp-1">
+                            {portfolio.description}
+                          </p>
+                        </div>
+                      </div>
+                      <Link
+                        href={`/projects?portfolio=${portfolio.key}`}
+                        className="p-2 hover:bg-white/5 rounded-xl transition-all duration-200 group"
+                      >
+                        <ArrowUpRight className="w-4 h-4 text-white/50 group-hover:text-white/80 transition-colors" />
+                      </Link>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4 mb-4">
+                      <div>
+                        <p className="text-sm text-white/50">Projects</p>
+                        <p className="text-2xl font-bold text-white/90">
+                          {portfolio.projectCount}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-white/50">Health</p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <div className="flex-1 bg-white/10 rounded-full h-2">
+                            <motion.div
+                              className={`h-2 rounded-full ${
+                                portfolio.avgHealth >= 80
+                                  ? "bg-green-400"
+                                  : portfolio.avgHealth >= 60
+                                    ? "bg-amber-400"
+                                    : "bg-red-400"
+                              }`}
+                              initial={{ width: 0 }}
+                              animate={{ width: `${portfolio.avgHealth}%` }}
+                              transition={{
+                                duration: 1,
+                                delay: 1 + index * 0.2,
+                              }}
+                            />
+                          </div>
+                          <span className="text-sm font-medium text-white/70">
+                            {portfolio.avgHealth}%
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-4 text-sm flex-wrap">
+                      <div className="flex items-center gap-1">
+                        <Clock className="w-4 h-4 text-blue-400" />
+                        <span className="text-white/50">Progress:</span>
+                        <span className="font-medium text-white/90">
+                          {portfolio.inProgressCount}
+                        </span>
+                      </div>
+                      {portfolio.blockedCount > 0 && (
+                        <div className="flex items-center gap-1">
+                          <AlertCircle className="w-4 h-4 text-red-400" />
+                          <span className="text-white/50">Blocked:</span>
+                          <span className="font-medium text-red-400">
+                            {portfolio.blockedCount}
+                          </span>
+                        </div>
+                      )}
+                      {portfolio.liveCount > 0 && (
+                        <div className="flex items-center gap-1">
+                          <CheckCircle className="w-4 h-4 text-green-400" />
+                          <span className="text-white/50">Live:</span>
+                          <span className="font-medium text-green-400">
+                            {portfolio.liveCount}
+                          </span>
+                        </div>
+                      )}
                     </div>
                   </div>
-                </div>
+                </GlassCard>
+              </motion.div>
+            ))}
+          </div>
 
-                <div className="flex items-center gap-4 text-sm">
-                  <div className="flex items-center gap-1">
-                    <Clock className="w-4 h-4 text-blue-500" />
-                    <span className="text-muted">In Progress:</span>
-                    <span className="font-medium text-fg">
-                      {portfolio.inProgressCount}
-                    </span>
-                  </div>
-                  {portfolio.blockedCount > 0 && (
-                    <div className="flex items-center gap-1">
-                      <AlertCircle className="w-4 h-4 text-red-500" />
-                      <span className="text-muted">Blocked:</span>
-                      <span className="font-medium text-red-600">
-                        {portfolio.blockedCount}
-                      </span>
-                    </div>
-                  )}
-                  {portfolio.liveCount > 0 && (
-                    <div className="flex items-center gap-1">
-                      <CheckCircle className="w-4 h-4 text-green-500" />
-                      <span className="text-muted">Live:</span>
-                      <span className="font-medium text-green-600">
-                        {portfolio.liveCount}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Quick Links */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Link
-            href="/projects"
-            className="bg-white rounded-xl border border-border p-6 hover:border-blue-300 transition-colors"
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-medium text-fg">View All Projects</p>
-                <p className="text-sm text-muted mt-1">
-                  Browse all projects by portfolio
-                </p>
-              </div>
-              <FolderOpen className="w-8 h-8 text-muted" />
-            </div>
-          </Link>
-          <Link
-            href="/reports"
-            className="bg-white rounded-xl border border-border p-6 hover:border-blue-300 transition-colors"
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-medium text-fg">Portfolio Reports</p>
-                <p className="text-sm text-muted mt-1">
-                  Detailed analytics and metrics
-                </p>
-              </div>
-              <BarChart3 className="w-8 h-8 text-muted" />
-            </div>
-          </Link>
-          <Link
-            href="/activity"
-            className="bg-white rounded-xl border border-border p-6 hover:border-blue-300 transition-colors"
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-medium text-fg">Recent Activity</p>
-                <p className="text-sm text-muted mt-1">
-                  Latest updates across portfolios
-                </p>
-              </div>
-              <Activity className="w-8 h-8 text-muted" />
-            </div>
-          </Link>
+          {/* Quick Links */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {[
+              {
+                href: "/projects",
+                title: "View All Projects",
+                desc: "Browse all projects by portfolio",
+                icon: FolderOpen,
+              },
+              {
+                href: "/reports",
+                title: "Portfolio Reports",
+                desc: "Detailed analytics and metrics",
+                icon: BarChart3,
+              },
+              {
+                href: "/activity",
+                title: "Recent Activity",
+                desc: "Latest updates across portfolios",
+                icon: Activity,
+              },
+            ].map((link, index) => {
+              const Icon = link.icon;
+              return (
+                <motion.div
+                  key={link.href}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 1.2 + index * 0.1 }}
+                >
+                  <Link href={link.href} className="block group">
+                    <GlassCard
+                      className="p-6 transition-all duration-200 group-hover:scale-[1.02]"
+                      hover
+                    >
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="font-medium text-white/90 group-hover:text-white transition-colors">
+                            {link.title}
+                          </p>
+                          <p className="text-sm text-white/50 mt-1 line-clamp-1">
+                            {link.desc}
+                          </p>
+                        </div>
+                        <Icon className="w-8 h-8 text-white/50 group-hover:text-white/80 transition-colors" />
+                      </div>
+                    </GlassCard>
+                  </Link>
+                </motion.div>
+              );
+            })}
+          </div>
         </div>
       </div>
     </div>

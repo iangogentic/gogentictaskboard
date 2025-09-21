@@ -4,6 +4,7 @@ import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { AnimatedBackground } from "@/components/glass/AnimatedBackground";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -66,16 +67,20 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-surface">
-      <div className="w-full max-w-md space-y-8 p-8 bg-bg rounded-xl shadow-card">
+    <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+      <AnimatedBackground />
+
+      <div className="relative z-10 w-full max-w-md space-y-8 p-8 bg-white/[0.02] backdrop-blur-xl rounded-3xl border border-white/[0.05]">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-fg">Create your account</h1>
-          <p className="mt-2 text-muted">Join Gogentic Portal</p>
+          <h1 className="text-2xl font-bold text-white/90">
+            Create your account
+          </h1>
+          <p className="mt-2 text-white/60">Join Gogentic Portal</p>
         </div>
 
         <form onSubmit={handleSubmit} className="mt-8 space-y-6">
           {error && (
-            <div className="p-3 text-sm text-danger bg-danger-bg rounded-lg">
+            <div className="p-3 text-sm text-red-400 bg-red-500/10 backdrop-blur-sm rounded-lg border border-red-500/20">
               {error}
             </div>
           )}
@@ -84,7 +89,7 @@ export default function RegisterPage() {
             <div>
               <label
                 htmlFor="name"
-                className="block text-sm font-medium text-fg"
+                className="block text-sm font-medium text-white/80"
               >
                 Name
               </label>
@@ -94,7 +99,7 @@ export default function RegisterPage() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
-                className="mt-1 w-full px-3 py-2 bg-surface border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand"
+                className="mt-1 w-full px-4 py-2.5 bg-white/[0.05] backdrop-blur-sm border border-white/10 rounded-xl text-white/90 placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-white/20 transition-all"
                 placeholder="John Doe"
               />
             </div>
@@ -102,7 +107,7 @@ export default function RegisterPage() {
             <div>
               <label
                 htmlFor="email"
-                className="block text-sm font-medium text-fg"
+                className="block text-sm font-medium text-white/80"
               >
                 Email
               </label>
@@ -112,7 +117,7 @@ export default function RegisterPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="mt-1 w-full px-3 py-2 bg-surface border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand"
+                className="mt-1 w-full px-4 py-2.5 bg-white/[0.05] backdrop-blur-sm border border-white/10 rounded-xl text-white/90 placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-white/20 transition-all"
                 placeholder="you@example.com"
               />
             </div>
@@ -120,7 +125,7 @@ export default function RegisterPage() {
             <div>
               <label
                 htmlFor="password"
-                className="block text-sm font-medium text-fg"
+                className="block text-sm font-medium text-white/80"
               >
                 Password
               </label>
@@ -130,7 +135,7 @@ export default function RegisterPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="mt-1 w-full px-3 py-2 bg-surface border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand"
+                className="mt-1 w-full px-4 py-2.5 bg-white/[0.05] backdrop-blur-sm border border-white/10 rounded-xl text-white/90 placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-white/20 transition-all"
                 placeholder="••••••••"
               />
             </div>
@@ -138,7 +143,7 @@ export default function RegisterPage() {
             <div>
               <label
                 htmlFor="confirmPassword"
-                className="block text-sm font-medium text-fg"
+                className="block text-sm font-medium text-white/80"
               >
                 Confirm Password
               </label>
@@ -148,7 +153,7 @@ export default function RegisterPage() {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
-                className="mt-1 w-full px-3 py-2 bg-surface border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand"
+                className="mt-1 w-full px-4 py-2.5 bg-white/[0.05] backdrop-blur-sm border border-white/10 rounded-xl text-white/90 placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-white/20 transition-all"
                 placeholder="••••••••"
               />
             </div>
@@ -157,17 +162,19 @@ export default function RegisterPage() {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full py-2 px-4 bg-brand hover:bg-brand-hover text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full py-3 px-4 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-xl font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-[1.02] active:scale-[0.98]"
           >
             {isLoading ? "Creating account..." : "Sign up"}
           </button>
 
           <div className="relative my-6">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-border"></div>
+              <div className="w-full border-t border-white/10"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-bg text-muted">Or continue with</span>
+              <span className="px-3 bg-gradient-to-br from-slate-900/80 via-purple-900/80 to-slate-900/80 backdrop-blur-sm text-white/50">
+                Or continue with
+              </span>
             </div>
           </div>
 
@@ -175,7 +182,7 @@ export default function RegisterPage() {
             <button
               type="button"
               onClick={() => handleOAuthSignIn("google")}
-              className="flex justify-center items-center py-2 px-4 border border-border rounded-lg hover:bg-surface transition-colors"
+              className="flex justify-center items-center py-2.5 px-4 bg-white/[0.05] backdrop-blur-sm border border-white/10 rounded-xl hover:bg-white/[0.08] hover:border-white/20 transition-all text-white/70"
             >
               <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
                 <path
@@ -201,7 +208,7 @@ export default function RegisterPage() {
             <button
               type="button"
               onClick={() => handleOAuthSignIn("github")}
-              className="flex justify-center items-center py-2 px-4 border border-border rounded-lg hover:bg-surface transition-colors"
+              className="flex justify-center items-center py-2.5 px-4 bg-white/[0.05] backdrop-blur-sm border border-white/10 rounded-xl hover:bg-white/[0.08] hover:border-white/20 transition-all text-white/70"
             >
               <svg
                 className="w-5 h-5 mr-2"
@@ -214,9 +221,12 @@ export default function RegisterPage() {
             </button>
           </div>
 
-          <p className="text-center text-sm text-muted">
+          <p className="text-center text-sm text-white/50">
             Already have an account?{" "}
-            <Link href="/login" className="text-brand hover:text-brand-hover">
+            <Link
+              href="/login"
+              className="text-purple-400 hover:text-purple-300 transition-colors"
+            >
               Sign in
             </Link>
           </p>

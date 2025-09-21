@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useTransition } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import {
   CalendarDays,
   CheckCircle2,
@@ -13,17 +13,11 @@ import {
   Bell,
   Link as LinkIcon,
   LogOut,
-  Menu,
-  X,
-  Home,
-  Briefcase,
-  Users,
-  FileText,
-  Activity,
-  LayoutDashboard,
 } from "lucide-react";
 import { GlassCard, Badge, ProgressRing, ThemeMenu } from "@/components/glass";
+import { AnimatedBackground } from "@/components/glass/AnimatedBackground";
 import { useTheme } from "@/lib/themes/provider";
+import AgentSidePanel from "@/components/AgentSidePanel";
 import {
   THEMES,
   buildConic,
@@ -93,7 +87,7 @@ export default function ClientWrapper({
   const [tasks, setTasks] = useState(initialData.tasks);
   const [newTaskTitle, setNewTaskTitle] = useState("");
   const [isPending, startTransition] = useTransition();
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [isPanelOpen, setIsPanelOpen] = useState(false);
   const { theme, clarity } = useTheme();
   const router = useRouter();
 
@@ -198,263 +192,384 @@ export default function ClientWrapper({
   };
 
   return (
-    <div
-      className="glass-home-page relative min-h-screen text-white"
-      style={{ position: "relative" }}
-    >
-      {/* BACKGROUND (theme-driven) */}
-      <div
-        className="pointer-events-none absolute inset-0 overflow-hidden"
-        style={{
-          position: "absolute",
-          inset: 0,
-          overflow: "hidden",
-          pointerEvents: "none",
-        }}
-      >
-        <div
-          className="absolute -top-24 left-1/2 h-[52rem] w-[52rem] -translate-x-1/2 rounded-full blur-3xl"
-          style={{
-            ...conic,
-            opacity: clarity ? 0.18 : 0.3,
-            position: "absolute",
-            height: "52rem",
-            width: "52rem",
-            top: "-6rem",
-            left: "50%",
-            transform: "translateX(-50%)",
-            filter: "blur(64px)",
-          }}
-        />
-        <div
-          className="absolute -bottom-48 -left-24 h-[40rem] w-[40rem] rounded-full blur-3xl"
-          style={{
-            ...radialA,
-            opacity: clarity ? 0.14 : 0.25,
-            position: "absolute",
-            height: "40rem",
-            width: "40rem",
-            bottom: "-12rem",
-            left: "-6rem",
-            filter: "blur(64px)",
-          }}
-        />
-        <div
-          className="absolute -bottom-20 -right-20 h-[36rem] w-[36rem] rounded-full blur-3xl"
-          style={{
-            ...radialB,
-            opacity: clarity ? 0.14 : 0.25,
-            position: "absolute",
-            height: "36rem",
-            width: "36rem",
-            bottom: "-5rem",
-            right: "-5rem",
-            filter: "blur(64px)",
-          }}
-        />
-        <div
-          className="absolute inset-0"
-          style={{ ...gridStyle, opacity: clarity ? 0.07 : 0.12 }}
-        />
-        {clarity ? <div className="absolute inset-0 bg-black/40" /> : null}
-      </div>
+    <div className="glass-home-page relative min-h-screen text-white flex flex-row">
+      {/* Main content area that shrinks when panel opens */}
+      <div className="flex-1 relative">
+        {/* Animated particle background */}
+        <AnimatedBackground />
 
-      {/* TOP BAR */}
-      <div
-        className={`sticky top-0 z-50 backdrop-blur-xl ${clarity ? "bg-black/55" : "bg-black/25"} border-b border-white/15`}
-      >
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center">
-          {/* LEFT: Hamburger Menu */}
-          <button
-            onClick={() => setMenuOpen(!menuOpen)}
-            className={`rounded-xl p-2 border transition mr-4 ${
-              clarity
-                ? "border-white/25 bg-white/10 hover:bg-white/15"
-                : "border-white/20 bg-white/5 hover:bg-white/10"
-            } ${focus}`}
-          >
-            {menuOpen ? (
-              <X className="h-5 w-5" />
-            ) : (
-              <Menu className="h-5 w-5" />
-            )}
-          </button>
+        {/* BACKGROUND (theme-driven) */}
+        <div className="pointer-events-none absolute inset-0 overflow-hidden">
+          <div
+            className="absolute -top-24 left-1/2 h-[52rem] w-[52rem] -translate-x-1/2 rounded-full blur-3xl"
+            style={{ ...conic, opacity: clarity ? 0.18 : 0.3 }}
+          />
+          <div
+            className="absolute -bottom-48 -left-24 h-[40rem] w-[40rem] rounded-full blur-3xl"
+            style={{ ...radialA, opacity: clarity ? 0.14 : 0.25 }}
+          />
+          <div
+            className="absolute -bottom-20 -right-20 h-[36rem] w-[36rem] rounded-full blur-3xl"
+            style={{ ...radialB, opacity: clarity ? 0.14 : 0.25 }}
+          />
+          <div
+            className="absolute inset-0"
+            style={{ ...gridStyle, opacity: clarity ? 0.07 : 0.12 }}
+          />
+          {clarity ? <div className="absolute inset-0 bg-black/40" /> : null}
+        </div>
 
-          {/* Title and User */}
-          <div className="flex items-center gap-4">
-            <span className="font-semibold tracking-tight text-white">
-              GoGentic Portal
-            </span>
-            <Badge>{userName}</Badge>
+        {/* TOP BAR */}
+        <div
+          className={`sticky top-0 z-20 backdrop-blur-xl ${clarity ? "bg-black/55" : "bg-black/25"} border-b border-white/15`}
+        >
+          <div className="max-w-7xl mx-auto px-6 py-4 relative flex items-center justify-between">
+            {/* LEFT: Title & User */}
+            <div className="flex items-center gap-4">
+              <span className="font-semibold tracking-tight text-white">
+                GoGentic Portal
+              </span>
+              <Badge>{userName}</Badge>
+            </div>
+
+            {/* CENTER: Menu Toggle */}
+            <div className="absolute left-1/2 -translate-x-1/2">
+              <ThemeMenu />
+            </div>
+
+            {/* RIGHT: Navigation Links */}
+            <nav className="flex items-center gap-2">
+              <a
+                href="/projects"
+                className={`rounded-xl px-3 py-2 text-sm border transition ${
+                  clarity
+                    ? "border-white/25 bg-white/10 hover:bg-white/15"
+                    : "border-white/20 bg-white/5 hover:bg-white/10"
+                } ${focus}`}
+              >
+                Projects
+              </a>
+              <a
+                href="/my-work"
+                className={`rounded-xl px-3 py-2 text-sm border transition ${
+                  clarity
+                    ? "border-white/25 bg-white/10 hover:bg-white/15"
+                    : "border-white/20 bg-white/5 hover:bg-white/10"
+                } ${focus}`}
+              >
+                My Work
+              </a>
+              <a
+                href="/team"
+                className={`rounded-xl px-3 py-2 text-sm border transition ${
+                  clarity
+                    ? "border-white/25 bg-white/10 hover:bg-white/15"
+                    : "border-white/20 bg-white/5 hover:bg-white/10"
+                } ${focus}`}
+              >
+                Team
+              </a>
+              <a
+                href="/reports"
+                className={`rounded-xl px-3 py-2 text-sm border transition ${
+                  clarity
+                    ? "border-white/25 bg-white/10 hover:bg-white/15"
+                    : "border-white/20 bg-white/5 hover:bg-white/10"
+                } ${focus}`}
+              >
+                Reports
+              </a>
+              <a
+                href="/dashboard"
+                className={`rounded-xl px-3 py-2 text-sm border transition ${
+                  clarity
+                    ? "border-white/25 bg-white/10 hover:bg-white/15"
+                    : "border-white/20 bg-white/5 hover:bg-white/10"
+                } ${focus}`}
+              >
+                Classic
+              </a>
+              <button
+                onClick={() => signOut({ callbackUrl: "/login" })}
+                className={`rounded-xl px-3 py-2 text-sm border flex items-center gap-2 transition ${
+                  clarity
+                    ? "bg-white/10 text-white border-white/25 hover:bg-white/15"
+                    : "bg-white/5 text-white border-white/20 hover:bg-white/10"
+                } ${focus}`}
+              >
+                <LogOut className="h-4 w-4" />
+                Sign Out
+              </button>
+            </nav>
           </div>
         </div>
-      </div>
 
-      {/* SLIDE-OUT MENU */}
-      <AnimatePresence>
-        {menuOpen && (
-          <>
-            {/* Backdrop */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40"
-              onClick={() => setMenuOpen(false)}
-            />
-
-            {/* Menu Panel */}
-            <motion.div
-              initial={{ x: -320 }}
-              animate={{ x: 0 }}
-              exit={{ x: -320 }}
-              transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className={`fixed left-0 top-0 h-full w-80 z-50 backdrop-blur-2xl ${
-                clarity ? "bg-black/85" : "bg-black/70"
-              } border-r border-white/15`}
-            >
-              <div className="p-6">
-                {/* Menu Header */}
-                <div className="flex items-center justify-between mb-8">
-                  <h2 className="text-xl font-semibold text-white">
-                    Navigation
-                  </h2>
-                  <button
-                    onClick={() => setMenuOpen(false)}
-                    className={`rounded-xl p-2 border transition ${
-                      clarity
-                        ? "border-white/25 bg-white/10 hover:bg-white/15"
-                        : "border-white/20 bg-white/5 hover:bg-white/10"
-                    } ${focus}`}
-                  >
-                    <X className="h-5 w-5" />
-                  </button>
+        {/* GRID */}
+        <div className="relative max-w-7xl mx-auto px-6 py-8 grid grid-cols-12 gap-6">
+          {/* LEFT: Updates */}
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={tMed}
+            className="hidden lg:block col-span-12 lg:col-span-3"
+          >
+            <GlassCard clarity={clarity} className="p-5">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <Bell className="h-5 w-5 opacity-95" />
+                  <h3 className="font-semibold text-white">Updates</h3>
                 </div>
-
-                {/* Theme Selector */}
-                <div className="mb-6">
-                  <ThemeMenu />
-                </div>
-
-                {/* Menu Items */}
-                <nav className="space-y-2">
-                  <a
-                    href="/glass-home"
-                    onClick={() => setMenuOpen(false)}
-                    className={`flex items-center gap-3 rounded-xl px-4 py-3 text-white transition ${
-                      clarity ? "hover:bg-white/10" : "hover:bg-white/5"
-                    } ${focus}`}
-                  >
-                    <Home className="h-5 w-5" />
-                    <span>Home</span>
-                  </a>
-                  <a
-                    href="/projects"
-                    onClick={() => setMenuOpen(false)}
-                    className={`flex items-center gap-3 rounded-xl px-4 py-3 text-white transition ${
-                      clarity ? "hover:bg-white/10" : "hover:bg-white/5"
-                    } ${focus}`}
-                  >
-                    <Briefcase className="h-5 w-5" />
-                    <span>Projects</span>
-                  </a>
-                  <a
-                    href="/my-work"
-                    onClick={() => setMenuOpen(false)}
-                    className={`flex items-center gap-3 rounded-xl px-4 py-3 text-white transition ${
-                      clarity ? "hover:bg-white/10" : "hover:bg-white/5"
-                    } ${focus}`}
-                  >
-                    <CheckCircle2 className="h-5 w-5" />
-                    <span>My Work</span>
-                  </a>
-                  <a
-                    href="/team"
-                    onClick={() => setMenuOpen(false)}
-                    className={`flex items-center gap-3 rounded-xl px-4 py-3 text-white transition ${
-                      clarity ? "hover:bg-white/10" : "hover:bg-white/5"
-                    } ${focus}`}
-                  >
-                    <Users className="h-5 w-5" />
-                    <span>Team</span>
-                  </a>
-                  <a
-                    href="/reports"
-                    onClick={() => setMenuOpen(false)}
-                    className={`flex items-center gap-3 rounded-xl px-4 py-3 text-white transition ${
-                      clarity ? "hover:bg-white/10" : "hover:bg-white/5"
-                    } ${focus}`}
-                  >
-                    <FileText className="h-5 w-5" />
-                    <span>Reports</span>
-                  </a>
-                  <a
-                    href="/activity"
-                    onClick={() => setMenuOpen(false)}
-                    className={`flex items-center gap-3 rounded-xl px-4 py-3 text-white transition ${
-                      clarity ? "hover:bg-white/10" : "hover:bg-white/5"
-                    } ${focus}`}
-                  >
-                    <Activity className="h-5 w-5" />
-                    <span>Activity</span>
-                  </a>
-                  <a
-                    href="/dashboard"
-                    onClick={() => setMenuOpen(false)}
-                    className={`flex items-center gap-3 rounded-xl px-4 py-3 text-white transition ${
-                      clarity ? "hover:bg-white/10" : "hover:bg-white/5"
-                    } ${focus}`}
-                  >
-                    <LayoutDashboard className="h-5 w-5" />
-                    <span>Classic Dashboard</span>
-                  </a>
-
-                  {/* Divider */}
-                  <div className="my-4 border-t border-white/10" />
-
-                  {/* Sign Out */}
-                  <button
-                    onClick={() => {
-                      setMenuOpen(false);
-                      signOut({ callbackUrl: "/login" });
-                    }}
-                    className={`flex items-center gap-3 rounded-xl px-4 py-3 text-white transition w-full ${
-                      clarity ? "hover:bg-red-500/20" : "hover:bg-red-500/10"
-                    } ${focus}`}
-                  >
-                    <LogOut className="h-5 w-5" />
-                    <span>Sign Out</span>
-                  </button>
-                </nav>
+                <Badge>Live</Badge>
               </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+              <div className="space-y-4">
+                {initialData.updates.length === 0 ? (
+                  <div className="text-sm text-white/70">
+                    No recent activity.
+                  </div>
+                ) : (
+                  initialData.updates.map((u) => (
+                    <div key={u.id} className="flex items-start gap-3">
+                      <span className="mt-1 h-2.5 w-2.5 rounded-full bg-white/90 shadow-[0_0_10px_rgba(255,255,255,.5)]" />
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2 text-[13px]">
+                          <span className="font-medium truncate text-white">
+                            {u.title}
+                          </span>
+                          <Badge>{u.project}</Badge>
+                          <span className="text-white/70">• {u.time}</span>
+                        </div>
+                        <p className="text-[13px] text-white/80 mt-0.5 line-clamp-2">
+                          {u.detail}
+                        </p>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </GlassCard>
+          </motion.div>
 
-      {/* GRID */}
-      <div className="relative max-w-7xl mx-auto px-6 py-8 grid grid-cols-12 gap-6">
-        {/* LEFT: Updates */}
-        <motion.div
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={tMed}
-          className="hidden lg:block col-span-12 lg:col-span-3"
-        >
-          <GlassCard clarity={clarity} className="p-5">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
+          {/* CENTER: Today Tasks */}
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={tMed}
+            className="col-span-12 lg:col-span-6"
+          >
+            <GlassCard clarity={clarity} className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h2 className="text-[22px] font-semibold tracking-tight text-white">
+                    Your day
+                  </h2>
+                  <p className="text-[13px] text-white/85">{today}</p>
+                </div>
+                <div className="flex items-center gap-4">
+                  <div className="relative grid place-items-center">
+                    <ProgressRing value={pct} />
+                    <span className="absolute text-xs font-semibold text-white">
+                      {pct}%
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => router.push("/my-work")}
+                    className={`inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium border ${
+                      clarity
+                        ? "bg-purple-500/20 text-white border-purple-400/40 hover:bg-purple-500/30"
+                        : "bg-purple-500/10 text-white border-purple-400/20 hover:bg-purple-500/20"
+                    } transition-all duration-200 ${focus}`}
+                  >
+                    <Zap className="h-4 w-4" /> Focus Mode
+                  </button>
+                </div>
+              </div>
+
+              {/* Quick add */}
+              <div className="flex items-center gap-2 mb-4">
+                <div className="flex-1">
+                  <input
+                    aria-label="Quick add task"
+                    placeholder="Quick add a task and press Enter…"
+                    value={newTaskTitle}
+                    onChange={(e) => setNewTaskTitle(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && addQuickTask()}
+                    className={`w-full rounded-xl border px-3 py-2 text-sm outline-none focus:ring-2 ${
+                      clarity
+                        ? "border-white/40 bg-white/20 ring-white/40 placeholder:text-white/80 text-white"
+                        : "border-white/15 bg-white/10 ring-white/20 placeholder:text-white/60 text-white"
+                    } ${focus}`}
+                  />
+                </div>
+                <button
+                  onClick={addQuickTask}
+                  disabled={isPending || !newTaskTitle.trim()}
+                  className={`rounded-xl px-3 py-2 text-sm font-medium border flex items-center gap-2 transition-all duration-200 ${
+                    clarity
+                      ? "border-blue-400/40 bg-blue-500/20 text-white hover:bg-blue-500/30 disabled:opacity-50"
+                      : "border-blue-400/20 bg-blue-500/10 text-white hover:bg-blue-500/20 disabled:opacity-50"
+                  } ${focus}`}
+                >
+                  <Plus className="h-4 w-4" />
+                  Add
+                </button>
+              </div>
+
+              <div
+                className={`divide-y ${clarity ? "divide-white/22" : "divide-white/12"}`}
+              >
+                {tasks.length === 0 ? (
+                  <div className="py-8 text-center text-white/75 text-sm">
+                    No tasks for today — add your first task above.
+                  </div>
+                ) : (
+                  tasks.map((t) => (
+                    <motion.button
+                      layout
+                      whileTap={{ scale: 0.995 }}
+                      transition={tFast}
+                      key={t.id}
+                      onClick={() => toggleTask(t.id)}
+                      className={`w-full text-left py-3 flex items-center gap-3 ${focus}`}
+                    >
+                      {t.done ? (
+                        <CheckCircle2 className="h-5 w-5 text-white drop-shadow-[0_0_8px_rgba(255,255,255,.35)]" />
+                      ) : (
+                        <Circle className="h-5 w-5 text-white/80" />
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <div
+                          className={`font-medium ${t.done ? "line-through text-white/70" : "text-white"}`}
+                        >
+                          {t.title}
+                        </div>
+                        <div className="text-xs text-white/85 mt-0.5 flex items-center gap-2">
+                          <Badge>{t.project}</Badge>
+                          <span className="inline-flex items-center gap-1">
+                            <Clock className="h-3 w-3" /> {t.due}
+                          </span>
+                        </div>
+                      </div>
+                      <ChevronRight className="h-4 w-4 text-white/60" />
+                    </motion.button>
+                  ))
+                )}
+              </div>
+
+              {/* Your Projects Section */}
+              <div className="mt-6 pt-4 border-t border-white/10">
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="text-sm font-semibold text-white">
+                    Your Projects
+                  </h4>
+                  <Badge>{initialData.stats.activeProjects}</Badge>
+                </div>
+                <div className="space-y-2">
+                  {initialData.projects && initialData.projects.length > 0 ? (
+                    initialData.projects.slice(0, 3).map((project) => (
+                      <a
+                        key={project.id}
+                        href={`/projects/${project.id}`}
+                        className={`block p-3 rounded-xl border transition ${
+                          clarity
+                            ? "border-white/20 bg-white/10 hover:bg-white/15"
+                            : "border-white/10 bg-white/5 hover:bg-white/10"
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <div className="font-medium text-white">
+                              {project.title}
+                            </div>
+                            <div className="text-xs text-white/70 mt-0.5">
+                              {project.activeTasks} active{" "}
+                              {project.activeTasks === 1 ? "task" : "tasks"} •{" "}
+                              {project.teamSize}{" "}
+                              {project.teamSize === 1 ? "member" : "members"}
+                            </div>
+                          </div>
+                          <ChevronRight className="h-4 w-4 text-white/50" />
+                        </div>
+                      </a>
+                    ))
+                  ) : (
+                    <div className="text-sm text-white/75">
+                      No projects assigned yet.
+                    </div>
+                  )}
+                </div>
+                {initialData.projects && initialData.projects.length > 3 && (
+                  <div className="mt-3 text-center">
+                    <a
+                      href="/projects"
+                      className="text-sm text-white/90 hover:text-white underline decoration-white/50"
+                    >
+                      View all {initialData.stats.activeProjects} projects →
+                    </a>
+                  </div>
+                )}
+              </div>
+            </GlassCard>
+          </motion.div>
+
+          {/* RIGHT: Meetings */}
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={tMed}
+            className="col-span-12 lg:col-span-3"
+          >
+            <GlassCard clarity={clarity} className="p-5">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <CalendarDays className="h-5 w-5 opacity-95" />
+                  <h3 className="font-semibold text-white">Upcoming</h3>
+                </div>
+                <Badge>Tasks</Badge>
+              </div>
+
+              <div className="space-y-3">
+                {initialData.meetings.length === 0 ? (
+                  <div className="text-sm text-white/75">
+                    No upcoming meetings or tasks.
+                  </div>
+                ) : (
+                  initialData.meetings.map((ev) => (
+                    <div
+                      key={ev.id}
+                      className={`p-3 rounded-xl border ${clarity ? "border-white/28 bg-white/18" : "border-white/12 bg-white/10"}`}
+                    >
+                      <div className="font-medium truncate text-white">
+                        {ev.title}
+                      </div>
+                      <div className="text-sm text-white/85">{ev.time}</div>
+                      <div className="text-xs text-white/75 mt-0.5">
+                        {ev.location}
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+
+              <div className="mt-4 pt-4 border-t border-white/10">
+                <a
+                  href="/tasks"
+                  className="text-sm text-white/90 hover:text-white underline decoration-white/50"
+                >
+                  View all tasks →
+                </a>
+              </div>
+            </GlassCard>
+          </motion.div>
+
+          {/* MOBILE: Updates below */}
+          <div className="lg:hidden col-span-12">
+            <GlassCard clarity={clarity} className="p-5">
+              <div className="flex items-center gap-2 mb-3">
                 <Bell className="h-5 w-5 opacity-95" />
                 <h3 className="font-semibold text-white">Updates</h3>
               </div>
-              <Badge>Live</Badge>
-            </div>
-            <div className="space-y-4">
-              {initialData.updates.length === 0 ? (
-                <div className="text-sm text-white/70">No recent activity.</div>
-              ) : (
-                initialData.updates.map((u) => (
+              <div className="space-y-4">
+                {initialData.updates.map((u) => (
                   <div key={u.id} className="flex items-start gap-3">
                     <span className="mt-1 h-2.5 w-2.5 rounded-full bg-white/90 shadow-[0_0_10px_rgba(255,255,255,.5)]" />
                     <div className="min-w-0">
@@ -470,253 +585,18 @@ export default function ClientWrapper({
                       </p>
                     </div>
                   </div>
-                ))
-              )}
-            </div>
-          </GlassCard>
-        </motion.div>
-
-        {/* CENTER: Today Tasks */}
-        <motion.div
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={tMed}
-          className="col-span-12 lg:col-span-6"
-        >
-          <GlassCard clarity={clarity} className="p-6">
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h2 className="text-[22px] font-semibold tracking-tight text-white">
-                  Your day
-                </h2>
-                <p className="text-[13px] text-white/85">{today}</p>
+                ))}
               </div>
-              <div className="flex items-center gap-4">
-                <div className="relative grid place-items-center">
-                  <ProgressRing value={pct} />
-                  <span className="absolute text-xs font-semibold text-white">
-                    {pct}%
-                  </span>
-                </div>
-                <button
-                  onClick={() => router.push("/my-work")}
-                  className={`inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm border ${
-                    clarity
-                      ? "bg-white text-black border-white/80 hover:bg-white/90"
-                      : "bg-white/10 text-white border-white/20 hover:bg-white/15"
-                  } transition ${focus}`}
-                >
-                  <Zap className="h-4 w-4" /> Focus
-                </button>
-              </div>
-            </div>
-
-            {/* Quick add */}
-            <div className="flex items-center gap-2 mb-4">
-              <div className="flex-1">
-                <input
-                  aria-label="Quick add task"
-                  placeholder="Quick add a task and press Enter…"
-                  value={newTaskTitle}
-                  onChange={(e) => setNewTaskTitle(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && addQuickTask()}
-                  className={`w-full rounded-xl border px-3 py-2 text-sm outline-none focus:ring-2 ${
-                    clarity
-                      ? "border-white/40 bg-white/20 ring-white/40 placeholder:text-white/80 text-white"
-                      : "border-white/15 bg-white/10 ring-white/20 placeholder:text-white/60 text-white"
-                  } ${focus}`}
-                />
-              </div>
-              <button
-                onClick={addQuickTask}
-                disabled={isPending}
-                className={`rounded-xl px-3 py-2 text-sm border flex items-center gap-2 transition ${
-                  clarity
-                    ? "border-white/80 bg-white text-black hover:bg-white/90 disabled:opacity-50"
-                    : "border-white/15 bg-white/10 hover:bg-white/15 text-white disabled:opacity-50"
-                } ${focus}`}
-              >
-                <Plus className="h-4 w-4" />
-                Add
-              </button>
-            </div>
-
-            <div
-              className={`divide-y ${clarity ? "divide-white/22" : "divide-white/12"}`}
-            >
-              {tasks.length === 0 ? (
-                <div className="py-8 text-center text-white/75 text-sm">
-                  No tasks for today — add your first task above.
-                </div>
-              ) : (
-                tasks.map((t) => (
-                  <motion.button
-                    layout
-                    whileTap={{ scale: 0.995 }}
-                    transition={tFast}
-                    key={t.id}
-                    onClick={() => toggleTask(t.id)}
-                    className={`w-full text-left py-3 flex items-center gap-3 ${focus}`}
-                  >
-                    {t.done ? (
-                      <CheckCircle2 className="h-5 w-5 text-white drop-shadow-[0_0_8px_rgba(255,255,255,.35)]" />
-                    ) : (
-                      <Circle className="h-5 w-5 text-white/80" />
-                    )}
-                    <div className="min-w-0 flex-1">
-                      <div
-                        className={`font-medium ${t.done ? "line-through text-white/70" : "text-white"}`}
-                      >
-                        {t.title}
-                      </div>
-                      <div className="text-xs text-white/85 mt-0.5 flex items-center gap-2">
-                        <Badge>{t.project}</Badge>
-                        <span className="inline-flex items-center gap-1">
-                          <Clock className="h-3 w-3" /> {t.due}
-                        </span>
-                      </div>
-                    </div>
-                    <ChevronRight className="h-4 w-4 text-white/60" />
-                  </motion.button>
-                ))
-              )}
-            </div>
-
-            {/* Your Projects Section */}
-            <div className="mt-6 pt-4 border-t border-white/10">
-              <div className="flex items-center justify-between mb-3">
-                <h4 className="text-sm font-semibold text-white">
-                  Your Projects
-                </h4>
-                <Badge>{initialData.stats.activeProjects}</Badge>
-              </div>
-              <div className="space-y-2">
-                {initialData.projects && initialData.projects.length > 0 ? (
-                  initialData.projects.slice(0, 3).map((project) => (
-                    <a
-                      key={project.id}
-                      href={`/projects/${project.id}`}
-                      className={`block p-3 rounded-xl border transition ${
-                        clarity
-                          ? "border-white/20 bg-white/10 hover:bg-white/15"
-                          : "border-white/10 bg-white/5 hover:bg-white/10"
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <div className="font-medium text-white">
-                            {project.title}
-                          </div>
-                          <div className="text-xs text-white/70 mt-0.5">
-                            {project.activeTasks} active{" "}
-                            {project.activeTasks === 1 ? "task" : "tasks"} •{" "}
-                            {project.teamSize}{" "}
-                            {project.teamSize === 1 ? "member" : "members"}
-                          </div>
-                        </div>
-                        <ChevronRight className="h-4 w-4 text-white/50" />
-                      </div>
-                    </a>
-                  ))
-                ) : (
-                  <div className="text-sm text-white/75">
-                    No projects assigned yet.
-                  </div>
-                )}
-              </div>
-              {initialData.projects && initialData.projects.length > 3 && (
-                <div className="mt-3 text-center">
-                  <a
-                    href="/projects"
-                    className="text-sm text-white/90 hover:text-white underline decoration-white/50"
-                  >
-                    View all {initialData.stats.activeProjects} projects →
-                  </a>
-                </div>
-              )}
-            </div>
-          </GlassCard>
-        </motion.div>
-
-        {/* RIGHT: Meetings */}
-        <motion.div
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={tMed}
-          className="col-span-12 lg:col-span-3"
-        >
-          <GlassCard clarity={clarity} className="p-5">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <CalendarDays className="h-5 w-5 opacity-95" />
-                <h3 className="font-semibold text-white">Upcoming</h3>
-              </div>
-              <Badge>Tasks</Badge>
-            </div>
-
-            <div className="space-y-3">
-              {initialData.meetings.length === 0 ? (
-                <div className="text-sm text-white/75">
-                  No upcoming meetings or tasks.
-                </div>
-              ) : (
-                initialData.meetings.map((ev) => (
-                  <div
-                    key={ev.id}
-                    className={`p-3 rounded-xl border ${clarity ? "border-white/28 bg-white/18" : "border-white/12 bg-white/10"}`}
-                  >
-                    <div className="font-medium truncate text-white">
-                      {ev.title}
-                    </div>
-                    <div className="text-sm text-white/85">{ev.time}</div>
-                    <div className="text-xs text-white/75 mt-0.5">
-                      {ev.location}
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-
-            <div className="mt-4 pt-4 border-t border-white/10">
-              <a
-                href="/tasks"
-                className="text-sm text-white/90 hover:text-white underline decoration-white/50"
-              >
-                View all tasks →
-              </a>
-            </div>
-          </GlassCard>
-        </motion.div>
-
-        {/* MOBILE: Updates below */}
-        <div className="lg:hidden col-span-12">
-          <GlassCard clarity={clarity} className="p-5">
-            <div className="flex items-center gap-2 mb-3">
-              <Bell className="h-5 w-5 opacity-95" />
-              <h3 className="font-semibold text-white">Updates</h3>
-            </div>
-            <div className="space-y-4">
-              {initialData.updates.map((u) => (
-                <div key={u.id} className="flex items-start gap-3">
-                  <span className="mt-1 h-2.5 w-2.5 rounded-full bg-white/90 shadow-[0_0_10px_rgba(255,255,255,.5)]" />
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2 text-[13px]">
-                      <span className="font-medium truncate text-white">
-                        {u.title}
-                      </span>
-                      <Badge>{u.project}</Badge>
-                      <span className="text-white/70">• {u.time}</span>
-                    </div>
-                    <p className="text-[13px] text-white/80 mt-0.5 line-clamp-2">
-                      {u.detail}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </GlassCard>
+            </GlassCard>
+          </div>
         </div>
       </div>
+
+      {/* AI Agent Side Panel that pushes content */}
+      <AgentSidePanel
+        isOpen={isPanelOpen}
+        onToggle={() => setIsPanelOpen(!isPanelOpen)}
+      />
     </div>
   );
 }

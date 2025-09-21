@@ -483,37 +483,174 @@ When login fails, check:
 
 ### Overview
 
-Implementing a modern glassmorphic UI with theme system based on the mockup at `C:\Users\ianig\Desktop\ui for portal\gogentic_portal_landing_page_draft_ui.jsx`. This migration will be done progressively without breaking existing functionality.
+Implementing a modern glassmorphic UI across ALL pages. The glass-home page and AI agent panel have been completed as reference implementations. Now migrating all remaining pages to match this aesthetic.
 
-### Design System Features
+### ✅ Completed Components
 
-- **Glassmorphic components**: Backdrop blur, transparency layers, glass cards
-- **Theme system**: 4 presets (Aurora, Neon Mint, Sunset, Orchid)
-- **Clarity mode**: Toggle between high/low contrast
-- **Animated gradients**: Conic and radial gradient backgrounds
-- **Framer Motion**: Smooth animations and transitions
+1. **Glass-Home Page** (`/glass-home`)
+   - Full glassmorphic dashboard with glass cards
+   - Gradient backgrounds with blur effects
+   - Minimal, clean typography
 
-### Implementation Plan
+2. **AI Agent Panel** (`components/AgentSidePanel.tsx`)
+   - Ultra-minimal glass pane design
+   - Subtle white/[0.03] opacity levels
+   - Icon-only quick actions
+   - Beautiful message bubbles with truncation
 
-#### Phase 1: Foundation Setup
+### Design System Standards
 
-1. **Install dependencies**:
+#### Glass Effects
 
-   ```bash
-   npm install framer-motion
-   ```
+```css
+/* Primary glass panel */
+bg-white/[0.02] backdrop-blur-xl border-white/5
 
-2. **Create glass components** at `components/glass/`:
-   - `GlassCard.tsx` - Main glass container component
-   - `Badge.tsx` - Glass-style badges
-   - `ProgressRing.tsx` - Circular progress indicators
-   - `ThemeMenu.tsx` - Theme switcher dropdown
-   - `ThemeProvider.tsx` - Context for theme management
+/* Secondary glass panel */
+bg-white/[0.05] backdrop-blur-lg border-white/10
 
-3. **Update Tailwind config** for glassmorphism:
-   - Add backdrop blur utilities
-   - Define transparency scales
-   - Add theme color tokens as CSS variables
+/* Hover states */
+hover:bg-white/[0.08] hover:border-white/15
+
+/* Text hierarchy */
+text-white/90  /* Primary text */
+text-white/70  /* Secondary text */
+text-white/50  /* Tertiary text */
+text-white/30  /* Placeholder/disabled */
+```
+
+#### Component Patterns
+
+- **Cards**: Rounded-2xl with glass effect
+- **Buttons**: Minimal with subtle hover states
+- **Inputs**: bg-white/[0.03] with clean borders
+- **Navigation**: Transparent with backdrop blur
+- **Modals**: Centered glass panels with overlay
+
+### 🎯 Full Site Glass Migration Plan
+
+#### Priority Order (by user visibility & impact)
+
+##### **Wave 1: Core User Journey** (Highest Priority)
+
+1. **Login Page** (`/login`)
+   - Glass card for login form
+   - Animated gradient background
+   - Minimal input fields
+   - Social login buttons with glass effect
+
+2. **Dashboard** (`/dashboard`)
+   - Convert all cards to glass panels
+   - Add gradient mesh background
+   - Minimize text, use icons more
+   - Glass navigation bar
+
+3. **Projects List** (`/projects`)
+   - Glass project cards with hover effects
+   - Floating action buttons
+   - Minimal grid layout
+   - Search bar with glass effect
+
+4. **My Work** (`/my-work`)
+   - Glass task cards
+   - Clean Kanban board style
+   - Minimal status badges
+   - Time tracking with glass panels
+
+##### **Wave 2: Project Management**
+
+5. **Project Detail** (`/projects/[id]`)
+   - Glass tabs for sections
+   - Minimal content cards
+   - Clean task list
+   - Glass update feed
+
+6. **New Project** (`/projects/new`)
+   - Multi-step glass form
+   - Minimal field styling
+   - Progress indicator
+   - Template selection cards
+
+7. **Edit Project** (`/projects/[id]/edit`)
+   - Glass form panels
+   - Auto-save indicator
+   - Minimal buttons
+
+##### **Wave 3: Team & Analytics**
+
+8. **Team Page** (`/team`)
+   - Glass member cards
+   - Minimal avatars
+   - Role badges with glass
+   - Activity timeline
+
+9. **Reports** (`/reports`)
+   - Glass chart containers
+   - Minimal data tables
+   - KPI cards with gradients
+   - Filter panels
+
+10. **Activity Feed** (`/activity`)
+    - Glass timeline cards
+    - Minimal timestamps
+    - Icon-based actions
+
+##### **Wave 4: Admin & Settings**
+
+11. **Users Management** (`/users`)
+    - Glass table design
+    - Minimal row actions
+    - Search/filter panel
+
+12. **Portfolio View** (`/portfolio/[key]`)
+    - Glass portfolio cards
+    - Color-coded with transparency
+    - Minimal project grid
+
+##### **Wave 5: Public & Testing**
+
+13. **Share Page** (`/share/[token]`)
+    - Public-facing glass design
+    - Read-only glass panels
+    - Minimal branding
+
+14. **Register** (`/register`)
+    - Glass onboarding flow
+    - Step indicators
+    - Welcome animation
+
+### Glass Component Library
+
+Create reusable components in `/components/glass/`:
+
+```typescript
+// Core Components Needed
+-GlassCard.tsx - // Base glass container
+  GlassButton.tsx - // Minimal buttons
+  GlassInput.tsx - // Form inputs
+  GlassModal.tsx - // Overlay dialogs
+  GlassNav.tsx - // Navigation bar
+  GlassTable.tsx - // Data tables
+  GlassTab.tsx - // Tab navigation
+  GlassSelect.tsx - // Dropdowns
+  GlassAvatar.tsx - // User avatars
+  GlassChart.tsx - // Chart containers
+  GlassBadge.tsx - // Status badges
+  GlassTooltip.tsx; // Hover tooltips
+```
+
+### Migration Rules
+
+1. **Remove all solid backgrounds** → Replace with glass effect
+2. **Reduce opacity of all text** → Use white/70, white/50, white/30
+3. **Minimize borders** → Use white/5 or white/10 max
+4. **Add backdrop blur to everything** → backdrop-blur-xl standard
+5. **Replace shadows with glow** → Use colored shadows sparingly
+6. **Reduce padding/spacing** → Tighter, more minimal layout
+7. **Icon-first design** → Replace text labels with icons where possible
+8. **Truncate long text** → Show less, focus on essential info
+9. **Animate on interaction** → Subtle hover/click effects
+10. **Gradient accents only** → Use gradients for emphasis, not backgrounds
 
 #### Phase 2: Route Structure
 

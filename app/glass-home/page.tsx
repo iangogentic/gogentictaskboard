@@ -1,5 +1,4 @@
 import React from "react";
-import { motion } from "framer-motion";
 import {
   CalendarDays,
   CheckCircle2,
@@ -24,15 +23,15 @@ async function getPageData(userId: string) {
   const tomorrow = new Date(today);
   tomorrow.setDate(tomorrow.getDate() + 1);
 
+  // Get all incomplete tasks for the user, not just today's
   const tasks = await prisma.task.findMany({
     where: {
       OR: [
         { assigneeId: userId },
         { project: { ProjectMember: { some: { userId } } } },
       ],
-      dueDate: {
-        gte: today,
-        lt: tomorrow,
+      status: {
+        not: "COMPLETED",
       },
     },
     include: {

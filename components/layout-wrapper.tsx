@@ -42,7 +42,7 @@ export default function LayoutWrapper({
       <UserProvider>
         <ToastProvider>
           {children}
-          {!isSharePage && <AgentChatContainer />}
+          {!isSharePage && !isGlassHomePage && <AgentChatContainer />}
         </ToastProvider>
       </UserProvider>
     );

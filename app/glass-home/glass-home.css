@@ -5,6 +5,30 @@ body:has(.glass-home-page) {
   background: #000000 !important;
   color: #ffffff !important;
   overflow-x: hidden;
+  position: relative;
+}
+
+/* Animated background gradient */
+@keyframes gradientShift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+body:has(.glass-home-page)::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(
+    -45deg,
+    #000000,
+    #0a0a0a,
+    #050510,
+    #000510,
+    #000000
+  );
+  background-size: 400% 400%;
+  animation: gradientShift 15s ease infinite;
+  z-index: 0;
 }
 
 body:has(.glass-home-page) .bg-bg {
@@ -47,17 +71,47 @@ body:has(.glass-home-page) .bg-bg {
   color: #ffffff !important;
 }
 
-/* Glass card styles */
+/* Glass card styles with animations */
 .glass-card {
-  background: rgba(255, 255, 255, 0.05) !important;
-  border: 1px solid rgba(255, 255, 255, 0.15) !important;
-  backdrop-filter: blur(12px) !important;
-  -webkit-backdrop-filter: blur(12px) !important;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03)) !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  backdrop-filter: blur(20px) saturate(150%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(150%) !important;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 0 0 1px rgba(255, 255, 255, 0.03) !important;
+  transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1) !important;
+  position: relative;
+  overflow: hidden;
+}
+
+.glass-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    600px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+    rgba(255, 255, 255, 0.06),
+    transparent 40%
+  );
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
 }
 
 .glass-card:hover {
-  background: rgba(255, 255, 255, 0.08) !important;
-  border-color: rgba(255, 255, 255, 0.2) !important;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.05)) !important;
+  border-color: rgba(255, 255, 255, 0.25) !important;
+  transform: translateY(-4px) scale(1.01) !important;
+  box-shadow:
+    0 20px 50px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    0 0 0 1px rgba(255, 255, 255, 0.05) !important;
+}
+
+.glass-card:hover::before {
+  opacity: 1;
 }
 
 /* Ensure backdrop filters work properly */
@@ -96,14 +150,33 @@ body:has(.glass-home-page) .bg-bg {
   backdrop-filter: blur(64px);
 }
 
-/* Gradient orb styles */
+/* Animated gradient orb styles */
+@keyframes float {
+  0%, 100% {
+    transform: translate(0, 0) scale(1) rotate(0deg);
+  }
+  33% {
+    transform: translate(30px, -30px) scale(1.05) rotate(120deg);
+  }
+  66% {
+    transform: translate(-20px, 20px) scale(0.95) rotate(240deg);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.5; }
+}
+
 .gradient-orb {
   position: absolute;
   border-radius: 50%;
-  filter: blur(64px);
+  filter: blur(80px);
   opacity: 0.3;
   pointer-events: none;
   mix-blend-mode: screen;
+  animation: float 20s ease-in-out infinite, pulse 8s ease-in-out infinite;
+  will-change: transform, opacity;
 }
 
 .gradient-orb-1 {
@@ -114,10 +187,13 @@ body:has(.glass-home-page) .bg-bg {
   transform: translateX(-50%);
   background: conic-gradient(
     from 0deg at 50% 50%,
-    rgba(120, 119, 198, 0.9),
-    rgba(0, 179, 255, 0.6),
-    rgba(120, 119, 198, 0.9)
+    rgba(139, 92, 246, 0.8),
+    rgba(59, 130, 246, 0.6),
+    rgba(14, 165, 233, 0.8),
+    rgba(139, 92, 246, 0.8)
   );
+  animation-duration: 25s, 10s;
+  animation-delay: 0s, 0s;
 }
 
 .gradient-orb-2 {
@@ -165,38 +241,108 @@ body:has(.glass-home-page) .bg-bg {
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
 }
 
-/* Badge styles */
-.glass-badge {
-  background: rgba(255, 255, 255, 0.1) !important;
-  border: 1px solid rgba(255, 255, 255, 0.2) !important;
-  color: #ffffff !important;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+/* Badge styles with micro-animations */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
 }
 
-/* Button styles */
+.glass-badge {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.08)) !important;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+  color: #ffffff !important;
+  backdrop-filter: blur(12px) saturate(120%);
+  -webkit-backdrop-filter: blur(12px) saturate(120%);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+  font-weight: 500;
+  letter-spacing: 0.025em;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.glass-badge::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.1),
+    transparent
+  );
+  background-size: 200% 100%;
+  animation: shimmer 3s infinite;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.glass-badge:hover::before {
+  opacity: 1;
+}
+
+.glass-badge:hover {
+  transform: translateY(-1px) scale(1.05);
+  border-color: rgba(255, 255, 255, 0.35) !important;
+}
+
+/* Button styles with ripple effect */
+@keyframes ripple {
+  0% {
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(4);
+    opacity: 0;
+  }
+}
+
 .glass-button {
   background: rgba(255, 255, 255, 0.1) !important;
   border: 1px solid rgba(255, 255, 255, 0.2) !important;
   color: #ffffff !important;
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  transition: all 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.glass-button::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
 }
 
 .glass-button:hover {
   background: rgba(255, 255, 255, 0.15) !important;
-  border-color: rgba(255, 255, 255, 0.3) !important;
-  transform: translateY(-1px);
+  border-color: rgba(255, 255, 255, 0.35) !important;
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+.glass-button:active::before {
+  width: 300px;
+  height: 300px;
 }
 
 /* Input styles */
 .glass-input {
-  background: rgba(255, 255, 255, 0.08) !important;
-  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
   color: #ffffff !important;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(12px) saturate(120%);
+  -webkit-backdrop-filter: blur(12px) saturate(120%);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3) !important;
+  transition: all 0.2s ease;
 }
 
 .glass-input:focus {
@@ -207,5 +353,66 @@ body:has(.glass-home-page) .bg-bg {
 }
 
 .glass-input::placeholder {
-  color: rgba(255, 255, 255, 0.5) !important;
+  color: rgba(255, 255, 255, 0.4) !important;
+  font-weight: 300;
+}
+
+/* Enhanced text readability */
+.glass-home-page h1,
+.glass-home-page h2,
+.glass-home-page h3 {
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5), 0 1px 3px rgba(0, 0, 0, 0.8);
+  font-weight: 600;
+}
+
+.glass-home-page p,
+.glass-home-page span,
+.glass-home-page div {
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
+}
+
+/* Ensure all text is properly visible */
+.glass-home-page * {
+  color: #ffffff;
+}
+
+/* Accent glow effects */
+.glow-effect {
+  position: relative;
+}
+
+.glow-effect::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  background: linear-gradient(45deg, #3b82f6, #8b5cf6, #ec4899, #3b82f6);
+  border-radius: inherit;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  filter: blur(8px);
+  z-index: -1;
+}
+
+.glow-effect:hover::before {
+  opacity: 0.5;
+}
+
+/* Improved scrollbar for glass theme */
+.glass-home-page ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.glass-home-page ::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+}
+
+.glass-home-page ::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+}
+
+.glass-home-page ::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
 }
