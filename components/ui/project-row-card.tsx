@@ -1,17 +1,23 @@
-'use client';
+"use client";
 
-import * as React from 'react';
-import Link from 'next/link';
-import { ChevronRight, MoreHorizontal, Users, Calendar, AlertCircle } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { formatDistanceToNow } from 'date-fns';
+import * as React from "react";
+import Link from "next/link";
+import {
+  ChevronRight,
+  MoreHorizontal,
+  Users,
+  Calendar,
+  AlertCircle,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import { formatDistanceToNow } from "date-fns";
 
 interface ProjectRowCardProps {
   project: {
     id: string;
     title: string;
     branch: string;
-    status: 'PLANNING' | 'IN_PROGRESS' | 'REVIEW' | 'BLOCKED' | 'COMPLETED';
+    status: "Not Started" | "In Progress" | "Review" | "Blocked" | "Done";
     clientName: string;
     lastUpdatedAt: Date;
     progress?: number;
@@ -22,45 +28,54 @@ interface ProjectRowCardProps {
       completed: number;
     };
   };
-  onQuickAction?: (action: 'assign' | 'status' | 'share', projectId: string) => void;
+  onQuickAction?: (
+    action: "assign" | "status" | "share",
+    projectId: string
+  ) => void;
   className?: string;
 }
 
 const statusColors = {
-  PLANNING: 'bg-info-bg text-info',
-  IN_PROGRESS: 'bg-brand/10 text-brand',
-  REVIEW: 'bg-portfolio-fisher/10 text-portfolio-fisher',
-  BLOCKED: 'bg-danger-bg text-danger',
-  COMPLETED: 'bg-success-bg text-success',
+  "Not Started": "bg-info-bg text-info",
+  "In Progress": "bg-brand/10 text-brand",
+  Review: "bg-portfolio-fisher/10 text-portfolio-fisher",
+  Blocked: "bg-danger-bg text-danger",
+  Done: "bg-success-bg text-success",
 };
 
 const branchColors = {
-  CORTEX: 'bg-portfolio-cortex/10 text-portfolio-cortex',
-  SOLUTIONS: 'bg-portfolio-solutions/10 text-portfolio-solutions',
-  LAUNCHPAD: 'bg-portfolio-launchpad/10 text-portfolio-launchpad',
-  FISHER: 'bg-portfolio-fisher/10 text-portfolio-fisher',
-  DEFAULT: 'bg-surface-strong text-muted',
+  CORTEX: "bg-portfolio-cortex/10 text-portfolio-cortex",
+  SOLUTIONS: "bg-portfolio-solutions/10 text-portfolio-solutions",
+  LAUNCHPAD: "bg-portfolio-launchpad/10 text-portfolio-launchpad",
+  FISHER: "bg-portfolio-fisher/10 text-portfolio-fisher",
+  DEFAULT: "bg-surface-strong text-muted",
 };
 
-export function ProjectRowCard({ project, onQuickAction, className }: ProjectRowCardProps) {
+export function ProjectRowCard({
+  project,
+  onQuickAction,
+  className,
+}: ProjectRowCardProps) {
   const [showActions, setShowActions] = React.useState(false);
-  const progress = project.taskCounts 
-    ? Math.round((project.taskCounts.completed / project.taskCounts.total) * 100) || 0
+  const progress = project.taskCounts
+    ? Math.round(
+        (project.taskCounts.completed / project.taskCounts.total) * 100
+      ) || 0
     : project.progress || 0;
 
   // Deduplicate owners to avoid duplicate keys
   const uniqueOwners = new Map();
-  
+
   if (project.pm) {
     uniqueOwners.set(project.pm.id, project.pm);
   }
-  
-  (project.developers || []).forEach(dev => {
+
+  (project.developers || []).forEach((dev) => {
     if (!uniqueOwners.has(dev.id)) {
       uniqueOwners.set(dev.id, dev);
     }
   });
-  
+
   const owners = Array.from(uniqueOwners.values()).slice(0, 3);
   const totalUniqueOwners = uniqueOwners.size;
   const overflowCount = Math.max(0, totalUniqueOwners - 3);
@@ -68,9 +83,9 @@ export function ProjectRowCard({ project, onQuickAction, className }: ProjectRow
   return (
     <div
       className={cn(
-        'group relative bg-bg rounded-2xl border border-border',
-        'shadow-[var(--shadow-card)] hover:shadow-[var(--shadow-card-hover)]',
-        'transition-all duration-200 hover:border-brand/20',
+        "group relative bg-bg rounded-2xl border border-border",
+        "shadow-[var(--shadow-card)] hover:shadow-[var(--shadow-card-hover)]",
+        "transition-all duration-200 hover:border-brand/20",
         className
       )}
       onMouseEnter={() => setShowActions(true)}
@@ -84,17 +99,22 @@ export function ProjectRowCard({ project, onQuickAction, className }: ProjectRow
               <h3 className="text-lg font-medium text-fg truncate">
                 {project.title}
               </h3>
-              <span className={cn(
-                'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium',
-                branchColors[project.branch as keyof typeof branchColors] || branchColors.DEFAULT
-              )}>
+              <span
+                className={cn(
+                  "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium",
+                  branchColors[project.branch as keyof typeof branchColors] ||
+                    branchColors.DEFAULT
+                )}
+              >
                 {project.branch}
               </span>
-              <span className={cn(
-                'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium',
-                statusColors[project.status]
-              )}>
-                {project.status === 'IN_PROGRESS' ? 'In Progress' : project.status}
+              <span
+                className={cn(
+                  "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium",
+                  statusColors[project.status]
+                )}
+              >
+                {project.status}
               </span>
             </div>
             <p className="text-sm text-muted">{project.clientName}</p>
@@ -118,7 +138,10 @@ export function ProjectRowCard({ project, onQuickAction, className }: ProjectRow
 
             {/* Last Update */}
             <div className="text-sm text-muted">
-              Last update {formatDistanceToNow(new Date(project.lastUpdatedAt), { addSuffix: true })}
+              Last update{" "}
+              {formatDistanceToNow(new Date(project.lastUpdatedAt), {
+                addSuffix: true,
+              })}
             </div>
 
             {/* Owners */}
@@ -136,7 +159,9 @@ export function ProjectRowCard({ project, onQuickAction, className }: ProjectRow
               ))}
               {overflowCount > 0 && (
                 <div className="w-8 h-8 rounded-full bg-surface border-2 border-bg flex items-center justify-center">
-                  <span className="text-xs font-medium text-muted">+{overflowCount}</span>
+                  <span className="text-xs font-medium text-muted">
+                    +{overflowCount}
+                  </span>
                 </div>
               )}
             </div>
@@ -155,7 +180,7 @@ export function ProjectRowCard({ project, onQuickAction, className }: ProjectRow
           <button
             onClick={(e) => {
               e.preventDefault();
-              onQuickAction('assign', project.id);
+              onQuickAction("assign", project.id);
             }}
             className="p-2 text-muted hover:bg-surface rounded-md transition-colors"
             title="Assign"
@@ -165,7 +190,7 @@ export function ProjectRowCard({ project, onQuickAction, className }: ProjectRow
           <button
             onClick={(e) => {
               e.preventDefault();
-              onQuickAction('status', project.id);
+              onQuickAction("status", project.id);
             }}
             className="p-2 text-muted hover:bg-surface rounded-md transition-colors"
             title="Change Status"
@@ -175,7 +200,7 @@ export function ProjectRowCard({ project, onQuickAction, className }: ProjectRow
           <button
             onClick={(e) => {
               e.preventDefault();
-              onQuickAction('share', project.id);
+              onQuickAction("share", project.id);
             }}
             className="p-2 text-muted hover:bg-surface rounded-md transition-colors"
             title="Share"
@@ -186,7 +211,7 @@ export function ProjectRowCard({ project, onQuickAction, className }: ProjectRow
       )}
 
       {/* Blocked indicator */}
-      {project.status === 'BLOCKED' && (
+      {project.status === "Blocked" && (
         <div className="absolute left-0 top-0 bottom-0 w-1 bg-danger rounded-l-2xl" />
       )}
     </div>

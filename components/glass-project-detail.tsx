@@ -140,14 +140,16 @@ export default function GlassProjectDetail({
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "IN_PROGRESS":
+      case "In Progress":
         return "text-blue-400";
-      case "COMPLETED":
+      case "Done":
         return "text-green-400";
-      case "PLANNING":
+      case "Not Started":
         return "text-yellow-400";
-      case "ON_HOLD":
-        return "text-orange-400";
+      case "Blocked":
+        return "text-red-400";
+      case "Review":
+        return "text-purple-400";
       default:
         return "text-white/70";
     }

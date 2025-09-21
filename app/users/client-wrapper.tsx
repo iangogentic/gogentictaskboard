@@ -127,17 +127,17 @@ export default function ClientWrapper({ users }: ClientWrapperProps) {
               // Get unique active projects (user might be both PM and developer on same project)
               const projectMap = new Map();
               user.projectsAsPM
-                .filter((p) => p.status === "IN_PROGRESS")
+                .filter((p) => p.status === "In Progress")
                 .forEach((p) => {
                   projectMap.set(p.id, p);
                 });
               user.projectsAsDev
-                .filter((p) => p.status === "IN_PROGRESS")
+                .filter((p) => p.status === "In Progress")
                 .forEach((p) => {
                   projectMap.set(p.id, p);
                 });
               const activeProjects = Array.from(projectMap.values());
-              const activeTasks = user.tasks.filter((t) => t.status !== "DONE");
+              const activeTasks = user.tasks.filter((t) => t.status !== "Done");
 
               return (
                 <GlassCard
