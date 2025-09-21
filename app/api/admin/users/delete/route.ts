@@ -72,10 +72,10 @@ export async function DELETE(request: Request) {
       where: { userId: userId },
     });
 
-    // 5. Update Projects where user is PM - set to null
-    await prisma.project.updateMany({
+    // 5. Delete Projects where user is PM (since pmId is required)
+    // Alternatively, you could reassign to another admin user
+    await prisma.project.deleteMany({
       where: { pmId: userId },
-      data: { pmId: null },
     });
 
     // 6. Finally, delete the user
