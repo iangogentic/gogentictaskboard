@@ -36,7 +36,7 @@ export default function LoginPage() {
       if (result?.error) {
         setError("Invalid email or password");
       } else {
-        router.push("/dashboard");
+        router.push("/glass-home");
         router.refresh();
       }
     } catch (error) {
@@ -47,7 +47,7 @@ export default function LoginPage() {
   };
 
   const handleOAuthSignIn = (provider: string) => {
-    signIn(provider, { callbackUrl: "/dashboard" });
+    signIn(provider, { callbackUrl: "/glass-home" });
   };
 
   return (

@@ -53,7 +53,7 @@ export default auth((req) => {
   // Redirect logged-in users away from auth pages
   if (isAuthRoute && isLoggedIn) {
     const redirectResponse = NextResponse.redirect(
-      new URL("/dashboard", nextUrl)
+      new URL("/glass-home", nextUrl)
     );
     // Also clear cookies on redirects
     if (process.env.NODE_ENV === "production") {

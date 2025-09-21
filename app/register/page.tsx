@@ -51,7 +51,7 @@ export default function RegisterPage() {
         });
 
         if (result?.ok) {
-          router.push("/dashboard");
+          router.push("/glass-home");
           router.refresh();
         }
       }
@@ -63,7 +63,7 @@ export default function RegisterPage() {
   };
 
   const handleOAuthSignIn = (provider: string) => {
-    signIn(provider, { callbackUrl: "/dashboard" });
+    signIn(provider, { callbackUrl: "/glass-home" });
   };
 
   return (
