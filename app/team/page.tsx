@@ -14,6 +14,19 @@ export default async function TeamPage() {
     redirect("/login");
   }
 
+  // Check if user is admin or PM
+  const currentUser = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { role: true },
+  });
+
+  if (
+    !currentUser ||
+    (currentUser.role !== "admin" && currentUser.role !== "pm")
+  ) {
+    redirect("/glass-home");
+  }
+
   const [users, projects, tasks, recentActivity, portfolios] =
     await Promise.all([
       prisma.user.findMany({
