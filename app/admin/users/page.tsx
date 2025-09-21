@@ -1,11 +1,10 @@
 import { getServerSession } from "@/lib/auth";
-import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import AdminUsersClient from "./client";
 
 export default async function AdminUsersPage() {
-  const session = await getServerSession(authOptions);
+  const session = await getServerSession();
 
   if (!session?.user?.email) {
     redirect("/login");
