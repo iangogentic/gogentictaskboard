@@ -64,7 +64,58 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           userId: user?.id,
         });
       }
-      // Let NextAuth handle the sign in
+
+      // Check if user exists with this email when using OAuth
+      if (account?.provider === "google" && user.email) {
+        const existingUser = await prisma.user.findUnique({
+          where: { email: user.email },
+        });
+
+        if (existingUser) {
+          // Link the Google account to the existing user
+          await prisma.account.create({
+            data: {
+              userId: existingUser.id,
+              type: account.type!,
+              provider: account.provider,
+              providerAccountId: account.providerAccountId,
+              refresh_token: account.refresh_token,
+              access_token: account.access_token,
+              expires_at: account.expires_at,
+              token_type: account.token_type,
+              scope: account.scope,
+              id_token: account.id_token,
+              session_state: account.session_state,
+            },
+          });
+
+          // Update user info if needed
+          if (!existingUser.name && user.name) {
+            await prisma.user.update({
+              where: { id: existingUser.id },
+              data: {
+                name: user.name,
+                image: user.image,
+                emailVerified: new Date(),
+              },
+            });
+          }
+
+          // Override the user id to use the existing user
+          user.id = existingUser.id;
+
+          if (isDebug) {
+            console.warn("AUTH_DEBUG: Linked Google account to existing user", {
+              existingUserId: existingUser.id,
+              email: user.email,
+            });
+          }
+
+          return true;
+        }
+      }
+
+      // Let NextAuth handle the sign in normally
       return true;
     },
     async session({ token, session }) {
