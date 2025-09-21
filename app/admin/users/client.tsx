@@ -5,7 +5,15 @@ import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { GlassCard, Badge } from "@/components/glass";
 import { useTheme } from "@/lib/themes/provider";
-import { User, Shield, UserCheck, UserX, Save, RefreshCw } from "lucide-react";
+import {
+  User,
+  Shield,
+  UserCheck,
+  UserX,
+  Save,
+  RefreshCw,
+  Trash2,
+} from "lucide-react";
 import { format } from "date-fns";
 
 type UserRole = "admin" | "pm" | "developer" | "client" | "user";
@@ -104,6 +112,40 @@ export default function AdminUsersClient({
     }
   };
 
+  const handleDeleteUser = async (userId: string, userEmail: string) => {
+    if (
+      !confirm(
+        `Are you sure you want to delete user: ${userEmail}?\n\nThis action cannot be undone.`
+      )
+    ) {
+      return;
+    }
+
+    setLoading(userId);
+    setUpdateMessage(null);
+
+    try {
+      const response = await fetch("/api/admin/users/delete", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId }),
+      });
+
+      if (response.ok) {
+        setUsers(users.filter((u) => u.id !== userId));
+        setUpdateMessage(`User ${userEmail} deleted successfully`);
+        setTimeout(() => setUpdateMessage(null), 3000);
+      } else {
+        const error = await response.json();
+        setUpdateMessage(`Error: ${error.error || "Failed to delete user"}`);
+      }
+    } catch (error) {
+      setUpdateMessage("Failed to delete user");
+    } finally {
+      setLoading(null);
+    }
+  };
+
   return (
     <div className="min-h-screen pt-4">
       <div className="max-w-7xl mx-auto px-6">
@@ -175,6 +217,9 @@ export default function AdminUsersClient({
                   </th>
                   <th className="text-left py-3 px-4 text-white/70 font-medium">
                     Last Updated
+                  </th>
+                  <th className="text-left py-3 px-4 text-white/70 font-medium">
+                    Actions
                   </th>
                 </tr>
               </thead>
@@ -259,6 +304,26 @@ export default function AdminUsersClient({
                         <span className="text-white/60 text-sm">
                           {format(new Date(user.updatedAt), "MMM d, yyyy")}
                         </span>
+                      </td>
+                      <td className="py-4 px-4">
+                        <button
+                          onClick={() => handleDeleteUser(user.id, user.email)}
+                          disabled={loading === user.id || isCurrentUser}
+                          className={`px-3 py-2 text-sm rounded-lg border transition flex items-center gap-2 ${
+                            isCurrentUser
+                              ? "opacity-50 cursor-not-allowed bg-gray-500/10 border-gray-500/20 text-gray-400"
+                              : clarity
+                                ? "bg-red-500/20 border-red-500/30 text-red-400 hover:bg-red-500/30 hover:border-red-500/40"
+                                : "bg-red-500/10 border-red-500/20 text-red-400 hover:bg-red-500/20 hover:border-red-500/30"
+                          }`}
+                        >
+                          {loading === user.id ? (
+                            <RefreshCw className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Trash2 className="h-4 w-4" />
+                          )}
+                          Delete
+                        </button>
                       </td>
                     </motion.tr>
                   );
