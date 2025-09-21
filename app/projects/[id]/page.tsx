@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/db";
 import { notFound } from "next/navigation";
-import ProjectDetail from "@/components/project-detail";
+import GlassProjectDetail from "@/components/glass-project-detail";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 60;
@@ -37,5 +37,5 @@ export default async function ProjectPage({
     notFound();
   }
 
-  return <ProjectDetail project={project} users={users} />;
+  return <GlassProjectDetail project={project} users={users} />;
 }

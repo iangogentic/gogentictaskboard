@@ -8,6 +8,8 @@ interface ThemeContextType {
   setTheme: (theme: ThemeName) => void;
   clarity: boolean;
   setClarity: (clarity: boolean) => void;
+  backgroundMode: "dark" | "light";
+  setBackgroundMode: (mode: "dark" | "light") => void;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -27,6 +29,9 @@ interface ThemeProviderProps {
 export function ThemeProvider({ children }: ThemeProviderProps) {
   const [theme, setTheme] = useState<ThemeName>("AURORA");
   const [clarity, setClarity] = useState(true);
+  const [backgroundMode, setBackgroundMode] = useState<"dark" | "light">(
+    "dark"
+  );
 
   // Load theme from localStorage on mount
   useEffect(() => {
@@ -35,6 +40,9 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
         "gogentic:theme"
       ) as ThemeName | null;
       const savedClarity = localStorage.getItem("gogentic:clarity");
+      const savedBackgroundMode = localStorage.getItem(
+        "gogentic:backgroundMode"
+      );
 
       if (savedTheme && THEMES[savedTheme]) {
         setTheme(savedTheme);
@@ -42,6 +50,10 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
 
       if (savedClarity !== null) {
         setClarity(savedClarity === "true");
+      }
+
+      if (savedBackgroundMode === "light" || savedBackgroundMode === "dark") {
+        setBackgroundMode(savedBackgroundMode);
       }
     } catch (error) {
       console.warn("Failed to load theme from localStorage:", error);
@@ -66,11 +78,22 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
     }
   }, [clarity]);
 
+  // Save background mode to localStorage when it changes
+  useEffect(() => {
+    try {
+      localStorage.setItem("gogentic:backgroundMode", backgroundMode);
+    } catch (error) {
+      console.warn("Failed to save background mode to localStorage:", error);
+    }
+  }, [backgroundMode]);
+
   const value = {
     theme,
     setTheme,
     clarity,
     setClarity,
+    backgroundMode,
+    setBackgroundMode,
   };
 
   return (

@@ -25,8 +25,8 @@ import {
   Zap,
   Rocket,
 } from "lucide-react";
-import { GlassCard, GlassNav } from "@/components/glass";
-import { AnimatedBackground } from "@/components/glass/AnimatedBackground";
+import { GlassCard } from "@/components/glass";
+import { useTheme } from "@/lib/themes/provider";
 
 interface Portfolio {
   id: string;
@@ -54,6 +54,7 @@ export default function DashboardPage() {
   const [portfolios, setPortfolios] = useState<Portfolio[]>([]);
   const [needsAttention, setNeedsAttention] = useState<AttentionItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const { clarity } = useTheme();
 
   useEffect(() => {
     fetchDashboardData();
@@ -97,28 +98,21 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
-        <AnimatedBackground />
-        <GlassNav />
-        <div className="relative z-10 min-h-screen flex items-center justify-center pt-20">
-          <motion.div
-            className="text-white/70 text-lg"
-            animate={{ opacity: [0.5, 1, 0.5] }}
-            transition={{ duration: 2, repeat: Infinity }}
-          >
-            Loading dashboard...
-          </motion.div>
-        </div>
+      <div className="min-h-screen flex items-center justify-center">
+        <motion.div
+          className="text-white/70 text-lg"
+          animate={{ opacity: [0.5, 1, 0.5] }}
+          transition={{ duration: 2, repeat: Infinity }}
+        >
+          Loading dashboard...
+        </motion.div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
-      <AnimatedBackground />
-      <GlassNav />
-
-      <div className="relative z-10 pt-20">
+    <div className="relative">
+      <div className="pt-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <motion.div
             className="mb-8"
@@ -170,7 +164,7 @@ export default function DashboardPage() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: index * 0.1 }}
                 >
-                  <GlassCard className="p-6" hover>
+                  <GlassCard className="p-6" clarity={clarity}>
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-sm text-white/50">{metric.label}</p>

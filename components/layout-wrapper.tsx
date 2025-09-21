@@ -2,8 +2,9 @@
 
 import { UserProvider } from "@/lib/user-context";
 import { ToastProvider } from "@/providers/toast-provider";
-import { SlimNav } from "@/components/navigation/slim-nav";
-import { AgentChatContainer } from "@/components/agent/agent-chat-container";
+import { ThemeProvider } from "@/lib/themes/provider";
+import { GlassLayout } from "@/components/glass-layout";
+import { SessionProvider } from "next-auth/react";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -14,7 +15,6 @@ export default function LayoutWrapper({
 }) {
   const pathname = usePathname();
   const isSharePage = pathname?.startsWith("/share/");
-  const isGlassHomePage = pathname === "/glass-home";
   const [projects, setProjects] = useState<any[]>([]);
   const [users, setUsers] = useState<any[]>([]);
   const [currentUser, setCurrentUser] = useState<any>(null);
@@ -37,30 +37,27 @@ export default function LayoutWrapper({
     loadData();
   }, []);
 
-  if (isSharePage || isGlassHomePage) {
+  if (isSharePage) {
     return (
-      <UserProvider>
-        <ToastProvider>
-          {children}
-          {!isSharePage && !isGlassHomePage && <AgentChatContainer />}
-        </ToastProvider>
-      </UserProvider>
+      <SessionProvider>
+        <ThemeProvider>
+          <UserProvider>
+            <ToastProvider>{children}</ToastProvider>
+          </UserProvider>
+        </ThemeProvider>
+      </SessionProvider>
     );
   }
 
   return (
-    <UserProvider>
-      <ToastProvider>
-        <div className="min-h-screen bg-bg">
-          <SlimNav
-            projects={projects}
-            users={users}
-            currentUser={currentUser}
-          />
-          <main>{children}</main>
-          <AgentChatContainer />
-        </div>
-      </ToastProvider>
-    </UserProvider>
+    <SessionProvider>
+      <ThemeProvider>
+        <UserProvider>
+          <ToastProvider>
+            <GlassLayout>{children}</GlassLayout>
+          </ToastProvider>
+        </UserProvider>
+      </ThemeProvider>
+    </SessionProvider>
   );
 }

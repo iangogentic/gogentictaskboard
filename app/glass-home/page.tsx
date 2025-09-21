@@ -119,6 +119,7 @@ async function getPageData(userId: string) {
       title: u.body.substring(0, 50) + (u.body.length > 50 ? "..." : ""),
       detail: u.body,
       project: u.project?.title || "General",
+      projectId: u.projectId,
       time: getRelativeTime(u.createdAt),
       kind: "update" as const,
     })),

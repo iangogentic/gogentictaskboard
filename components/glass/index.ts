@@ -5,3 +5,6 @@ export { ThemeMenu } from "./ThemeMenu";
 export { GlassButton } from "./GlassButton";
 export { GlassInput } from "./GlassInput";
 export { GlassNav } from "./GlassNav";
+export { GlassTopBar } from "./GlassTopBar";
+export { GlassTabs } from "./GlassTabs";
+export type { Tab } from "./GlassTabs";

@@ -31,12 +31,6 @@ const navItems = [
     description: "All projects",
   },
   {
-    href: "/my-work",
-    label: "My Work",
-    icon: Briefcase,
-    description: "Your tasks",
-  },
-  {
     href: "/dashboard",
     label: "Dashboard",
     icon: BarChart3,
