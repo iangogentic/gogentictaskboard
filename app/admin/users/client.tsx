@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, JSX } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { GlassCard, Badge } from "@/components/glass";

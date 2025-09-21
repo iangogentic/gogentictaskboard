@@ -1,5 +1,5 @@
-import { getServerSession } from "next-auth/react";
-import { authOptions } from "@/auth";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import AdminUsersClient from "./client";
