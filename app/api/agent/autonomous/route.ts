@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
 import { prisma } from "@/lib/prisma";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import {
   executePrismaOperation,
   executeMultipleOperations,
@@ -220,25 +222,7 @@ You have FULL autonomy. Make intelligent decisions and execute them.`,
 
   ASSISTANT_ID = assistant.id;
 
-  // Store in database for persistence
-  try {
-    await prisma.agentSession.create({
-      data: {
-        id: `session_${Date.now()}`,
-        userId: "autonomous_agent",
-        state: "active",
-        plan: {
-          assistantId: assistant.id,
-          model: "gpt-4-turbo-preview",
-          capabilities: ["full_database_access", "autonomous_operations"],
-        },
-        updatedAt: new Date(),
-      },
-    });
-  } catch (error) {
-    console.log("Could not store assistant session:", error);
-  }
-
+  // Note: AgentSession creation removed - will be created per-user when they use the agent
   console.log("Created new assistant:", assistant.id);
   return assistant;
 }
@@ -293,10 +277,19 @@ async function getOrCreateThread(userId: string, conversationId?: string) {
  */
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
-    const { message, userId, conversationId, createNewThread = false } = body;
+    // Get authenticated user session
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: "Authentication required" },
+        { status: 401 }
+      );
+    }
 
-    const effectiveUserId = userId || "autonomous-user";
+    const body = await req.json();
+    const { message, conversationId, createNewThread = false } = body;
+
+    const effectiveUserId = session.user.id;
 
     // Get or create the assistant
     const assistant = await getOrCreateAssistant();
@@ -516,13 +509,21 @@ export async function POST(req: NextRequest) {
  * GET handler for conversation history
  */
 export async function GET(req: NextRequest) {
+  // Get authenticated user session
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) {
+    return NextResponse.json(
+      { error: "Authentication required" },
+      { status: 401 }
+    );
+  }
+
   const { searchParams } = new URL(req.url);
   const conversationId = searchParams.get("conversationId");
-  const userId = searchParams.get("userId");
 
   if (!conversationId) {
     const conversations = await prisma.conversation.findMany({
-      where: userId ? { userId } : undefined,
+      where: { userId: session.user.id },
       orderBy: { updatedAt: "desc" },
       take: 20,
       include: {
