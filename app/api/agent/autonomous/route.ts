@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
 import { prisma } from "@/lib/prisma";
-import { getServerSession, authOptions } from "@/lib/auth";
+import { getServerSession } from "@/lib/auth";
 import {
   executePrismaOperation,
   executeMultipleOperations,
@@ -277,7 +277,7 @@ async function getOrCreateThread(userId: string, conversationId?: string) {
 export async function POST(req: NextRequest) {
   try {
     // Get authenticated user session
-    const session = await getServerSession(authOptions);
+    const session = await getServerSession();
     if (!session?.user?.id) {
       return NextResponse.json(
         { error: "Authentication required" },
@@ -509,7 +509,7 @@ export async function POST(req: NextRequest) {
  */
 export async function GET(req: NextRequest) {
   // Get authenticated user session
-  const session = await getServerSession(authOptions);
+  const session = await getServerSession();
   if (!session?.user?.id) {
     return NextResponse.json(
       { error: "Authentication required" },
