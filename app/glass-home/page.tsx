@@ -122,6 +122,7 @@ async function getPageData(userId: string, userRole: string | null) {
       id: t.id,
       title: t.title,
       project: t.project?.title || "No Project",
+      projectId: t.projectId,
       due: t.dueDate
         ? new Date(t.dueDate).toLocaleTimeString("en-US", {
             hour: "numeric",

@@ -25,6 +25,7 @@ interface Task {
   id: string;
   title: string;
   project: string;
+  projectId: string | null;
   due: string;
   done: boolean;
 }
@@ -239,7 +240,7 @@ export default function ClientWrapper({
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h2 className="text-[22px] font-semibold tracking-tight text-white">
-                  Your day
+                  Hello, {userName}
                 </h2>
                 <p className="text-[13px] text-white/85">{today}</p>
               </div>
@@ -292,34 +293,37 @@ export default function ClientWrapper({
                 </div>
               ) : (
                 tasks.map((t) => (
-                  <motion.button
-                    layout
-                    whileTap={{ scale: 0.995 }}
-                    transition={tFast}
-                    key={t.id}
-                    onClick={() => toggleTask(t.id)}
-                    className={`w-full text-left py-3 flex items-center gap-3 ${focus}`}
-                  >
-                    {t.done ? (
-                      <CheckCircle2 className="h-5 w-5 text-white drop-shadow-[0_0_8px_rgba(255,255,255,.35)]" />
-                    ) : (
-                      <Circle className="h-5 w-5 text-white/80" />
-                    )}
-                    <div className="min-w-0 flex-1">
-                      <div
-                        className={`font-medium ${t.done ? "line-through text-white/70" : "text-white"}`}
-                      >
-                        {t.title}
+                  <div key={t.id} className="flex items-center gap-3 py-3">
+                    <button
+                      onClick={() => toggleTask(t.id)}
+                      className="flex-shrink-0"
+                    >
+                      {t.done ? (
+                        <CheckCircle2 className="h-5 w-5 text-white drop-shadow-[0_0_8px_rgba(255,255,255,.35)]" />
+                      ) : (
+                        <Circle className="h-5 w-5 text-white/80" />
+                      )}
+                    </button>
+                    <a
+                      href={t.projectId ? `/projects/${t.projectId}` : "#"}
+                      className={`flex-1 flex items-center gap-3 cursor-pointer hover:bg-white/5 -mx-2 px-2 rounded-lg transition-colors ${focus}`}
+                    >
+                      <div className="min-w-0 flex-1">
+                        <div
+                          className={`font-medium ${t.done ? "line-through text-white/70" : "text-white"}`}
+                        >
+                          {t.title}
+                        </div>
+                        <div className="text-xs text-white/85 mt-0.5 flex items-center gap-2">
+                          <Badge>{t.project}</Badge>
+                          <span className="inline-flex items-center gap-1">
+                            <Clock className="h-3 w-3" /> {t.due}
+                          </span>
+                        </div>
                       </div>
-                      <div className="text-xs text-white/85 mt-0.5 flex items-center gap-2">
-                        <Badge>{t.project}</Badge>
-                        <span className="inline-flex items-center gap-1">
-                          <Clock className="h-3 w-3" /> {t.due}
-                        </span>
-                      </div>
-                    </div>
-                    <ChevronRight className="h-4 w-4 text-white/60" />
-                  </motion.button>
+                      <ChevronRight className="h-4 w-4 text-white/60" />
+                    </a>
+                  </div>
                 ))
               )}
             </div>
