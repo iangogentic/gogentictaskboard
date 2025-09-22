@@ -256,15 +256,15 @@ export class AgentEngine {
         step.completedAt = new Date();
 
         // Log the error
-        await AuditLogger.logError(
+        await AuditLogger.logFailure(
           this.session.userId,
           "tool_execution_failed",
           "tool",
+          toolError.message,
           step.tool,
           {
             sessionId: this.session.id,
             stepId: step.id,
-            error: toolError.message,
             duration: Date.now() - startTime,
           }
         );
