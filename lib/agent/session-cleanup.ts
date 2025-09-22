@@ -92,10 +92,8 @@ export class SessionCleanup {
         },
         data: {
           state: "failed",
-          metadata: {
-            expiredAt: new Date().toISOString(),
-            reason: "Session expired due to inactivity",
-          },
+          error: "Session expired due to inactivity",
+          updatedAt: new Date(),
         },
       });
 
@@ -137,11 +135,8 @@ export class SessionCleanup {
         where: { id: sessionId },
         data: {
           state: "failed",
-          metadata: {
-            ...((session.metadata as any) || {}),
-            cleanedUp: new Date().toISOString(),
-            reason: "Manual cleanup",
-          },
+          error: "Manual cleanup",
+          updatedAt: new Date(),
         },
       });
 
