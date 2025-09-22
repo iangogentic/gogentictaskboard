@@ -125,13 +125,13 @@ export default function AgentSidePanel({
 
   return (
     <>
-      {/* Toggle Button - Minimal */}
+      {/* Toggle Button - Glass */}
       <motion.button
         onClick={onToggle}
-        className={`fixed right-0 top-1/2 -translate-y-1/2 z-50 p-2.5 backdrop-blur-xl border transition-all duration-300 rounded-l-xl ${
+        className={`fixed right-0 top-1/2 -translate-y-1/2 z-50 p-3 backdrop-blur-2xl border transition-all duration-300 rounded-l-2xl shadow-xl ${
           clarity
-            ? "bg-black/20 border-white/20 text-black/50 hover:text-black/70"
-            : "bg-white/5 border-white/10 text-white/50 hover:text-white/70"
+            ? "bg-black/40 border-white/30 text-black/60 hover:text-black/80 hover:bg-black/50"
+            : "bg-white/10 border-white/20 text-white/60 hover:text-white/80 hover:bg-white/15"
         }`}
         whileHover={{ x: -2 }}
         whileTap={{ scale: 0.95 }}
@@ -158,42 +158,53 @@ export default function AgentSidePanel({
         style={{ minWidth: isOpen ? "380px" : "0px" }}
       >
         <div className="w-[380px] h-full flex flex-col relative">
-          {/* Minimal glass background */}
+          {/* High quality glass background */}
           <div
             className={`absolute inset-0 ${
-              clarity ? "bg-black/20" : "bg-white/[0.02]"
+              clarity
+                ? "bg-black/40 shadow-[inset_0_1px_0_rgba(255,255,255,.35),0_20px_40px_rgba(0,0,0,.25)]"
+                : "bg-black/30 shadow-[inset_0_1px_0_rgba(255,255,255,.15),0_10px_30px_rgba(0,0,0,.35)]"
             }`}
           />
-          <div className="absolute inset-0 backdrop-blur-xl" />
+          <div className="absolute inset-0 backdrop-blur-2xl" />
+
+          {/* Top highlight line */}
+          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent" />
 
           {/* Content wrapper */}
           <div className="relative z-10 h-full flex flex-col">
-            {/* Minimal Header */}
+            {/* Glass Header */}
             <div
               className={`p-4 flex items-center justify-between flex-shrink-0 border-b ${
-                clarity ? "border-white/10" : "border-white/5"
+                clarity ? "border-white/20" : "border-white/10"
               }`}
             >
               <div className="flex items-center gap-2">
-                <MessageSquare
-                  className={`w-4 h-4 ${
-                    clarity ? "text-black/40" : "text-white/40"
-                  }`}
-                />
-                <span
-                  className={`text-xs font-light ${
-                    clarity ? "text-black/60" : "text-white/60"
+                <div
+                  className={`p-1.5 rounded-lg ${
+                    clarity ? "bg-white/10" : "bg-white/5"
                   }`}
                 >
-                  AI
+                  <MessageSquare
+                    className={`w-3.5 h-3.5 ${
+                      clarity ? "text-black/60" : "text-white/60"
+                    }`}
+                  />
+                </div>
+                <span
+                  className={`text-sm font-medium ${
+                    clarity ? "text-black/70" : "text-white/70"
+                  }`}
+                >
+                  AI Assistant
                 </span>
               </div>
               <button
                 onClick={onToggle}
                 className={`p-1.5 rounded-lg transition-all duration-200 ${
                   clarity
-                    ? "hover:bg-black/5 text-black/40 hover:text-black/60"
-                    : "hover:bg-white/5 text-white/40 hover:text-white/60"
+                    ? "hover:bg-white/10 text-black/50 hover:text-black/70"
+                    : "hover:bg-white/5 text-white/50 hover:text-white/70"
                 }`}
                 aria-label="Close"
               >
@@ -201,16 +212,27 @@ export default function AgentSidePanel({
               </button>
             </div>
 
-            {/* Messages Container - Minimal */}
+            {/* Messages Container - Glass */}
             <div className="flex-1 overflow-y-auto p-4 space-y-3">
               {messages.length === 0 ? (
-                <div className="flex items-center justify-center h-full">
-                  <p
-                    className={`text-xs font-light ${
-                      clarity ? "text-black/30" : "text-white/30"
+                <div className="flex flex-col items-center justify-center h-full gap-3">
+                  <div
+                    className={`p-3 rounded-xl ${
+                      clarity ? "bg-white/10" : "bg-white/5"
                     }`}
                   >
-                    Ask me anything
+                    <Bot
+                      className={`w-8 h-8 ${
+                        clarity ? "text-black/30" : "text-white/30"
+                      }`}
+                    />
+                  </div>
+                  <p
+                    className={`text-xs ${
+                      clarity ? "text-black/50" : "text-white/50"
+                    }`}
+                  >
+                    How can I help you today?
                   </p>
                 </div>
               ) : (
@@ -222,20 +244,18 @@ export default function AgentSidePanel({
                     className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
                   >
                     <div
-                      className={`max-w-[90%] px-3 py-2 rounded-xl text-xs ${
+                      className={`max-w-[85%] px-3.5 py-2.5 rounded-2xl text-xs backdrop-blur-md border ${
                         msg.role === "user"
                           ? clarity
-                            ? "bg-black/10 text-black/70 ml-8"
-                            : "bg-white/[0.07] text-white/70 ml-8"
+                            ? "bg-black/20 border-white/20 text-black/80 ml-auto shadow-lg"
+                            : "bg-white/10 border-white/15 text-white/80 ml-auto shadow-lg"
                           : clarity
-                            ? "bg-black/5 text-black/60 mr-8"
-                            : "bg-white/[0.03] text-white/60 mr-8"
+                            ? "bg-white/15 border-white/15 text-black/70 mr-auto"
+                            : "bg-white/5 border-white/10 text-white/70 mr-auto"
                       }`}
                     >
-                      <div className="whitespace-pre-wrap font-light leading-relaxed">
-                        {msg.content.length > 200
-                          ? msg.content.substring(0, 200) + "..."
-                          : msg.content}
+                      <div className="whitespace-pre-wrap leading-relaxed">
+                        {msg.content}
                       </div>
                     </div>
                   </motion.div>
@@ -248,29 +268,32 @@ export default function AgentSidePanel({
                   className="flex justify-start"
                 >
                   <div
-                    className={`px-3 py-2 rounded-xl ${
-                      clarity ? "bg-black/5" : "bg-white/[0.03]"
+                    className={`px-3.5 py-2.5 rounded-2xl backdrop-blur-md border ${
+                      clarity
+                        ? "bg-white/15 border-white/15"
+                        : "bg-white/5 border-white/10"
                     }`}
                   >
-                    <div className="flex gap-1">
-                      <span
-                        className={`w-1.5 h-1.5 rounded-full animate-bounce ${
-                          clarity ? "bg-black/30" : "bg-white/30"
-                        }`}
-                        style={{ animationDelay: "0ms" }}
-                      ></span>
-                      <span
-                        className={`w-1.5 h-1.5 rounded-full animate-bounce ${
-                          clarity ? "bg-black/30" : "bg-white/30"
-                        }`}
-                        style={{ animationDelay: "150ms" }}
-                      ></span>
-                      <span
-                        className={`w-1.5 h-1.5 rounded-full animate-bounce ${
-                          clarity ? "bg-black/30" : "bg-white/30"
-                        }`}
-                        style={{ animationDelay: "300ms" }}
-                      ></span>
+                    <div className="flex gap-1.5 items-center">
+                      <div className="flex gap-1">
+                        <span
+                          className={`w-2 h-2 rounded-full animate-pulse ${
+                            clarity ? "bg-black/40" : "bg-white/40"
+                          }`}
+                        ></span>
+                        <span
+                          className={`w-2 h-2 rounded-full animate-pulse ${
+                            clarity ? "bg-black/40" : "bg-white/40"
+                          }`}
+                          style={{ animationDelay: "150ms" }}
+                        ></span>
+                        <span
+                          className={`w-2 h-2 rounded-full animate-pulse ${
+                            clarity ? "bg-black/40" : "bg-white/40"
+                          }`}
+                          style={{ animationDelay: "300ms" }}
+                        ></span>
+                      </div>
                     </div>
                   </div>
                 </motion.div>
@@ -278,17 +301,17 @@ export default function AgentSidePanel({
               <div ref={messagesEndRef} />
             </div>
 
-            {/* Quick Actions - Icon only, minimal */}
+            {/* Quick Actions - Glass buttons */}
             <div
-              className={`px-4 py-2 border-t flex-shrink-0 ${
-                clarity ? "border-white/10" : "border-white/5"
+              className={`px-4 py-3 border-t flex-shrink-0 ${
+                clarity ? "border-white/20" : "border-white/10"
               }`}
             >
-              <div className="flex justify-center gap-1">
-                {quickActions.map((action, idx) => (
+              <div className="flex justify-center gap-2">
+                {quickActions.slice(0, 5).map((action, idx) => (
                   <motion.button
                     key={idx}
-                    whileHover={{ scale: 1.1 }}
+                    whileHover={{ scale: 1.05, y: -1 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={async () => {
                       setInput(action.action);
@@ -300,10 +323,10 @@ export default function AgentSidePanel({
                           ?.click();
                       }, 100);
                     }}
-                    className={`p-2 rounded-lg transition-all duration-200 ${
+                    className={`p-2 rounded-xl backdrop-blur-md border transition-all duration-200 ${
                       clarity
-                        ? "hover:bg-black/5 text-black/30 hover:text-black/50"
-                        : "hover:bg-white/5 text-white/30 hover:text-white/50"
+                        ? "bg-white/10 border-white/15 hover:bg-white/15 text-black/50 hover:text-black/70"
+                        : "bg-white/5 border-white/10 hover:bg-white/10 text-white/50 hover:text-white/70"
                     }`}
                     title={action.label}
                   >
@@ -313,10 +336,12 @@ export default function AgentSidePanel({
               </div>
             </div>
 
-            {/* Input Area - Minimal */}
+            {/* Input Area - Glass */}
             <div
-              className={`p-3 border-t flex-shrink-0 ${
-                clarity ? "border-white/10" : "border-white/5"
+              className={`p-3.5 border-t flex-shrink-0 ${
+                clarity
+                  ? "border-white/20 bg-black/10"
+                  : "border-white/10 bg-white/[0.02]"
               }`}
             >
               <div className="flex gap-2 items-center">
@@ -326,10 +351,10 @@ export default function AgentSidePanel({
                   onChange={(e) => setInput(e.target.value)}
                   onKeyPress={(e) => e.key === "Enter" && handleSend()}
                   placeholder="Type a message..."
-                  className={`flex-1 px-3 py-2 rounded-lg focus:outline-none transition-all duration-200 text-sm ${
+                  className={`flex-1 px-3.5 py-2.5 rounded-xl backdrop-blur-md focus:outline-none transition-all duration-200 text-sm border ${
                     clarity
-                      ? "bg-black/5 border border-white/10 text-black/70 placeholder-black/30 focus:bg-black/10 focus:border-white/20"
-                      : "bg-white/[0.03] border border-white/5 text-white/70 placeholder-white/20 focus:bg-white/[0.05] focus:border-white/10"
+                      ? "bg-white/15 border-white/20 text-black/80 placeholder-black/40 focus:bg-white/20 focus:border-white/30"
+                      : "bg-white/5 border-white/10 text-white/80 placeholder-white/30 focus:bg-white/10 focus:border-white/20"
                   }`}
                   disabled={isLoading}
                 />
@@ -338,10 +363,10 @@ export default function AgentSidePanel({
                   whileTap={{ scale: 0.95 }}
                   onClick={handleSend}
                   disabled={isLoading || !input.trim()}
-                  className={`p-2 rounded-lg transition-all duration-200 disabled:opacity-20 ${
+                  className={`p-2.5 rounded-xl backdrop-blur-md border transition-all duration-200 disabled:opacity-30 ${
                     clarity
-                      ? "bg-black/10 hover:bg-black/15 text-black/40 hover:text-black/60"
-                      : "bg-white/[0.05] hover:bg-white/[0.08] text-white/40 hover:text-white/60"
+                      ? "bg-white/15 border-white/20 hover:bg-white/20 text-black/60 hover:text-black/80"
+                      : "bg-white/10 border-white/15 hover:bg-white/15 text-white/60 hover:text-white/80"
                   }`}
                   aria-label="Send"
                 >
