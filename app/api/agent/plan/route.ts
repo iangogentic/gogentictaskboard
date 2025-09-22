@@ -9,7 +9,7 @@ const agentService = AgentService.getInstance();
 // Generate a plan for a request
 export async function POST(request: NextRequest) {
   try {
-    const authSession = await getServerSession();
+    const authSession = await getServerSession(authOptions);
     if (!authSession?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }

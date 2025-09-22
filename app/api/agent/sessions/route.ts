@@ -9,7 +9,7 @@ const agentService = AgentService.getInstance();
 // Create a new agent session
 export async function POST(request: NextRequest) {
   try {
-    const authSession = await getServerSession();
+    const authSession = await getServerSession(authOptions);
     if (!authSession?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
 // List user's agent sessions
 export async function GET(request: NextRequest) {
   try {
-    const authSession = await getServerSession();
+    const authSession = await getServerSession(authOptions);
     if (!authSession?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }

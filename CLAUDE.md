@@ -71,7 +71,7 @@ Activate and debug the existing agent system to enable:
     - `planner.ts` - GPT-4 planning (exists)
     - `service.ts` - Orchestration (exists)
     - 11 total agent files implemented
-  - ✅ 33 tools defined and imported
+  - ✅ ~21 tools actually working (some commented out)
   - ✅ 11 API endpoints created
   - ⚠️ TypeScript compilation issues (import paths)
   - ❌ Never tested - Database tables empty:
@@ -340,7 +340,7 @@ Empty tables (14 total):
 | Portfolio    | 2     | Portfolio operations                                         |
 | Others       | 10+   | deliverables, updates, saved-views, health, etc.             |
 
-## Agent Tool Registry (33 tools)
+## Agent Tool Registry (~21 working tools)
 
 ### Tool Categories
 

@@ -480,8 +480,8 @@ export class ToolRegistry {
       ragIndexDocument,
 
       // New comprehensive integration tools
-      ...slackTools, // 5 Slack tools: sendMessage, linkProject, dailySummary, listChannels, getUserInfo
-      ...driveTools, // 8 Drive tools: upload, download, create, share, search, list, move, delete
+      ...slackTools, // 4 Slack tools: sendMessage, linkProject, dailySummary, listChannels (getUserInfo commented out)
+      ...driveTools, // 7 Drive tools: upload, download, create, share, search, list, delete (move not implemented)
       ...ragTools, // 3 RAG tools: sync, search, index
       ...workflowTools, // 5 Workflow tools: create, execute, schedule, list, templates
     ]);
