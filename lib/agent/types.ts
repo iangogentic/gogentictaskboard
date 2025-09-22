@@ -117,6 +117,7 @@ export interface AgentContext {
   };
   permissions: string[];
   variables: Record<string, any>;
+  traceId?: string;
 }
 
 export interface AgentMessage {
