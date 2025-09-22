@@ -7,6 +7,7 @@ import {
 } from "./types";
 import { AgentEngine } from "./engine";
 import { AgentPlanner } from "./planner";
+import { toolRegistry } from "./tool-registry";
 import { prisma } from "@/lib/prisma";
 import { AuditLogger } from "@/lib/audit";
 import { v4 as uuidv4 } from "uuid";
@@ -241,6 +242,11 @@ export class AgentService {
   // Get session status
   async getSessionStatus(sessionId: string): Promise<AgentSession | null> {
     return await AgentEngine.loadSession(sessionId);
+  }
+
+  // Get tool by name
+  getToolByName(name: string) {
+    return toolRegistry.get(name);
   }
 
   // List user sessions

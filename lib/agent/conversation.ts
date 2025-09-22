@@ -240,6 +240,26 @@ export class ConversationManager {
   }
 
   /**
+   * Update conversation metadata
+   */
+  async updateConversationMetadata(
+    conversationId: string,
+    metadata: any
+  ): Promise<void> {
+    try {
+      await prisma.conversation.update({
+        where: { id: conversationId },
+        data: {
+          metadata: metadata as any,
+          updatedAt: new Date(),
+        },
+      });
+    } catch (error) {
+      console.error("Error updating conversation metadata:", error);
+    }
+  }
+
+  /**
    * Get conversation context with RAG memory
    */
   async getEnhancedContext(
