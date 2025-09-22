@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
 import { prisma } from "@/lib/prisma";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { getServerSession, authOptions } from "@/lib/auth";
 import {
   executePrismaOperation,
   executeMultipleOperations,
