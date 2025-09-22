@@ -1,4 +1,4 @@
-import prisma from "@/lib/prisma";
+import { prisma } from "@/lib/prisma";
 import { agentMemory } from "./memory";
 import { Conversation, Message } from "@prisma/client";
 import OpenAI from "openai";
@@ -25,43 +25,80 @@ export class ConversationManager {
     let conversation: Conversation;
     let messages: Message[];
 
-    if (conversationId) {
-      // Continue existing conversation
-      const existing = await prisma.conversation.findUnique({
-        where: { id: conversationId },
-        include: {
-          Message: {
-            orderBy: { createdAt: "asc" },
-            take: 50, // Last 50 messages for context
+    try {
+      if (conversationId) {
+        // Continue existing conversation
+        // Check if conversation exists with specific fields
+        const existing = (await prisma.conversation.findUnique({
+          where: { id: conversationId },
+          select: {
+            id: true,
+            userId: true,
+            projectId: true,
+            title: true,
+            createdAt: true,
+            updatedAt: true,
           },
-        },
-      });
+        })) as any;
 
-      if (!existing || existing.userId !== userId) {
-        throw new Error("Conversation not found or access denied");
+        // Get messages separately to avoid relation errors
+        messages = existing
+          ? await prisma.message.findMany({
+              where: { conversationId },
+              orderBy: { createdAt: "asc" },
+              take: 50,
+            })
+          : [];
+
+        if (!existing || existing.userId !== userId) {
+          throw new Error("Conversation not found or access denied");
+        }
+
+        conversation = existing;
+      } else {
+        // Create new conversation
+        const { randomUUID } = require("crypto");
+        console.log(
+          "[ConversationManager] Creating new conversation for user:",
+          userId
+        );
+
+        // Create conversation with specific fields
+        const newConv = await prisma.conversation.create({
+          data: {
+            id: randomUUID(),
+            userId,
+            projectId: projectId || null,
+            title: `Conversation ${new Date().toLocaleString()}`,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
+          select: {
+            id: true,
+            userId: true,
+            projectId: true,
+            title: true,
+            createdAt: true,
+            updatedAt: true,
+          },
+        });
+
+        console.log("[ConversationManager] Created conversation:", newConv.id);
+        conversation = newConv as any;
+        messages = [];
       }
-
-      conversation = existing;
-      messages = existing.Message;
-    } else {
-      // Create new conversation
-      const { randomUUID } = require("crypto");
-      conversation = await prisma.conversation.create({
-        data: {
-          id: randomUUID(),
-          userId,
-          projectId,
-          title: `Conversation ${new Date().toLocaleString()}`,
-          updatedAt: new Date(),
-        },
-      });
-      messages = [];
+    } catch (error) {
+      console.error(
+        "[ConversationManager] Error in getOrCreateConversation:",
+        error
+      );
+      throw error;
     }
 
     return {
       conversation,
       messages,
-      summary: conversation.summary || undefined,
+      summary: undefined, // Skip summary field entirely
     };
   }
 
@@ -74,24 +111,38 @@ export class ConversationManager {
     content: string,
     metadata?: any
   ): Promise<Message> {
-    const { randomUUID } = require("crypto");
-    const message = await prisma.message.create({
-      data: {
-        id: randomUUID(),
-        conversationId,
-        role,
-        content,
-        metadata: metadata || {},
-      },
-    });
+    try {
+      const { randomUUID } = require("crypto");
+      console.log(
+        "[ConversationManager] Adding message to conversation:",
+        conversationId
+      );
 
-    // Update conversation's updatedAt
-    await prisma.conversation.update({
-      where: { id: conversationId },
-      data: { updatedAt: new Date() },
-    });
+      const message = await prisma.message.create({
+        data: {
+          id: randomUUID(),
+          conversationId,
+          role,
+          content,
+          metadata: metadata || null,
+          createdAt: new Date(),
+        },
+      });
 
-    return message;
+      console.log("[ConversationManager] Created message:", message.id);
+
+      // Update conversation's updatedAt with specific fields
+      await prisma.conversation.update({
+        where: { id: conversationId },
+        data: { updatedAt: new Date() },
+        select: { id: true }, // Just select id to avoid field issues
+      });
+
+      return message;
+    } catch (error) {
+      console.error("[ConversationManager] Error in addMessage:", error);
+      throw error;
+    }
   }
 
   /**
@@ -171,11 +222,15 @@ export class ConversationManager {
       const summary =
         response.choices[0]?.message?.content || "Unable to generate summary";
 
-      // Update conversation with summary
-      await prisma.conversation.update({
-        where: { id: conversationId },
-        data: { summary },
-      });
+      // Update conversation with summary if field exists
+      try {
+        await prisma.conversation.update({
+          where: { id: conversationId },
+          data: { summary } as any,
+        });
+      } catch (e) {
+        console.log("Could not update summary - field may not exist");
+      }
 
       return summary;
     } catch (error) {
@@ -233,17 +288,25 @@ ${ragContext}
     limit: number = 10
   ): Promise<Conversation[]> {
     // Simple text search - could be enhanced with vector search
-    return await prisma.conversation.findMany({
+    return (await prisma.conversation.findMany({
       where: {
         userId,
         OR: [
           { title: { contains: query, mode: "insensitive" } },
-          { summary: { contains: query, mode: "insensitive" } },
+          // summary field may not exist
         ],
       },
       orderBy: { updatedAt: "desc" },
       take: limit,
-    });
+      select: {
+        id: true,
+        userId: true,
+        projectId: true,
+        title: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    })) as any;
   }
 
   /**
@@ -259,11 +322,19 @@ ${ragContext}
       where.projectId = projectId;
     }
 
-    return await prisma.conversation.findMany({
+    return (await prisma.conversation.findMany({
       where,
       orderBy: { updatedAt: "desc" },
       take: limit,
-    });
+      select: {
+        id: true,
+        userId: true,
+        projectId: true,
+        title: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    })) as any;
   }
 
   /**
@@ -275,6 +346,10 @@ ${ragContext}
   ): Promise<void> {
     const conversation = await prisma.conversation.findUnique({
       where: { id: conversationId },
+      select: {
+        id: true,
+        userId: true,
+      },
     });
 
     if (!conversation || conversation.userId !== userId) {

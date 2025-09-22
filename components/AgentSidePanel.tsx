@@ -14,9 +14,12 @@ import {
   Search,
   ChevronLeft,
   MessageSquare,
+  Plus,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTheme } from "@/lib/themes/provider";
+import { useUser } from "@/lib/user-context";
+import { useSession } from "next-auth/react";
 
 interface AgentSidePanelProps {
   isOpen: boolean;
@@ -28,6 +31,8 @@ export default function AgentSidePanel({
   onToggle,
 }: AgentSidePanelProps) {
   const { clarity } = useTheme();
+  const { currentUser } = useUser();
+  const { data: session } = useSession();
   const [messages, setMessages] = useState<
     Array<{ role: string; content: string }>
   >([]);
@@ -43,6 +48,41 @@ export default function AgentSidePanel({
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  // Load previous conversation on mount
+  useEffect(() => {
+    const savedConversationId = localStorage.getItem("currentConversationId");
+    if (savedConversationId) {
+      setConversationId(savedConversationId);
+      // Optionally load conversation history from API
+      loadConversationHistory(savedConversationId);
+    }
+  }, []);
+
+  const loadConversationHistory = async (convId: string) => {
+    try {
+      const response = await fetch(`/api/conversations/${convId}/messages`);
+      if (response.ok) {
+        const data = await response.json();
+        if (data.messages && data.messages.length > 0) {
+          setMessages(
+            data.messages.map((msg: any) => ({
+              role: msg.role,
+              content: msg.content,
+            }))
+          );
+        }
+      }
+    } catch (error) {
+      console.error("Failed to load conversation history:", error);
+    }
+  };
+
+  const startNewConversation = () => {
+    setConversationId(null);
+    setMessages([]);
+    localStorage.removeItem("currentConversationId");
+  };
 
   const quickActions = [
     { icon: Zap, label: "Tasks", action: "Show me all tasks" },
@@ -79,7 +119,7 @@ export default function AgentSidePanel({
         content: msg.content,
       }));
 
-      // Use the more powerful chat-v2 endpoint
+      // Use the more powerful chat-v2 endpoint with conversation persistence
       const response = await fetch("/api/agent/chat-v2", {
         method: "POST",
         headers: {
@@ -89,6 +129,7 @@ export default function AgentSidePanel({
           message: userMessage,
           projectId,
           history,
+          conversationId,
         }),
       });
 
@@ -98,6 +139,12 @@ export default function AgentSidePanel({
       }
 
       const data = await response.json();
+
+      // Update conversation ID if this is a new conversation
+      if (data.conversationId && !conversationId) {
+        setConversationId(data.conversationId);
+        localStorage.setItem("currentConversationId", data.conversationId);
+      }
 
       setMessages((prev) => [
         ...prev,
@@ -173,7 +220,7 @@ export default function AgentSidePanel({
 
           {/* Content wrapper */}
           <div className="relative z-10 h-full flex flex-col">
-            {/* Glass Header */}
+            {/* Glass Header with Conversation Controls */}
             <div
               className={`p-4 flex items-center justify-between flex-shrink-0 border-b ${
                 clarity ? "border-white/20" : "border-white/10"
@@ -198,18 +245,47 @@ export default function AgentSidePanel({
                 >
                   AI Assistant
                 </span>
+                {conversationId && (
+                  <span
+                    className={`text-xs px-2 py-0.5 rounded-lg backdrop-blur-sm ${
+                      clarity
+                        ? "bg-white/10 text-black/40"
+                        : "bg-white/5 text-white/30"
+                    }`}
+                  >
+                    Session Active
+                  </span>
+                )}
               </div>
-              <button
-                onClick={onToggle}
-                className={`p-1.5 rounded-lg transition-all duration-200 ${
-                  clarity
-                    ? "hover:bg-white/10 text-black/50 hover:text-black/70"
-                    : "hover:bg-white/5 text-white/50 hover:text-white/70"
-                }`}
-                aria-label="Close"
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
+              <div className="flex items-center gap-1.5">
+                {conversationId && (
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={startNewConversation}
+                    className={`p-1.5 rounded-lg transition-all duration-200 ${
+                      clarity
+                        ? "hover:bg-white/10 text-black/50 hover:text-black/70"
+                        : "hover:bg-white/5 text-white/50 hover:text-white/70"
+                    }`}
+                    aria-label="New Conversation"
+                    title="Start New Conversation"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                  </motion.button>
+                )}
+                <button
+                  onClick={onToggle}
+                  className={`p-1.5 rounded-lg transition-all duration-200 ${
+                    clarity
+                      ? "hover:bg-white/10 text-black/50 hover:text-black/70"
+                      : "hover:bg-white/5 text-white/50 hover:text-white/70"
+                  }`}
+                  aria-label="Close"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
             </div>
 
             {/* Messages Container - Glass */}
@@ -234,6 +310,15 @@ export default function AgentSidePanel({
                   >
                     How can I help you today?
                   </p>
+                  {conversationId && (
+                    <p
+                      className={`text-xs ${
+                        clarity ? "text-black/40" : "text-white/40"
+                      }`}
+                    >
+                      Continuing session...
+                    </p>
+                  )}
                 </div>
               ) : (
                 messages.map((msg, idx) => (

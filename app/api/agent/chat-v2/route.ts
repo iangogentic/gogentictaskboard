@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
 import { prisma } from "@/lib/prisma";
 import { toolRegistry } from "@/lib/agent/tool-registry";
+import { conversationManager } from "@/lib/agent/conversation";
+import { auth } from "@/auth";
 
 // Use Node.js runtime to avoid Edge Function size limits
 export const runtime = "nodejs";
@@ -416,10 +418,35 @@ async function callFunction(name: string, args: any) {
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
-    const { message, projectId, history = [] } = body;
+    // Get the actual user from session (works with both Google OAuth and Credentials)
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
-    // Build messages array with system prompt
+    const body = await req.json();
+    const { message, projectId, history = [], conversationId } = body;
+
+    // Use the actual user ID from session
+    const userId = session.user.id;
+
+    // Get or create conversation
+    const conversationContext =
+      await conversationManager.getOrCreateConversation(
+        userId,
+        projectId,
+        conversationId
+      );
+
+    // Store the user message in the conversation
+    await conversationManager.addMessage(
+      conversationContext.conversation.id,
+      "user",
+      message,
+      { projectId }
+    );
+
+    // Build messages array with system prompt and conversation history
     const messages: OpenAI.Chat.ChatCompletionMessageParam[] = [
       {
         role: "system",
@@ -479,9 +506,30 @@ If asked about specific projects or tasks, always fetch the latest data first be
       responseMessage = secondCompletion.choices[0].message;
     }
 
+    // Store the assistant's response in the conversation
+    const assistantResponse =
+      responseMessage.content || "I couldn't generate a response.";
+    await conversationManager.addMessage(
+      conversationContext.conversation.id,
+      "assistant",
+      assistantResponse,
+      { functionCalled: responseMessage.function_call ? true : false }
+    );
+
+    // Update conversation title if this is the first exchange
+    if (conversationContext.messages.length === 0) {
+      const title =
+        message.length > 50 ? message.substring(0, 50) + "..." : message;
+      await conversationManager.updateConversationTitle(
+        conversationContext.conversation.id,
+        title
+      );
+    }
+
     return NextResponse.json({
-      response: responseMessage.content || "I couldn't generate a response.",
+      response: assistantResponse,
       functionCalled: responseMessage.function_call ? true : false,
+      conversationId: conversationContext.conversation.id,
     });
   } catch (error: any) {
     console.error("Chat error:", error);
