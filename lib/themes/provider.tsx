@@ -48,14 +48,10 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
         setTheme(savedTheme);
       }
 
-      // Load saved clarity setting
-      // Default to false (standard contrast) for all new users
-      if (savedClarity === "true") {
-        setClarity(true); // High contrast mode
-      } else {
-        // Default to standard contrast (false) for new users or if not set
-        setClarity(false);
-      }
+      // Force reset to standard contrast for all users
+      // Remove old setting and set to false
+      localStorage.removeItem("gogentic:clarity");
+      setClarity(false); // Always use standard contrast
 
       if (savedBackgroundMode === "light" || savedBackgroundMode === "dark") {
         setBackgroundMode(savedBackgroundMode);
@@ -74,14 +70,14 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
     }
   }, [theme]);
 
-  // Save clarity to localStorage when it changes
-  useEffect(() => {
-    try {
-      localStorage.setItem("gogentic:clarity", clarity.toString());
-    } catch (error) {
-      console.warn("Failed to save clarity to localStorage:", error);
-    }
-  }, [clarity]);
+  // Disabled saving clarity - always using standard contrast
+  // useEffect(() => {
+  //   try {
+  //     localStorage.setItem("gogentic:clarity", clarity.toString());
+  //   } catch (error) {
+  //     console.warn("Failed to save clarity to localStorage:", error);
+  //   }
+  // }, [clarity]);
 
   // Save background mode to localStorage when it changes
   useEffect(() => {
