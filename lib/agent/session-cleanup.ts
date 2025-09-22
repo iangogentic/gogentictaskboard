@@ -4,7 +4,7 @@
  */
 
 import { prisma } from "@/lib/prisma";
-import { AuditLogger } from "@/lib/audit-logger";
+import { AuditLogger } from "@/lib/audit";
 
 const SESSION_EXPIRY_HOURS = 24; // Sessions expire after 24 hours
 const CLEANUP_INTERVAL_MINUTES = 60; // Run cleanup every hour
@@ -101,7 +101,7 @@ export class SessionCleanup {
 
       // Log the cleanup
       for (const session of expiredSessions) {
-        await AuditLogger.log(
+        await AuditLogger.logSuccess(
           session.userId,
           "session_expired",
           "session",
@@ -145,7 +145,7 @@ export class SessionCleanup {
         },
       });
 
-      await AuditLogger.log(
+      await AuditLogger.logSuccess(
         session.userId,
         "session_cleanup",
         "session",
