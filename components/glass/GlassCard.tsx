@@ -22,7 +22,7 @@ export function GlassCard({
   ...motionProps
 }: GlassCardProps) {
   const pane = clarity
-    ? "bg-white/14 border-white/30 backdrop-blur-2xl shadow-[inset_0_1px_0_rgba(255,255,255,.35),0_20px_40px_rgba(0,0,0,.25)]"
+    ? "bg-black/40 border-white/30 backdrop-blur-2xl shadow-[inset_0_1px_0_rgba(255,255,255,.35),0_20px_40px_rgba(0,0,0,.25)]"
     : "bg-black/30 border-white/20 backdrop-blur-3xl shadow-[inset_0_1px_0_rgba(255,255,255,.15),0_10px_30px_rgba(0,0,0,.35)]";
 
   return (
