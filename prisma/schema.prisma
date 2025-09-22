@@ -40,6 +40,7 @@ model User {
   timeEntries   TimeEntry[]
   updates       Update[]
   projectsAsDev Project[]       @relation("ProjectDevs")
+  conversations Conversation[]
 }
 
 model Account {
@@ -239,6 +240,7 @@ model Conversation {
   metadata  Json?
   createdAt DateTime  @default(now())
   updatedAt DateTime
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   Message   Message[]
 
   @@index([projectId])
