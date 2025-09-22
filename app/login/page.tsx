@@ -71,15 +71,17 @@ export default function LoginPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.3 }}
             >
-              <img
-                src="/Gogentic.ai.png"
-                alt="Gogentic.ai"
-                className="h-12 w-auto mx-auto mb-6 opacity-90"
-              />
-              <h1 className="text-2xl font-bold text-white/90 mb-2">
+              <div className="mb-6">
+                <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+                  GoGentic Portal
+                </h1>
+              </div>
+              <h2 className="text-2xl font-bold text-white/90 mb-2">
                 Welcome Back
-              </h1>
-              <p className="text-white/70">Sign in to your account</p>
+              </h2>
+              <p className="text-white/70">
+                Sign in to continue to your dashboard
+              </p>
             </motion.div>
 
             <div className="space-y-6">
