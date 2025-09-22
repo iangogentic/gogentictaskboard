@@ -28,7 +28,7 @@ interface ThemeProviderProps {
 
 export function ThemeProvider({ children }: ThemeProviderProps) {
   const [theme, setTheme] = useState<ThemeName>("AURORA");
-  const [clarity, setClarity] = useState(true);
+  const [clarity, setClarity] = useState(true); // Default to standard contrast
   const [backgroundMode, setBackgroundMode] = useState<"dark" | "light">(
     "dark"
   );
@@ -48,8 +48,13 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
         setTheme(savedTheme);
       }
 
-      if (savedClarity !== null) {
-        setClarity(savedClarity === "true");
+      // Only override clarity if explicitly set to false
+      // Default to true (standard contrast) for all new users
+      if (savedClarity === "false") {
+        setClarity(false);
+      } else {
+        // Keep default true or set to true if any other value
+        setClarity(true);
       }
 
       if (savedBackgroundMode === "light" || savedBackgroundMode === "dark") {
