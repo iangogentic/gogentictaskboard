@@ -91,24 +91,43 @@ export async function POST(req: NextRequest) {
         response = `Operation failed: ${result.summary || "Unknown error"}`;
       }
     } else {
-      // For mutations, describe the plan and ask for confirmation
-      response = `I can help you with that. Here's what I'll do:\n\n`;
-      response += `**${plan.title}**\n`;
-      response += `${plan.description}\n\n`;
-      response += `Steps:\n`;
-      plan.steps.forEach((step, index) => {
-        response += `${index + 1}. ${step.title}\n`;
-      });
-      response += `\nEstimated time: ${plan.estimatedDuration} minutes\n`;
-
-      if (plan.risks && plan.risks.length > 0) {
-        response += `\nConsiderations: ${plan.risks.join(", ")}\n`;
-      }
-
-      response += `\nTo execute this plan, please use the approval workflow or type "proceed" to continue.`;
-
-      // Store plan in session for later execution
+      // For mutations, auto-approve and execute with user consent implied
       await agentService.approvePlan(agentSessionId, session.user.id);
+
+      // Execute the approved plan
+      const result = await agentService.executePlan(agentSessionId);
+
+      if (result.success) {
+        response = `✅ ${result.summary || "Operation completed successfully."}\n\n`;
+
+        // Add detailed results if available
+        if (result.steps && result.steps.length > 0) {
+          response += `**Completed steps:**\n`;
+          result.steps.forEach((step, index) => {
+            if (step.status === "completed") {
+              response += `${index + 1}. ✓ ${step.title}\n`;
+            }
+          });
+
+          const outputs = result.steps
+            .filter((s) => s.status === "completed" && s.output)
+            .map((s) => {
+              if (typeof s.output === "object") {
+                return JSON.stringify(s.output, null, 2);
+              }
+              return s.output;
+            });
+
+          if (outputs.length > 0) {
+            response += `\n**Results:**\n${outputs.join("\n")}`;
+          }
+        }
+      } else {
+        response = `❌ Operation failed: ${result.summary || "Unknown error"}\n`;
+        if (result.error) {
+          response += `\nError details: ${result.error}`;
+        }
+      }
     }
 
     // Store assistant response
