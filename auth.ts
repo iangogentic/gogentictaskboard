@@ -72,22 +72,46 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         });
 
         if (existingUser) {
-          // Link the Google account to the existing user
-          await prisma.account.create({
-            data: {
-              userId: existingUser.id,
-              type: account.type!,
+          // Check if account already exists
+          const existingAccount = await prisma.account.findFirst({
+            where: {
               provider: account.provider,
               providerAccountId: account.providerAccountId,
-              refresh_token: account.refresh_token,
-              access_token: account.access_token,
-              expires_at: account.expires_at,
-              token_type: account.token_type,
-              scope: account.scope,
-              id_token: account.id_token,
-              session_state: account.session_state as string | null | undefined,
             },
           });
+
+          if (!existingAccount) {
+            // Link the Google account to the existing user
+            await prisma.account.create({
+              data: {
+                userId: existingUser.id,
+                type: account.type!,
+                provider: account.provider,
+                providerAccountId: account.providerAccountId,
+                refresh_token: account.refresh_token,
+                access_token: account.access_token,
+                expires_at: account.expires_at,
+                token_type: account.token_type,
+                scope: account.scope,
+                id_token: account.id_token,
+                session_state: account.session_state as
+                  | string
+                  | null
+                  | undefined,
+              },
+            });
+          } else {
+            // Update the existing account with new tokens
+            await prisma.account.update({
+              where: { id: existingAccount.id },
+              data: {
+                refresh_token: account.refresh_token,
+                access_token: account.access_token,
+                expires_at: account.expires_at,
+                id_token: account.id_token,
+              },
+            });
+          }
 
           // Update user info if needed
           if (!existingUser.name && user.name) {
