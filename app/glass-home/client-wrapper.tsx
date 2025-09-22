@@ -250,16 +250,6 @@ export default function ClientWrapper({
                     {pct}%
                   </span>
                 </div>
-                <button
-                  onClick={() => router.push("/my-work")}
-                  className={`inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium border ${
-                    clarity
-                      ? "bg-purple-500/20 text-white border-purple-400/40 hover:bg-purple-500/30"
-                      : "bg-purple-500/10 text-white border-purple-400/20 hover:bg-purple-500/20"
-                  } transition-all duration-200 ${focus}`}
-                >
-                  <Zap className="h-4 w-4" /> Focus Mode
-                </button>
               </div>
             </div>
 
