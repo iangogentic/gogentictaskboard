@@ -394,6 +394,48 @@ export class AgentEngine {
 
     if (!session) return null;
 
+    // Manually load user
+    const user = await prisma.user.findUnique({
+      where: { id: session.userId },
+    });
+
+    if (!user) return null;
+
+    // Manually load project if exists
+    let project = undefined;
+    if (session.projectId) {
+      const projectData = await prisma.project.findUnique({
+        where: { id: session.projectId },
+      });
+      if (projectData) {
+        project = {
+          id: projectData.id,
+          title: projectData.title,
+        };
+      }
+    }
+
+    // Load user's integration credentials
+    const integrations = await prisma.integrationCredential.findMany({
+      where: { userId: session.userId },
+    });
+
+    const context: AgentContext = {
+      user: {
+        id: user.id,
+        name: user.name || "Unknown",
+        email: user.email || "",
+        role: user.role || "user",
+      },
+      project,
+      integrations: {
+        slack: integrations.some((i) => i.type === "slack"),
+        googleDrive: integrations.some((i) => i.type === "google-drive"),
+      },
+      permissions: [],
+      traceId: `session_${sessionId}`,
+    };
+
     return {
       id: session.id,
       userId: session.userId,
@@ -401,7 +443,7 @@ export class AgentEngine {
       state: session.state as AgentState,
       plan: session.plan as any as AgentPlan | undefined,
       result: session.result as any as AgentResult | undefined,
-      context: {} as AgentContext, // context not stored in DB
+      context,
       startedAt: session.createdAt,
       error: session.error || undefined,
     };

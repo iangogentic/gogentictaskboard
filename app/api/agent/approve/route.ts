@@ -1,13 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { AuditLogger } from "@/lib/audit";
+import { getServerSession } from "@/lib/auth";
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
-    const { planId, sessionId, userId, approved, reason } = body;
+    // Get current user from session
+    const authSession = await getServerSession();
+    if (!authSession?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const userId = authSession.user.id;
 
-    if (!planId || !sessionId || !userId) {
+    const body = await req.json();
+    const { planId, sessionId, approved, reason } = body;
+
+    if (!planId || !sessionId) {
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 }
