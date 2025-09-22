@@ -363,48 +363,6 @@ export const driveTools: ToolDefinition[] = [
     },
   },
 
-  // TODO: Implement moveFile in GoogleDriveService
-  // {
-  //   name: "moveDriveFile",
-  //   description: "Move a file or folder to a different location in Google Drive",
-  //   schema: moveFileSchema,
-  //   mutates: true,
-  //   scopes: ["integration:drive", "file:write"],
-  //   handler: async (ctx, input) => {
-  //     try {
-  //       const integration = await prisma.integrationCredential.findFirst({
-  //         where: {
-  //           userId: ctx.userId,
-  //           type: "google_drive",
-  //         }
-  //       });
-
-  //       if (!integration) {
-  //         throw new Error("Google Drive not connected");
-  //       }
-
-  //       const drive = GoogleDriveService.getInstance();
-  //       const file = await drive.moveFile(
-  //         ctx.userId,
-  //         input.fileId,
-  //         input.newParentId,
-  //         input.oldParentId
-  //       );
-
-  //       return {
-  //         success: true,
-  //         fileId: file.id,
-  //         message: `File moved successfully`
-  //       };
-  //     } catch (error: any) {
-  //       return {
-  //         success: false,
-  //         error: error.message || "Failed to move file"
-  //       };
-  //     }
-  //   }
-  // },
-
   {
     name: "deleteDriveFile",
     description: "Delete a file or folder from Google Drive",

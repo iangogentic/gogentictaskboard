@@ -15,6 +15,7 @@ import { AuditLogger } from "@/lib/audit";
 import { checkPermissions } from "@/lib/rbac";
 import { z } from "zod";
 import { v4 as uuidv4 } from "uuid";
+import { withRetry, retryNetworkRequest } from "./retry-utils";
 
 export class AgentEngine {
   private session: AgentSession;
@@ -209,17 +210,67 @@ export class AgentEngine {
         }
       );
 
-      // Execute the tool
-      const result = await toolRegistry.execute(
-        step.tool,
-        toolContext,
-        validatedParams
-      );
+      // Execute the tool with error handling and retry logic
+      let result;
+      try {
+        // Use retry logic for network-based tools
+        const isNetworkTool =
+          step.tool.includes("slack") ||
+          step.tool.includes("drive") ||
+          step.tool.includes("rag");
 
-      // Update step with result
-      step.status = "completed";
-      step.result = { success: true, data: result };
-      step.completedAt = new Date();
+        if (isNetworkTool) {
+          result = await retryNetworkRequest(
+            () => toolRegistry.execute(step.tool, toolContext, validatedParams),
+            {
+              onRetry: (attempt, error) => {
+                console.log(
+                  `Retrying ${step.tool} (attempt ${attempt}): ${error.message}`
+                );
+                step.retryCount = (step.retryCount || 0) + 1;
+              },
+            }
+          );
+        } else {
+          result = await toolRegistry.execute(
+            step.tool,
+            toolContext,
+            validatedParams
+          );
+        }
+
+        // Update step with result
+        step.status = "completed";
+        step.result = { success: true, data: result };
+        step.completedAt = new Date();
+      } catch (toolError: any) {
+        // Handle tool execution failure
+        step.status = "failed";
+        step.result = {
+          success: false,
+          error: toolError.message || "Tool execution failed",
+          details: toolError.stack,
+        };
+        step.completedAt = new Date();
+
+        // Log the error
+        await AuditLogger.logError(
+          this.session.userId,
+          "tool_execution_failed",
+          "tool",
+          step.tool,
+          {
+            sessionId: this.session.id,
+            stepId: step.id,
+            error: toolError.message,
+            duration: Date.now() - startTime,
+          }
+        );
+
+        // Re-throw for higher-level handling
+        throw new Error(`Tool ${step.tool} failed: ${toolError.message}`);
+      }
+
       await this.saveSession();
 
       // Log successful execution

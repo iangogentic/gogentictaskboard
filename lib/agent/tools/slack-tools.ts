@@ -268,20 +268,4 @@ export const slackTools: ToolDefinition[] = [
       }
     },
   },
-
-  // TODO: Implement getSlackUserInfo once getUserByEmail and getUserInfo methods are added to SlackService
-  // {
-  //   name: "getSlackUserInfo",
-  //   description: "Get information about a Slack user",
-  //   schema: getUserInfoSchema,
-  //   mutates: false,
-  //   scopes: ["integration:slack"],
-  //   handler: async (ctx, input) => {
-  //     // Implementation pending - SlackService needs getUserByEmail and getUserInfo methods
-  //     return {
-  //       success: false,
-  //       error: "This feature is not yet implemented"
-  //     };
-  //   }
-  // }
 ];
