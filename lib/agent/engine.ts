@@ -249,7 +249,9 @@ export class AgentEngine {
         step.result = {
           success: false,
           error: toolError.message || "Tool execution failed",
-          details: toolError.stack,
+          metadata: {
+            stack: toolError.stack,
+          },
         };
         step.completedAt = new Date();
 
