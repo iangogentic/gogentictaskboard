@@ -431,7 +431,7 @@ export default function ClientWrapper({
 
             <div className="mt-4 pt-4 border-t border-white/10">
               <a
-                href="/tasks"
+                href="/my-work"
                 className="text-sm text-white/90 hover:text-white underline decoration-white/50"
               >
                 View all tasks →

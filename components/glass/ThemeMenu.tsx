@@ -77,7 +77,7 @@ export function ThemeMenu() {
     { href: "/", label: "Home", icon: Home },
     { href: "/dashboard", label: "Dashboard", icon: BarChart3 },
     { href: "/projects", label: "Projects", icon: FolderOpen },
-    { href: "/tasks", label: "Tasks", icon: FileText },
+    { href: "/my-work", label: "My Work", icon: FileText },
     ...(userRole === "admin" || userRole === "pm"
       ? [{ href: "/team", label: "Team", icon: Users }]
       : []),
