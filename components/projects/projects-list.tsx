@@ -9,6 +9,7 @@ import { SavedViews, SavedView } from "@/components/ui/saved-views";
 import { EmptyState } from "@/components/ui/empty-states";
 import { ProjectCardSkeleton } from "@/components/ui/skeletons";
 import { GlassCard, GlassButton, GlassInput } from "@/components/glass";
+import { useTheme } from "@/lib/themes/provider";
 import {
   Plus,
   GitBranch,
@@ -38,6 +39,12 @@ export function ProjectsList({
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
   const [customViews, setCustomViews] = useState<SavedView[]>([]);
   const [currentViewId, setCurrentViewId] = useState<string>("all");
+  const { clarity } = useTheme();
+
+  // Dynamic text colors based on theme
+  const textPrimary = clarity ? "text-black/90" : "text-white/90";
+  const textSecondary = clarity ? "text-black/70" : "text-white/70";
+  const textMuted = clarity ? "text-black/50" : "text-white/50";
 
   // Filter configuration
   const filters = [
@@ -241,8 +248,8 @@ export function ProjectsList({
         transition={{ duration: 0.6 }}
       >
         <div>
-          <h2 className="text-2xl font-bold text-white/90">Projects</h2>
-          <p className="mt-1 text-sm text-white/50">
+          <h2 className={`text-2xl font-bold ${textPrimary}`}>Projects</h2>
+          <p className={`mt-1 text-sm ${textMuted}`}>
             {filteredProjects.length} of {projects.length} projects
           </p>
         </div>
@@ -312,8 +319,12 @@ export function ProjectsList({
                     inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm transition-all duration-200
                     ${
                       isActive
-                        ? "bg-white/20 text-white border border-white/30"
-                        : "bg-white/5 text-white/70 border border-white/10 hover:bg-white/10 hover:text-white/90"
+                        ? clarity
+                          ? "bg-black/30 text-black border border-black/40"
+                          : "bg-white/20 text-white border border-white/30"
+                        : clarity
+                          ? "bg-black/10 text-black/70 border border-black/20 hover:bg-black/20 hover:text-black/90"
+                          : "bg-white/5 text-white/70 border border-white/10 hover:bg-white/10 hover:text-white/90"
                     }
                   `}
                 >
@@ -334,14 +345,14 @@ export function ProjectsList({
           transition={{ duration: 0.5, delay: 0.4 }}
         >
           <GlassCard className="p-12 text-center">
-            <div className="text-white/50 mb-4">
+            <div className={`${textMuted} mb-4`}>
               <Filter className="w-12 h-12 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-white/70">
+              <h3 className={`text-lg font-medium ${textSecondary}`}>
                 {searchQuery || activeFilters.length > 0
                   ? "No projects found"
                   : "No projects yet"}
               </h3>
-              <p className="text-white/50 mt-2">
+              <p className={`${textMuted} mt-2`}>
                 {searchQuery || activeFilters.length > 0
                   ? "Try adjusting your search or filters"
                   : "Create your first project to get started"}
@@ -383,7 +394,7 @@ export function ProjectsList({
                       )}
                       <Link
                         href={`/projects/${project.id}`}
-                        className="text-lg font-semibold text-white/90 hover:text-white transition-colors"
+                        className={`text-lg font-semibold ${textPrimary} ${clarity ? "hover:text-black" : "hover:text-white"} transition-colors`}
                       >
                         {project.title}
                       </Link>
@@ -404,7 +415,9 @@ export function ProjectsList({
                         {project.status?.replace("_", " ")}
                       </span>
                     </div>
-                    <div className="flex items-center gap-6 text-sm text-white/50">
+                    <div
+                      className={`flex items-center gap-6 text-sm ${textMuted}`}
+                    >
                       <span>{project.clientName}</span>
                       {project.taskCounts && (
                         <span className="flex items-center gap-1">
