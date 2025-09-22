@@ -14,8 +14,6 @@ import {
   Search,
   ChevronLeft,
   MessageSquare,
-  Minimize2,
-  Maximize2,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTheme } from "@/lib/themes/provider";
@@ -127,138 +125,93 @@ export default function AgentSidePanel({
 
   return (
     <>
-      {/* Toggle Button - Fixed on Right Side of Screen */}
+      {/* Toggle Button - Minimal */}
       <motion.button
         onClick={onToggle}
-        className={`fixed right-0 top-1/2 -translate-y-1/2 z-50 p-3 backdrop-blur-2xl border shadow-2xl transition-all duration-300 rounded-l-2xl ${
+        className={`fixed right-0 top-1/2 -translate-y-1/2 z-50 p-2.5 backdrop-blur-xl border transition-all duration-300 rounded-l-xl ${
           clarity
-            ? "bg-black/40 border-white/30 text-black/70 hover:bg-black/50 hover:text-black/90"
-            : "bg-white/10 border-white/20 text-white/70 hover:bg-white/15 hover:text-white/90"
+            ? "bg-black/20 border-white/20 text-black/50 hover:text-black/70"
+            : "bg-white/5 border-white/10 text-white/50 hover:text-white/70"
         }`}
-        whileHover={{ x: -3 }}
+        whileHover={{ x: -2 }}
         whileTap={{ scale: 0.95 }}
         aria-label={isOpen ? "Close AI" : "Open AI"}
       >
         <motion.div
           animate={{ rotate: isOpen ? 0 : 180 }}
-          transition={{ duration: 0.3, ease: "easeInOut" }}
-          className="flex items-center gap-2"
+          transition={{ duration: 0.3 }}
         >
-          <ChevronLeft className="w-5 h-5" />
-          {!isOpen && <MessageSquare className="w-5 h-5" />}
+          <ChevronLeft className="w-4 h-4" />
         </motion.div>
       </motion.button>
 
-      {/* Agent Panel - This will be in the flex flow */}
+      {/* Agent Panel - Minimal */}
       <motion.div
         initial={false}
         animate={{
-          width: isOpen ? "420px" : "0px",
+          width: isOpen ? "380px" : "0px",
           opacity: isOpen ? 1 : 0,
           x: isOpen ? 0 : 20,
         }}
-        transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
+        transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
         className="h-full overflow-hidden relative"
-        style={{ minWidth: isOpen ? "420px" : "0px" }}
+        style={{ minWidth: isOpen ? "380px" : "0px" }}
       >
-        <div className="w-[420px] h-full flex flex-col relative">
-          {/* Enhanced glass background with gradient */}
+        <div className="w-[380px] h-full flex flex-col relative">
+          {/* Minimal glass background */}
           <div
             className={`absolute inset-0 ${
-              clarity
-                ? "bg-gradient-to-b from-black/30 via-black/20 to-black/30"
-                : "bg-gradient-to-b from-white/[0.05] via-white/[0.02] to-white/[0.05]"
+              clarity ? "bg-black/20" : "bg-white/[0.02]"
             }`}
           />
-          <div className="absolute inset-0 backdrop-blur-2xl" />
-
-          {/* Decorative gradient overlay */}
-          <div className="absolute inset-0 pointer-events-none">
-            <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-purple-500/5 to-transparent" />
-            <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-blue-500/5 to-transparent" />
-          </div>
+          <div className="absolute inset-0 backdrop-blur-xl" />
 
           {/* Content wrapper */}
           <div className="relative z-10 h-full flex flex-col">
-            {/* Enhanced Header with gradient */}
+            {/* Minimal Header */}
             <div
-              className={`p-5 flex items-center justify-between flex-shrink-0 border-b ${
-                clarity ? "border-white/20" : "border-white/10"
+              className={`p-4 flex items-center justify-between flex-shrink-0 border-b ${
+                clarity ? "border-white/10" : "border-white/5"
               }`}
             >
-              <div className="flex items-center gap-3">
-                <div
-                  className={`p-2 rounded-xl ${
-                    clarity ? "bg-white/20" : "bg-white/10"
+              <div className="flex items-center gap-2">
+                <MessageSquare
+                  className={`w-4 h-4 ${
+                    clarity ? "text-black/40" : "text-white/40"
+                  }`}
+                />
+                <span
+                  className={`text-xs font-light ${
+                    clarity ? "text-black/60" : "text-white/60"
                   }`}
                 >
-                  <Sparkles
-                    className={`w-5 h-5 ${
-                      clarity ? "text-black/70" : "text-white/70"
-                    }`}
-                  />
-                </div>
-                <div>
-                  <h3
-                    className={`text-sm font-semibold ${
-                      clarity ? "text-black/90" : "text-white/90"
-                    }`}
-                  >
-                    AI Assistant
-                  </h3>
-                  <p
-                    className={`text-xs ${
-                      clarity ? "text-black/50" : "text-white/50"
-                    }`}
-                  >
-                    Powered by GPT-4
-                  </p>
-                </div>
+                  AI
+                </span>
               </div>
               <button
                 onClick={onToggle}
-                className={`p-2 rounded-xl transition-all duration-200 ${
+                className={`p-1.5 rounded-lg transition-all duration-200 ${
                   clarity
-                    ? "hover:bg-black/10 text-black/50 hover:text-black/70"
-                    : "hover:bg-white/10 text-white/50 hover:text-white/70"
+                    ? "hover:bg-black/5 text-black/40 hover:text-black/60"
+                    : "hover:bg-white/5 text-white/40 hover:text-white/60"
                 }`}
                 aria-label="Close"
               >
-                <X className="w-4 h-4" />
+                <X className="w-3.5 h-3.5" />
               </button>
             </div>
 
-            {/* Messages Container - Enhanced */}
-            <div className="flex-1 overflow-y-auto p-5 space-y-4 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
+            {/* Messages Container - Minimal */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-3">
               {messages.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-full gap-6">
-                  <div
-                    className={`p-4 rounded-2xl ${
-                      clarity ? "bg-white/10" : "bg-white/5"
+                <div className="flex items-center justify-center h-full">
+                  <p
+                    className={`text-xs font-light ${
+                      clarity ? "text-black/30" : "text-white/30"
                     }`}
                   >
-                    <Bot
-                      className={`w-12 h-12 ${
-                        clarity ? "text-black/30" : "text-white/30"
-                      }`}
-                    />
-                  </div>
-                  <div className="text-center">
-                    <p
-                      className={`text-sm font-medium mb-2 ${
-                        clarity ? "text-black/70" : "text-white/70"
-                      }`}
-                    >
-                      How can I help you today?
-                    </p>
-                    <p
-                      className={`text-xs ${
-                        clarity ? "text-black/40" : "text-white/40"
-                      }`}
-                    >
-                      Ask me about projects, tasks, or anything else
-                    </p>
-                  </div>
+                    Ask me anything
+                  </p>
                 </div>
               ) : (
                 messages.map((msg, idx) => (
@@ -269,18 +222,20 @@ export default function AgentSidePanel({
                     className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
                   >
                     <div
-                      className={`max-w-[85%] px-4 py-3 rounded-2xl text-sm shadow-lg ${
+                      className={`max-w-[90%] px-3 py-2 rounded-xl text-xs ${
                         msg.role === "user"
                           ? clarity
-                            ? "bg-gradient-to-r from-purple-500/20 to-pink-500/20 text-black/80 ml-auto border border-purple-500/20"
-                            : "bg-gradient-to-r from-purple-500/20 to-pink-500/20 text-white/90 ml-auto border border-purple-500/30"
+                            ? "bg-black/10 text-black/70 ml-8"
+                            : "bg-white/[0.07] text-white/70 ml-8"
                           : clarity
-                            ? "bg-white/20 text-black/70 mr-auto border border-white/20"
-                            : "bg-white/10 text-white/80 mr-auto border border-white/10"
+                            ? "bg-black/5 text-black/60 mr-8"
+                            : "bg-white/[0.03] text-white/60 mr-8"
                       }`}
                     >
-                      <div className="whitespace-pre-wrap leading-relaxed">
-                        {msg.content}
+                      <div className="whitespace-pre-wrap font-light leading-relaxed">
+                        {msg.content.length > 200
+                          ? msg.content.substring(0, 200) + "..."
+                          : msg.content}
                       </div>
                     </div>
                   </motion.div>
@@ -293,36 +248,29 @@ export default function AgentSidePanel({
                   className="flex justify-start"
                 >
                   <div
-                    className={`px-4 py-3 rounded-2xl ${
-                      clarity ? "bg-white/20" : "bg-white/10"
+                    className={`px-3 py-2 rounded-xl ${
+                      clarity ? "bg-black/5" : "bg-white/[0.03]"
                     }`}
                   >
-                    <div className="flex gap-1.5 items-center">
-                      <Sparkles
-                        className={`w-4 h-4 animate-pulse ${
-                          clarity ? "text-purple-700" : "text-purple-400"
+                    <div className="flex gap-1">
+                      <span
+                        className={`w-1.5 h-1.5 rounded-full animate-bounce ${
+                          clarity ? "bg-black/30" : "bg-white/30"
                         }`}
-                      />
-                      <div className="flex gap-1">
-                        <span
-                          className={`w-2 h-2 rounded-full animate-bounce ${
-                            clarity ? "bg-black/40" : "bg-white/40"
-                          }`}
-                          style={{ animationDelay: "0ms" }}
-                        ></span>
-                        <span
-                          className={`w-2 h-2 rounded-full animate-bounce ${
-                            clarity ? "bg-black/40" : "bg-white/40"
-                          }`}
-                          style={{ animationDelay: "150ms" }}
-                        ></span>
-                        <span
-                          className={`w-2 h-2 rounded-full animate-bounce ${
-                            clarity ? "bg-black/40" : "bg-white/40"
-                          }`}
-                          style={{ animationDelay: "300ms" }}
-                        ></span>
-                      </div>
+                        style={{ animationDelay: "0ms" }}
+                      ></span>
+                      <span
+                        className={`w-1.5 h-1.5 rounded-full animate-bounce ${
+                          clarity ? "bg-black/30" : "bg-white/30"
+                        }`}
+                        style={{ animationDelay: "150ms" }}
+                      ></span>
+                      <span
+                        className={`w-1.5 h-1.5 rounded-full animate-bounce ${
+                          clarity ? "bg-black/30" : "bg-white/30"
+                        }`}
+                        style={{ animationDelay: "300ms" }}
+                      ></span>
                     </div>
                   </div>
                 </motion.div>
@@ -330,17 +278,17 @@ export default function AgentSidePanel({
               <div ref={messagesEndRef} />
             </div>
 
-            {/* Quick Actions - Enhanced with labels */}
+            {/* Quick Actions - Icon only, minimal */}
             <div
-              className={`px-5 py-3 border-t flex-shrink-0 ${
-                clarity ? "border-white/20" : "border-white/10"
+              className={`px-4 py-2 border-t flex-shrink-0 ${
+                clarity ? "border-white/10" : "border-white/5"
               }`}
             >
-              <div className="flex gap-2 flex-wrap">
-                {quickActions.slice(0, 4).map((action, idx) => (
+              <div className="flex justify-center gap-1">
+                {quickActions.map((action, idx) => (
                   <motion.button
                     key={idx}
-                    whileHover={{ scale: 1.05 }}
+                    whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={async () => {
                       setInput(action.action);
@@ -352,40 +300,36 @@ export default function AgentSidePanel({
                           ?.click();
                       }, 100);
                     }}
-                    className={`flex-1 min-w-[80px] p-2 rounded-xl transition-all duration-200 flex flex-col items-center gap-1 ${
+                    className={`p-2 rounded-lg transition-all duration-200 ${
                       clarity
-                        ? "bg-white/10 hover:bg-white/20 text-black/50 hover:text-black/70 border border-white/20"
-                        : "bg-white/5 hover:bg-white/10 text-white/50 hover:text-white/70 border border-white/10"
+                        ? "hover:bg-black/5 text-black/30 hover:text-black/50"
+                        : "hover:bg-white/5 text-white/30 hover:text-white/50"
                     }`}
+                    title={action.label}
                   >
-                    <action.icon className="w-4 h-4" />
-                    <span className="text-[10px] font-medium">
-                      {action.label}
-                    </span>
+                    <action.icon className="w-3.5 h-3.5" />
                   </motion.button>
                 ))}
               </div>
             </div>
 
-            {/* Input Area - Enhanced */}
+            {/* Input Area - Minimal */}
             <div
-              className={`p-4 border-t flex-shrink-0 ${
-                clarity
-                  ? "border-white/20 bg-black/10"
-                  : "border-white/10 bg-white/[0.02]"
+              className={`p-3 border-t flex-shrink-0 ${
+                clarity ? "border-white/10" : "border-white/5"
               }`}
             >
-              <div className="flex gap-3 items-center">
+              <div className="flex gap-2 items-center">
                 <input
                   type="text"
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyPress={(e) => e.key === "Enter" && handleSend()}
-                  placeholder="Ask me anything..."
-                  className={`flex-1 px-4 py-3 rounded-xl focus:outline-none transition-all duration-200 text-sm ${
+                  placeholder="Type a message..."
+                  className={`flex-1 px-3 py-2 rounded-lg focus:outline-none transition-all duration-200 text-sm ${
                     clarity
-                      ? "bg-white/20 border border-white/30 text-black/80 placeholder-black/40 focus:bg-white/30 focus:border-white/40"
-                      : "bg-white/10 border border-white/20 text-white/90 placeholder-white/40 focus:bg-white/15 focus:border-white/30"
+                      ? "bg-black/5 border border-white/10 text-black/70 placeholder-black/30 focus:bg-black/10 focus:border-white/20"
+                      : "bg-white/[0.03] border border-white/5 text-white/70 placeholder-white/20 focus:bg-white/[0.05] focus:border-white/10"
                   }`}
                   disabled={isLoading}
                 />
@@ -394,18 +338,14 @@ export default function AgentSidePanel({
                   whileTap={{ scale: 0.95 }}
                   onClick={handleSend}
                   disabled={isLoading || !input.trim()}
-                  className={`p-3 rounded-xl transition-all duration-200 disabled:opacity-30 ${
+                  className={`p-2 rounded-lg transition-all duration-200 disabled:opacity-20 ${
                     clarity
-                      ? "bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
-                      : "bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
+                      ? "bg-black/10 hover:bg-black/15 text-black/40 hover:text-black/60"
+                      : "bg-white/[0.05] hover:bg-white/[0.08] text-white/40 hover:text-white/60"
                   }`}
                   aria-label="Send"
                 >
-                  {isLoading ? (
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                  ) : (
-                    <Send className="w-5 h-5" />
-                  )}
+                  <Send className="w-3.5 h-3.5" />
                 </motion.button>
               </div>
             </div>
