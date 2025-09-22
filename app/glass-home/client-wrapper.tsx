@@ -150,6 +150,7 @@ export default function ClientWrapper({
               id: newTask.id,
               title: newTask.title,
               project: newTask.project?.name || "Personal",
+              projectId: newTask.projectId || null,
               due: new Date().toLocaleTimeString("en-US", {
                 hour: "numeric",
                 minute: "2-digit",
