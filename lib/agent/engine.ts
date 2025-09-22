@@ -434,6 +434,7 @@ export class AgentEngine {
       },
       permissions: [],
       traceId: `session_${sessionId}`,
+      variables: {},
     };
 
     return {
