@@ -12,7 +12,7 @@ export const createTaskTool: AgentTool = {
     status: {
       type: "string",
       required: false,
-      enum: ["todo", "in_progress", "review", "done", "blocked"],
+      enum: ["Todo", "Doing", "Review", "Done"],
     },
     assigneeId: { type: "string", required: false },
     dueDate: { type: "string", required: false },
@@ -24,7 +24,7 @@ export const createTaskTool: AgentTool = {
           projectId: params.projectId,
           title: params.title,
           notes: params.notes,
-          status: params.status || "todo",
+          status: params.status || "Todo",
           assigneeId: params.assigneeId,
           dueDate: params.dueDate ? new Date(params.dueDate) : undefined,
         },
@@ -75,7 +75,7 @@ export const updateTaskTool: AgentTool = {
     status: {
       type: "string",
       required: false,
-      enum: ["todo", "in_progress", "review", "done", "blocked"],
+      enum: ["Todo", "Doing", "Review", "Done"],
     },
     assigneeId: { type: "string", required: false },
     dueDate: { type: "string", required: false },
@@ -93,7 +93,7 @@ export const updateTaskTool: AgentTool = {
         updateData.dueDate = new Date(params.dueDate);
       if (params.completedAt !== undefined)
         updateData.completedAt = new Date(params.completedAt);
-      if (params.status === "done" && !params.completedAt) {
+      if (params.status === "Done" && !params.completedAt) {
         updateData.completedAt = new Date();
       }
 

@@ -113,13 +113,22 @@ export async function POST(req: NextRequest) {
             .filter((s) => s.status === "completed" && s.output)
             .map((s) => {
               if (typeof s.output === "object") {
-                return JSON.stringify(s.output, null, 2);
+                // For project creation, just show the created project
+                if (s.tool === "create_project" && s.output.id) {
+                  return `Created project:\n- ID: ${s.output.id}\n- Title: ${s.output.title}\n- Status: ${s.output.status}`;
+                }
+                // For get_projects, summarize instead of showing all
+                if (s.tool === "get_projects" && Array.isArray(s.output)) {
+                  return `Found ${s.output.length} projects in the system.`;
+                }
+                // Default: show compact JSON
+                return JSON.stringify(s.output, null, 2).substring(0, 500);
               }
               return s.output;
             });
 
           if (outputs.length > 0) {
-            response += `\n**Results:**\n${outputs.join("\n")}`;
+            response += `\n\n**Results:**\n${outputs.join("\n\n")}`;
           }
         }
       } else {

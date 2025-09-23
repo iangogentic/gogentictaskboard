@@ -201,10 +201,10 @@ export default function AgentSidePanel({
           x: isOpen ? 0 : 20,
         }}
         transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
-        className="h-full overflow-hidden relative"
+        className="fixed right-0 top-0 h-screen overflow-hidden z-40"
         style={{ minWidth: isOpen ? "380px" : "0px" }}
       >
-        <div className="w-[380px] h-full flex flex-col relative">
+        <div className="w-[380px] h-screen flex flex-col relative">
           {/* High quality glass background */}
           <div
             className={`absolute inset-0 ${
@@ -289,7 +289,7 @@ export default function AgentSidePanel({
             </div>
 
             {/* Messages Container - Glass */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-3">
+            <div className="flex-1 overflow-y-auto p-4 space-y-3 min-h-0">
               {messages.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-full gap-3">
                   <div
