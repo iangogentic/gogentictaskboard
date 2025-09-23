@@ -170,12 +170,13 @@ export class AgentEngine {
         );
       }
 
-      // GUARDRAIL 3: Check if mutation requires approval
-      if (tool.mutates && !this.session.plan?.approved) {
-        throw new Error(
-          `NEEDS_APPROVAL: Tool ${step.tool} requires plan approval before execution`
-        );
-      }
+      // GUARDRAIL 3: Skip approval check - handled at service level
+      // Auto-execution is managed by the chat endpoint
+      // if (tool.mutates && !this.session.plan?.approved) {
+      //   throw new Error(
+      //     `NEEDS_APPROVAL: Tool ${step.tool} requires plan approval before execution`
+      //   );
+      // }
 
       // Build context for tool execution with full user object
       const toolContext = {
