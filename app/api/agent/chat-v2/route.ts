@@ -124,8 +124,15 @@ export async function POST(req: NextRequest) {
         }
       } else {
         response = `❌ Operation failed: ${result.summary || "Unknown error"}\n`;
-        if (result.error) {
-          response += `\nError details: ${result.error}`;
+        // Check for errors in individual steps
+        const failedSteps = result.steps.filter(
+          (s) => s.status === "failed" && s.error
+        );
+        if (failedSteps.length > 0) {
+          response += `\n**Error details:**\n`;
+          failedSteps.forEach((step) => {
+            response += `- ${step.tool}: ${step.error}\n`;
+          });
         }
       }
     }
