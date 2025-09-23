@@ -93,9 +93,9 @@ export class GoogleDriveService {
 
     const tokens = credential.data as any;
 
-    // Set credentials
+    // Set credentials (handle both field names for compatibility)
     this.oauth2Client.setCredentials({
-      access_token: tokens.accessToken,
+      access_token: tokens.accessToken || tokens.token,
       refresh_token: tokens.refreshToken,
     });
 
