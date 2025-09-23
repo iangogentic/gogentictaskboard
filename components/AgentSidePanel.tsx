@@ -34,11 +34,12 @@ export default function AgentSidePanel({
   const { currentUser } = useUser();
   const { data: session } = useSession();
   const [messages, setMessages] = useState<
-    Array<{ role: string; content: string }>
+    Array<{ role: string; content: string; metadata?: any }>
   >([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [conversationId, setConversationId] = useState<string | null>(null);
+  const [conversationState, setConversationState] = useState<any>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -81,6 +82,7 @@ export default function AgentSidePanel({
   const startNewConversation = () => {
     setConversationId(null);
     setMessages([]);
+    setConversationState(null);
     localStorage.removeItem("currentConversationId");
   };
 
@@ -130,6 +132,7 @@ export default function AgentSidePanel({
           projectId,
           history,
           conversationId,
+          conversationState,
         }),
       });
 
@@ -146,11 +149,20 @@ export default function AgentSidePanel({
         localStorage.setItem("currentConversationId", data.conversationId);
       }
 
+      // Update conversation state
+      if (data.conversationState) {
+        setConversationState(data.conversationState);
+      }
+
       setMessages((prev) => [
         ...prev,
         {
           role: "assistant",
           content: data.response || "I couldn't process that request.",
+          metadata: {
+            requiresConfirmation: data.requiresConfirmation,
+            phase: data.conversationState?.phase,
+          },
         },
       ]);
     } catch (error) {
@@ -342,6 +354,46 @@ export default function AgentSidePanel({
                       <div className="whitespace-pre-wrap leading-relaxed">
                         {msg.content}
                       </div>
+                      {msg.metadata?.requiresConfirmation &&
+                        msg.role === "assistant" && (
+                          <div
+                            className={`mt-2 pt-2 border-t ${clarity ? "border-white/20" : "border-white/10"}`}
+                          >
+                            <p
+                              className={`text-xs ${clarity ? "text-black/50" : "text-white/50"} mb-2`}
+                            >
+                              Confirm to proceed:
+                            </p>
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => {
+                                  setInput("yes");
+                                  setTimeout(() => handleSend(), 100);
+                                }}
+                                className={`px-2 py-1 rounded-lg text-xs ${
+                                  clarity
+                                    ? "bg-green-500/20 text-green-700 hover:bg-green-500/30"
+                                    : "bg-green-500/20 text-green-400 hover:bg-green-500/30"
+                                } transition-all`}
+                              >
+                                ✓ Yes
+                              </button>
+                              <button
+                                onClick={() => {
+                                  setInput("no");
+                                  setTimeout(() => handleSend(), 100);
+                                }}
+                                className={`px-2 py-1 rounded-lg text-xs ${
+                                  clarity
+                                    ? "bg-red-500/20 text-red-700 hover:bg-red-500/30"
+                                    : "bg-red-500/20 text-red-400 hover:bg-red-500/30"
+                                } transition-all`}
+                              >
+                                ✗ No
+                              </button>
+                            </div>
+                          </div>
+                        )}
                     </div>
                   </motion.div>
                 ))
