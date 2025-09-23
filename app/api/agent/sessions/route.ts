@@ -1,15 +1,15 @@
 export const runtime = "nodejs";
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "@/lib/auth";
 import { AgentService } from "@/lib/agent/service";
+import { resolveRequestUser } from "@/lib/api/auth-helpers";
 
 const agentService = AgentService.getInstance();
 
 // Create a new agent session
 export async function POST(request: NextRequest) {
   try {
-    const authSession = await getServerSession();
-    if (!authSession?.user?.id) {
+    const requestUser = await resolveRequestUser(request);
+    if (!requestUser) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
 
     // Create agent session
     const session = await agentService.createSession(
-      authSession.user.id,
+      requestUser.id,
       projectId
     );
 
@@ -35,8 +35,8 @@ export async function POST(request: NextRequest) {
 // List user's agent sessions
 export async function GET(request: NextRequest) {
   try {
-    const authSession = await getServerSession();
-    if (!authSession?.user?.id) {
+    const requestUser = await resolveRequestUser(request);
+    if (!requestUser) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -45,7 +45,7 @@ export async function GET(request: NextRequest) {
 
     // Get user sessions
     const sessions = await agentService.listUserSessions(
-      authSession.user.id,
+      requestUser.id,
       limit
     );
 

@@ -148,8 +148,20 @@ export class AgentService {
       throw new Error("Session not found");
     }
 
+    console.log("Approving plan for session:", {
+      sessionId,
+      hasPlan: !!session.plan,
+      planSteps: session.plan?.steps?.length || 0
+    });
+
     if (!session.plan) {
       throw new Error("No plan to approve");
+    }
+
+    // Check if plan has steps before approving
+    if (!session.plan.steps || session.plan.steps.length === 0) {
+      console.error("Cannot approve plan without steps:", session.plan);
+      throw new Error("Invalid plan: Plan has no steps to approve");
     }
 
     // Update plan with approval
@@ -184,6 +196,20 @@ export class AgentService {
 
     if (!session.plan) {
       throw new Error("No plan to execute");
+    }
+
+    // Add better debugging for plan structure
+    console.log("Plan loaded from session:", {
+      hasSteps: !!session.plan.steps,
+      stepsCount: session.plan.steps?.length || 0,
+      planId: session.plan.id,
+      planTitle: session.plan.title
+    });
+
+    // Check if plan has steps
+    if (!session.plan.steps || session.plan.steps.length === 0) {
+      console.error("Plan has no steps:", session.plan);
+      throw new Error("Invalid plan: Plan has no steps");
     }
 
     // Skip approval check since we're auto-approving in chat-v2

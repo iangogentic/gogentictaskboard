@@ -1,16 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { AuditLogger } from "@/lib/audit";
-import { getServerSession } from "@/lib/auth";
+import { resolveRequestUser } from "@/lib/api/auth-helpers";
 
 export async function POST(req: NextRequest) {
   try {
-    // Get current user from session
-    const authSession = await getServerSession();
-    if (!authSession?.user?.id) {
+    const requestUser = await resolveRequestUser(req);
+    if (!requestUser) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-    const userId = authSession.user.id;
 
     const body = await req.json();
     const { planId, sessionId, approved, reason } = body;
@@ -33,14 +31,14 @@ export async function POST(req: NextRequest) {
 
     // Verify the user owns the session or is an admin
     const user = await prisma.user.findUnique({
-      where: { id: userId },
+      where: { id: requestUser.id },
     });
 
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    if (session.userId !== userId && user.role !== "admin") {
+    if (session.userId !== user.id && user.role !== "admin") {
       return NextResponse.json(
         { error: "Unauthorized to approve this plan" },
         { status: 403 }
@@ -59,7 +57,7 @@ export async function POST(req: NextRequest) {
     if (approved) {
       plan.approved = true;
       plan.approvedAt = new Date();
-      plan.approvedBy = userId;
+      plan.approvedBy = user.id;
 
       // Update session state
       await prisma.agentSession.update({
@@ -73,7 +71,7 @@ export async function POST(req: NextRequest) {
 
       // Log approval
       await AuditLogger.logSuccess(
-        userId,
+        user.id,
         "plan_approved",
         "agent_plan",
         planId,
@@ -93,7 +91,7 @@ export async function POST(req: NextRequest) {
       // Rejection
       plan.rejected = true;
       plan.rejectedAt = new Date();
-      plan.rejectedBy = userId;
+      plan.rejectedBy = user.id;
       plan.rejectionReason = reason;
 
       await prisma.agentSession.update({
@@ -101,14 +99,14 @@ export async function POST(req: NextRequest) {
         data: {
           state: "failed",
           plan: plan,
-          error: `Plan rejected: ${reason || "No reason provided"}`,
+          error: "Plan rejected",
           updatedAt: new Date(),
         },
       });
 
       // Log rejection
       await AuditLogger.logSuccess(
-        userId,
+        user.id,
         "plan_rejected",
         "agent_plan",
         planId,
@@ -135,6 +133,11 @@ export async function POST(req: NextRequest) {
  */
 export async function PUT(req: NextRequest) {
   try {
+    const requestUser = await resolveRequestUser(req);
+    if (!requestUser) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const body = await req.json();
     const { sessionId, planId } = body;
 
@@ -144,6 +147,10 @@ export async function PUT(req: NextRequest) {
 
     if (!session) {
       return NextResponse.json({ error: "Session not found" }, { status: 404 });
+    }
+
+    if (session.userId !== requestUser.id && requestUser.role !== "admin") {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     const plan = session.plan as any;
@@ -163,7 +170,7 @@ export async function PUT(req: NextRequest) {
       if (!tool) {
         dryRunResults.push({
           stepId: step.id,
-          error: `Tool ${step.tool} not found`,
+          error: "Tool not found",
         });
         continue;
       }
@@ -178,7 +185,7 @@ export async function PUT(req: NextRequest) {
               projectId: session.projectId || undefined,
               session,
               permissions: tool.scopes,
-              traceId: `dry_run_${session.id}_${step.id}`,
+              traceId: "dry_run__",
             },
             step.parameters
           );
@@ -198,10 +205,10 @@ export async function PUT(req: NextRequest) {
         // Simulate mutation
         dryRunResults.push({
           stepId: step.id,
-          preview: `[SIMULATION] Would ${step.tool} with parameters: ${JSON.stringify(step.parameters, null, 2).substring(0, 200)}`,
+          preview: "[SIMULATION] Would execute with parameters",
           changes: [
-            `Would modify data using ${step.tool}`,
-            `Estimated impact: ${tool.scopes.join(", ")}`,
+            "Would modify data using tool",
+            "Estimated impact: unknown",
           ],
           warnings: tool.scopes.includes("delete")
             ? ["This operation would permanently delete data"]

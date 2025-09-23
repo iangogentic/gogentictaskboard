@@ -20,13 +20,21 @@ export const createProjectTool: AgentTool = {
     },
     startDate: { type: "string", required: false },
     targetDelivery: { type: "string", required: false },
-    pmId: { type: "string", required: true },
-    clientName: { type: "string", required: true },
-    clientEmail: { type: "string", required: true },
+    pmId: { type: "string", required: false }, // Made optional
+    clientName: { type: "string", required: false }, // Made optional
+    clientEmail: { type: "string", required: false }, // Made optional
   },
-  execute: async (params: any): Promise<ToolResult> => {
+  execute: async (params: any, context?: any): Promise<ToolResult> => {
     try {
       const { randomUUID } = require("crypto");
+
+      // Use context user as PM if pmId not provided
+      const pmId = params.pmId || context?.userId || context?.user?.id;
+
+      // Default client info if not provided
+      const clientName = params.clientName || "TBD";
+      const clientEmail = params.clientEmail || "tbd@example.com";
+
       const project = await prisma.project.create({
         data: {
           id: randomUUID(),
@@ -38,9 +46,9 @@ export const createProjectTool: AgentTool = {
           targetDelivery: params.targetDelivery
             ? new Date(params.targetDelivery)
             : undefined,
-          pmId: params.pmId,
-          clientName: params.clientName,
-          clientEmail: params.clientEmail,
+          pmId: pmId,
+          clientName: clientName,
+          clientEmail: clientEmail,
           clientShareToken: randomUUID(),
           archived: false,
           lastUpdatedAt: new Date(),

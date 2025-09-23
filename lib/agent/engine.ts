@@ -484,7 +484,7 @@ export class AgentEngine {
       project,
       integrations: {
         slack: integrations.some((i) => i.type === "slack"),
-        googleDrive: integrations.some((i) => i.type === "google-drive"),
+        googleDrive: integrations.some((i) => i.type === "google_drive"),
       },
       permissions: [],
       traceId: `session_${sessionId}`,

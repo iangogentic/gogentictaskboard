@@ -5,6 +5,25 @@ import { prisma } from "@/lib/prisma";
  * This provides a controlled environment for database operations
  */
 
+// Define allowed operations whitelist
+const ALLOWED_OPERATIONS = {
+  project: ['findMany', 'findUnique', 'findFirst', 'count'],
+  task: ['findMany', 'findUnique', 'findFirst', 'count'],
+  user: ['findMany', 'findUnique', 'count'],
+  update: ['findMany', 'findFirst', 'count'],
+  // Explicitly block all mutations in production
+  // Uncomment specific operations only after security review
+  // project: ['create', 'update'],
+  // task: ['create', 'update'],
+};
+
+// Dangerous operations that should never be allowed
+const BLOCKED_OPERATIONS = [
+  'delete', 'deleteMany', 'updateMany', 'createMany',
+  '$executeRaw', '$executeRawUnsafe', '$queryRaw', '$queryRawUnsafe',
+  '$transaction', 'upsert'
+];
+
 export interface ExecutionResult {
   success: boolean;
   data?: any;
@@ -77,6 +96,33 @@ export async function executePrismaOperation(
       return {
         success: false,
         error: "Invalid operation format",
+        operation,
+      };
+    }
+
+    // Security check: Validate against whitelist
+    const allowedMethods = (ALLOWED_OPERATIONS as any)[parsed.model];
+    if (!allowedMethods) {
+      return {
+        success: false,
+        error: `Model '${parsed.model}' is not allowed for autonomous operations`,
+        operation,
+      };
+    }
+
+    if (!allowedMethods.includes(parsed.method)) {
+      return {
+        success: false,
+        error: `Method '${parsed.method}' is not allowed on model '${parsed.model}'. Only read operations are permitted.`,
+        operation,
+      };
+    }
+
+    // Additional check for blocked operations
+    if (BLOCKED_OPERATIONS.includes(parsed.method)) {
+      return {
+        success: false,
+        error: `Method '${parsed.method}' is explicitly blocked for security reasons`,
         operation,
       };
     }

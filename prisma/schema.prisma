@@ -32,6 +32,7 @@ model User {
   password      String?
   role          String          @default("user")
   accounts      Account[]
+  conversations Conversation[]
   projectsAsPM  Project[]       @relation("ProjectPM")
   ProjectMember ProjectMember[]
   savedViews    SavedView[]
@@ -40,7 +41,6 @@ model User {
   timeEntries   TimeEntry[]
   updates       Update[]
   projectsAsDev Project[]       @relation("ProjectDevs")
-  conversations Conversation[]
 }
 
 model Account {
@@ -108,6 +108,7 @@ model Project {
 
   @@index([portfolioId, stage, health])
   @@index([portfolioId, status])
+  @@index([portfolioId, status], map: "idx_project_portfolio_status")
 }
 
 model Task {
@@ -181,18 +182,18 @@ model SavedView {
 
 model AgentAnalytics {
   id         String   @id
-  sessionId  String?
   userId     String
   projectId  String?
-  action     String
   duration   Int
-  toolsUsed  Json?
-  tokensUsed Int?
   cost       Float?
   success    Boolean
-  errorType  String?
   metadata   Json?
   createdAt  DateTime @default(now())
+  action     String
+  errorType  String?
+  sessionId  String?
+  tokensUsed Int?
+  toolsUsed  Json?
 
   @@index([createdAt])
   @@index([projectId])
@@ -217,7 +218,6 @@ model AgentSession {
 model AuditLog {
   id         String   @id
   actorId    String
-  actorType  String
   action     String
   targetType String
   targetId   String?
@@ -225,6 +225,7 @@ model AuditLog {
   status     String
   error      String?
   createdAt  DateTime @default(now())
+  actorType  String
 
   @@index([actorId])
   @@index([createdAt])
@@ -232,16 +233,17 @@ model AuditLog {
 }
 
 model Conversation {
-  id        String    @id
-  userId    String
-  projectId String?
-  title     String?
-  summary   String?
-  metadata  Json?
-  createdAt DateTime  @default(now())
-  updatedAt DateTime
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  Message   Message[]
+  id                String             @id
+  userId            String
+  projectId         String?
+  title             String?
+  summary           String?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime
+  metadata          Json?
+  user              User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  conversationState ConversationState?
+  Message           Message[]
 
   @@index([projectId])
   @@index([userId])
@@ -269,9 +271,9 @@ model Embedding {
   id         String                 @id
   documentId String
   chunkIndex Int
-  chunkText  String
   metadata   Json?
   createdAt  DateTime               @default(now())
+  chunkText  String
   vector     Unsupported("vector")?
   Document   Document               @relation(fields: [documentId], references: [id], onDelete: Cascade)
 
@@ -283,12 +285,12 @@ model Embedding {
 model IntegrationCredential {
   id        String   @id
   userId    String?
-  orgLevel  Boolean  @default(false)
   type      String
   data      Json
-  metadata  Json?
   createdAt DateTime @default(now())
   updatedAt DateTime
+  orgLevel  Boolean  @default(false)
+  metadata  Json?
 
   @@unique([userId, type])
   @@index([type])
@@ -307,14 +309,31 @@ model Message {
   @@index([conversationId])
 }
 
+model ConversationState {
+  id                  String       @id @default(cuid())
+  conversationId      String       @unique
+  phase               String       @default("clarifying")
+  entities            Json?
+  workingMemory       Json?
+  accumulatedEntities Json?
+  confidence          Float        @default(0.5)
+  clarificationCount  Int          @default(0)
+  agentSessionId      String?
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
+  conversation        Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId])
+}
+
 model ProjectIntegration {
   id        String   @id
   projectId String
-  key       String
-  value     String
-  metadata  Json?
   createdAt DateTime @default(now())
   updatedAt DateTime
+  key       String
+  metadata  Json?
+  value     String
   Project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
   @@unique([projectId, key])
@@ -338,16 +357,16 @@ model ProjectMember {
 
 model ScheduledTask {
   id         String    @id
-  workflowId String?
   name       String
   cron       String
-  nextRun    DateTime
-  lastRun    DateTime?
+  workflowId String?
   status     String
-  metadata   Json?
+  lastRun    DateTime?
+  nextRun    DateTime
   createdBy  String
   createdAt  DateTime  @default(now())
   updatedAt  DateTime
+  metadata   Json?
   Workflow   Workflow? @relation(fields: [workflowId], references: [id], onDelete: Cascade)
 
   @@index([nextRun])
@@ -359,13 +378,13 @@ model Workflow {
   name              String
   description       String?
   steps             Json
-  triggers          Json?
-  isActive          Boolean             @default(true)
-  isTemplate        Boolean             @default(false)
   createdBy         String
-  projectId         String?
+  isActive          Boolean             @default(true)
   createdAt         DateTime            @default(now())
   updatedAt         DateTime
+  isTemplate        Boolean             @default(false)
+  projectId         String?
+  triggers          Json?
   ScheduledTask     ScheduledTask[]
   WorkflowExecution WorkflowExecution[]
 
@@ -377,12 +396,12 @@ model WorkflowExecution {
   id          String    @id
   workflowId  String
   status      String
-  currentStep Int       @default(0)
-  context     Json
-  result      Json?
   error       String?
   startedAt   DateTime  @default(now())
   completedAt DateTime?
+  context     Json
+  currentStep Int       @default(0)
+  result      Json?
   Workflow    Workflow  @relation(fields: [workflowId], references: [id], onDelete: Cascade)
 
   @@index([status])

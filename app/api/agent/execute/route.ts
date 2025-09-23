@@ -1,15 +1,15 @@
 export const runtime = "nodejs";
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "@/lib/auth";
 import { AgentService } from "@/lib/agent/service";
+import { resolveRequestUser } from "@/lib/api/auth-helpers";
 
 const agentService = AgentService.getInstance();
 
 // Execute an approved plan
 export async function POST(request: NextRequest) {
   try {
-    const authSession = await getServerSession();
-    if (!authSession?.user?.id) {
+    const requestUser = await resolveRequestUser(request);
+    if (!requestUser) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -29,10 +29,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Session not found" }, { status: 404 });
     }
 
-    if (
-      session.userId !== authSession.user.id &&
-      authSession.user.role !== "admin"
-    ) {
+    if (session.userId !== requestUser.id && requestUser.role !== "admin") {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 

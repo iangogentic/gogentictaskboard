@@ -20,15 +20,22 @@ export interface ConversationState {
   intent?: string;
   entities?: Record<string, any>;
   pendingConfirmation?: {
-    plan: any;
+    planId: string;  // Track plan ID instead of full plan
     description: string;
   };
   clarificationCount: number;
+  confidence?: number;  // 0-1 scale
+  workingMemory?: {
+    partialIntent?: string;
+    lastTopic?: string;
+    accumulatedEntities?: Record<string, any>;
+  };
 }
 
 export class ConversationAnalyzer {
   private context: AgentContext;
   private conversationHistory: Array<{ role: string; content: string }>;
+  private accumulatedEntities: Record<string, any> = {};
 
   constructor(
     context: AgentContext,
@@ -54,6 +61,7 @@ export class ConversationAnalyzer {
             - User: ${this.context.user.name} (${this.context.user.role})
             - Current project: ${this.context.project?.title || "None selected"}
             - Available capabilities: project management, task creation, Slack messaging, file operations
+            - Accumulated entities from conversation: ${JSON.stringify(this.accumulatedEntities)}
 
             Analyze the message and return a JSON object with:
             {
@@ -67,10 +75,11 @@ export class ConversationAnalyzer {
             }
 
             Guidelines:
-            - If the request mentions "project" but doesn't specify which one, ask for clarification
-            - If asking to "create task" without details, ask for title and project
-            - If request is vague like "help me", "overview", "status", ask what specifically they need
-            - Confidence < 0.7 should trigger clarification
+            - Check accumulated entities FIRST before asking for clarification
+            - If user says "come up with a plan" after mentioning a project, use that context
+            - Only clarify if you truly don't have enough context from the conversation
+            - Confidence < 0.7 should trigger clarification ONLY if entities don't provide context
+            - Be proactive when user asks for help - generate ideas instead of asking "what kind"
             - Be conversational in clarifying questions`,
           },
           {
@@ -92,6 +101,14 @@ Current message: ${message}`,
       const analysis = JSON.parse(
         response.choices[0]?.message?.content || "{}"
       );
+
+      // Update accumulated entities with new ones
+      if (analysis.extractedEntities) {
+        this.accumulatedEntities = {
+          ...this.accumulatedEntities,
+          ...analysis.extractedEntities
+        };
+      }
 
       // Ensure all required fields
       return {
@@ -268,5 +285,26 @@ Make it conversational and end with asking for confirmation.`,
     if (this.conversationHistory.length > 10) {
       this.conversationHistory = this.conversationHistory.slice(-10);
     }
+  }
+
+  /**
+   * Get accumulated entities
+   */
+  getAccumulatedEntities(): Record<string, any> {
+    return this.accumulatedEntities;
+  }
+
+  /**
+   * Set accumulated entities (for restoring state)
+   */
+  setAccumulatedEntities(entities: Record<string, any>) {
+    this.accumulatedEntities = entities;
+  }
+
+  /**
+   * Clear accumulated entities
+   */
+  clearEntities() {
+    this.accumulatedEntities = {};
   }
 }

@@ -1,14 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "@/lib/auth";
-import { authOptions } from "@/lib/auth";
 import { embeddingService } from "@/lib/embeddings";
 import { checkPermissions } from "@/lib/rbac";
 import { logAction } from "@/lib/audit";
+import { resolveRequestUser } from "@/lib/api/auth-helpers";
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession();
-    if (!session) {
+    const requestUser = await resolveRequestUser(request);
+    if (!requestUser) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
@@ -19,9 +18,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Query is required" }, { status: 400 });
     }
 
-    // Check permissions if searching within a project
     if (projectId) {
-      const hasAccess = await checkPermissions(session.user.id, [
+      const hasAccess = await checkPermissions(requestUser.id, [
         `project:${projectId}:read`,
       ]);
 
@@ -30,7 +28,6 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Perform semantic search
     const results = await embeddingService.search(
       query,
       projectId,
@@ -38,9 +35,8 @@ export async function POST(request: NextRequest) {
       threshold
     );
 
-    // Log the search action
     await logAction({
-      actorId: session.user.id,
+      actorId: requestUser.id,
       actorType: "user",
       action: "semantic_search",
       targetType: projectId ? "project" : "global",
@@ -76,8 +72,8 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession();
-    if (!session) {
+    const requestUser = await resolveRequestUser(request);
+    if (!requestUser) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
@@ -93,9 +89,8 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Check permissions if searching within a project
     if (projectId) {
-      const hasAccess = await checkPermissions(session.user.id, [
+      const hasAccess = await checkPermissions(requestUser.id, [
         `project:${projectId}:read`,
       ]);
 
@@ -104,7 +99,6 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Get context for the query
     const context = await embeddingService.getContextForQuery(
       query,
       projectId || undefined,
@@ -115,6 +109,7 @@ export async function GET(request: NextRequest) {
       query,
       context,
       projectId,
+      limit,
     });
   } catch (error) {
     console.error("Context retrieval error:", error);
