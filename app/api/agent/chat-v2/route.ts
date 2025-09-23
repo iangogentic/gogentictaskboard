@@ -4,6 +4,7 @@ import { AgentService } from "@/lib/agent/service";
 import { conversationManager } from "@/lib/agent/conversation";
 import { ConversationAnalyzer } from "@/lib/agent/conversation-analyzer";
 import { ConversationStateService } from "@/lib/agent/conversation-state-service";
+import { prisma } from "@/lib/prisma";
 
 // Use Node.js runtime for full functionality
 export const runtime = "nodejs";
@@ -108,8 +109,7 @@ export async function POST(req: NextRequest) {
         );
 
         // Check if plan exists in the session
-        const sessionCheck =
-          await agentService.getSessionStatus(agentSessionId);
+        let sessionCheck = await agentService.getSessionStatus(agentSessionId);
         console.log("Session check:", {
           sessionId: agentSessionId,
           hasPlan: !!sessionCheck?.plan,
@@ -118,9 +118,31 @@ export async function POST(req: NextRequest) {
           sessionState: sessionCheck?.state,
         });
 
+        if (
+          !sessionCheck?.plan &&
+          currentState.pendingConfirmation?.planSnapshot
+        ) {
+          console.log("Restoring plan from pending confirmation snapshot");
+          await prisma.agentSession.update({
+            where: { id: agentSessionId },
+            data: {
+              plan: currentState.pendingConfirmation.planSnapshot as any,
+              updatedAt: new Date(),
+            },
+          });
+
+          sessionCheck = await agentService.getSessionStatus(agentSessionId);
+          console.log("Session reloaded after restoration:", {
+            sessionId: agentSessionId,
+            hasPlan: !!sessionCheck?.plan,
+            planId: sessionCheck?.plan?.id,
+            planSteps: sessionCheck?.plan?.steps?.length,
+            sessionState: sessionCheck?.state,
+          });
+        }
+
         if (!sessionCheck?.plan) {
-          // The plan hasn't been stored yet - this is the issue!
-          console.error("Plan not found in session, need to wait or re-fetch");
+          console.error("Plan not found in session after restoration attempt");
           throw new Error(
             "Plan not yet available in session. Please try again."
           );
@@ -162,14 +184,14 @@ export async function POST(req: NextRequest) {
         // Update state to completed
         await ConversationStateService.updateState(
           conversationContext.conversation.id,
-          { phase: "completed" }
+          { phase: "completed", pendingConfirmation: null }
         );
 
         return NextResponse.json({
           response,
           conversationId: conversationContext.conversation.id,
           sessionId: agentSessionId,
-          conversationState: { phase: "completed" },
+          conversationState: { phase: "completed", pendingConfirmation: null },
           functionCalled: true,
         });
       } else if (analyzer.isRejection(message)) {
@@ -190,7 +212,7 @@ export async function POST(req: NextRequest) {
           {
             phase: "clarifying",
             clarificationCount: 0,
-            pendingConfirmation: undefined,
+            pendingConfirmation: null,
           }
         );
 
@@ -202,6 +224,61 @@ export async function POST(req: NextRequest) {
           functionCalled: false,
         });
       }
+    }
+
+    // Check if user is asking about capabilities
+    const lowerMessage = message.toLowerCase();
+    if (
+      lowerMessage.includes("capabilities") ||
+      lowerMessage.includes("what can you do") ||
+      lowerMessage.includes("what are you capable of") ||
+      lowerMessage.includes("tell me your abilities")
+    ) {
+      const capabilityResponse = `I can help you with project management and team coordination! Here are my main capabilities:
+
+**Project Management:**
+• Create and manage projects
+• Create, update, and track tasks
+• Search for projects and tasks
+• Generate project updates
+
+**Team Collaboration:**
+• Send messages via Slack (direct messages or channels)
+• Create daily summaries for the team
+• Link projects to Slack channels
+
+**Document Management:**
+• Create folders in Google Drive
+• Upload and download files
+• Share documents with team members
+• Search for files and documents
+
+**Knowledge Base:**
+• Search through project documentation
+• Index new documents for searchability
+• Answer questions about your projects
+
+**Workflow Automation:**
+• Create automated workflows
+• Schedule recurring tasks
+• Execute workflow templates
+
+I understand natural language, so just tell me what you need help with and I'll figure out how to do it!`;
+
+      await conversationManager.addMessage(
+        conversationContext.conversation.id,
+        "assistant",
+        capabilityResponse,
+        { phase: "completed" }
+      );
+
+      return NextResponse.json({
+        response: capabilityResponse,
+        conversationId: conversationContext.conversation.id,
+        sessionId: agentSessionId,
+        conversationState: { phase: "completed" },
+        functionCalled: false,
+      });
     }
 
     // Analyze user intent
@@ -235,6 +312,7 @@ export async function POST(req: NextRequest) {
           partialIntent: analysis.suggestedIntent,
           accumulatedEntities: analyzer.getAccumulatedEntities(),
         },
+        pendingConfirmation: null,
       };
 
       await ConversationStateService.updateState(
@@ -272,6 +350,8 @@ export async function POST(req: NextRequest) {
       planSteps: sessionAfterPlan?.plan?.steps?.length,
     });
 
+    const planSnapshot = JSON.parse(JSON.stringify(plan));
+
     // Check if this should be auto-executed or proposed
     const isReadOnly = plan.steps.every((step) => {
       const tool = agentService.getToolByName(step.tool);
@@ -297,6 +377,9 @@ export async function POST(req: NextRequest) {
         pendingConfirmation: {
           planId: plan.id,
           description: plan.description,
+          summary: plan.title,
+          stepCount: plan.steps.length,
+          planSnapshot,
         },
         workingMemory: {
           accumulatedEntities: analyzer.getAccumulatedEntities(),
@@ -313,6 +396,9 @@ export async function POST(req: NextRequest) {
         pendingConfirmation: {
           planId: plan.id,
           description: plan.description,
+          summary: plan.title,
+          stepCount: plan.steps.length,
+          planSnapshot,
         },
       },
       functionCalled: false,

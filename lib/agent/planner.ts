@@ -22,7 +22,9 @@ export class AgentPlanner {
       // Get available tools from registry
       const tools = toolRegistry.getAllTools();
       const toolDescriptions = tools
-        .map((tool: any) => `- ${tool.name}: ${tool.description}`)
+        .map(
+          (tool: any) => `- **${tool.name}** (exact name): ${tool.description}`
+        )
         .join("\n");
 
       // Retrieve relevant memory/context
@@ -89,8 +91,10 @@ export class AgentPlanner {
             }
 
             CRITICAL: Each step's "tool" field MUST be an EXACT tool name from the "Available tools" list above.
-            Common tool names include: create_project, get_projects, create_task, update_task, get_tasks, etc.
-            Do NOT use: user_input, ask_user, confirm, or any other made-up tool names.`,
+            Example actual tool names: search, create_project, create_task, update_task, list_tasks,
+            sendSlackMessage, createDriveFolder, createWorkflow, listWorkflows, etc.
+            Do NOT use made-up names like: user_input, ask_user, confirm, drive_create_folder, slack_send_dm.
+            The tool name MUST exactly match one from the list above!`,
           },
           {
             role: "user",
@@ -149,9 +153,9 @@ export class AgentPlanner {
               toolName === "confirm"
             ) {
               // These are not real tools - the plan should use actual action tools
-              // Default to rag_search tool as a safe fallback (search doesn't exist)
-              toolName = "rag_search";
-              // Ensure rag_search has basic parameters
+              // Default to search tool as a safe fallback
+              toolName = "search";
+              // Ensure search has basic parameters
               if (!s.parameters || Object.keys(s.parameters).length === 0) {
                 s.parameters = { query: request.slice(0, 100) };
               }
@@ -159,29 +163,46 @@ export class AgentPlanner {
               toolName?.includes("create") &&
               toolName?.includes("project")
             ) {
-              toolName = "create_project";
+              toolName = "createProject";
             } else if (
               toolName?.includes("create") &&
               toolName?.includes("task")
             ) {
-              toolName = "create_task";
+              toolName = "createTask";
             } else if (
               toolName?.includes("update") &&
               toolName?.includes("task")
             ) {
-              toolName = "update_task";
+              toolName = "updateTask";
+            } else if (
+              toolName === "slack_send_dm" ||
+              toolName === "send_slack_message"
+            ) {
+              toolName = "sendSlackMessage";
+            } else if (
+              toolName === "drive_create_folder" ||
+              toolName === "create_drive_folder"
+            ) {
+              toolName = "createDriveFolder";
+            } else if (toolName === "get_users" || toolName === "list_users") {
+              toolName = "get_users"; // This one is correct
+            } else if (
+              toolName?.includes("workflow") &&
+              toolName?.includes("create")
+            ) {
+              toolName = "createWorkflow";
             } else if (
               toolName?.includes("search") ||
               toolName?.includes("get")
             ) {
-              toolName = "rag_search";
-              // Ensure rag_search has basic parameters
+              toolName = "search";
+              // Ensure search has basic parameters
               if (!s.parameters || Object.keys(s.parameters).length === 0) {
                 s.parameters = { query: request.slice(0, 100) };
               }
             } else {
-              // Final fallback to rag_search (search tool doesn't exist)
-              toolName = "rag_search";
+              // Final fallback to search
+              toolName = "search";
               if (!s.parameters || Object.keys(s.parameters).length === 0) {
                 s.parameters = { query: request.slice(0, 100) };
               }
@@ -235,7 +256,7 @@ export class AgentPlanner {
           order: 1,
           title: "Search for relevant information",
           description: "Search the system for relevant data",
-          tool: "rag_search",
+          tool: "search",
           parameters: { query: request.slice(0, 100) },
           status: "pending",
         },
@@ -282,7 +303,7 @@ export class AgentPlanner {
     } catch (error) {
       return {
         intent: "general",
-        requiredTools: ["rag_search"],
+        requiredTools: ["search"],
         suggestedParameters: {},
       };
     }
@@ -293,18 +314,8 @@ export class AgentPlanner {
     // Sort steps by dependencies
     const optimizedSteps = [...plan.steps].sort((a, b) => {
       // Prioritize search and analysis tools first
-      if (
-        a.tool.includes("rag_search") ||
-        a.tool.includes("search") ||
-        a.tool.includes("analyze")
-      )
-        return -1;
-      if (
-        b.tool.includes("rag_search") ||
-        b.tool.includes("search") ||
-        b.tool.includes("analyze")
-      )
-        return 1;
+      if (a.tool.includes("search") || a.tool.includes("analyze")) return -1;
+      if (b.tool.includes("search") || b.tool.includes("analyze")) return 1;
 
       // Then creation tools
       if (a.tool.includes("create")) return -1;
@@ -341,11 +352,9 @@ export class AgentPlanner {
     // Fix and validate each step
     plan.steps.forEach((step, index) => {
       // Auto-fix invalid tool names (for plans stored before the fix)
-      if (step.tool === "get_projects" || step.tool === "search") {
-        console.log(
-          `Auto-fixing invalid tool name: ${step.tool} -> rag_search`
-        );
-        step.tool = "rag_search";
+      if (step.tool === "get_projects" || step.tool === "rag_search") {
+        console.log(`Auto-fixing invalid tool name: ${step.tool} -> search`);
+        step.tool = "search";
         if (!step.parameters || Object.keys(step.parameters).length === 0) {
           step.parameters = { query: "projects" };
         }
