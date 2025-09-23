@@ -105,7 +105,7 @@ export async function POST(req: NextRequest) {
           response += `**Completed steps:**\n`;
           result.steps.forEach((step, index) => {
             if (step.status === "completed") {
-              response += `${index + 1}. ✓ ${step.title}\n`;
+              response += `${index + 1}. ✓ ${step.tool}\n`;
             }
           });
 
