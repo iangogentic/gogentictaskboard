@@ -2,6 +2,14 @@ import { prisma } from "@/lib/prisma";
 import { ConversationAnalyzer } from "./conversation-analyzer";
 import { AgentContext } from "./types";
 
+export interface PendingConfirmation {
+  planId: string;
+  description?: string;
+  summary?: string;
+  stepCount?: number;
+  planSnapshot?: any;
+}
+
 export interface ConversationStateData {
   phase: "clarifying" | "proposing" | "executing" | "completed";
   entities: Record<string, any>;
@@ -10,19 +18,12 @@ export interface ConversationStateData {
     lastTopic?: string;
     accumulatedEntities?: Record<string, any>;
   };
+  pendingConfirmation?: PendingConfirmation | null;
   confidence: number;
   clarificationCount: number;
   agentSessionId?: string;
-  pendingConfirmation?: {
-    planId: string;
-    description: string;
-  };
 }
 
-/**
- * Service for managing conversation state in the database
- * This ensures state persistence and security (no client control)
- */
 export class ConversationStateService {
   private static analyzers = new Map<string, ConversationAnalyzer>();
 
@@ -51,12 +52,13 @@ export class ConversationStateService {
           clarificationCount: existingState.clarificationCount,
           agentSessionId: existingState.agentSessionId || undefined,
           pendingConfirmation:
-            (existingState as any).pendingConfirmation || undefined,
+            (existingState.pendingConfirmation as PendingConfirmation | null) ??
+            null,
         };
       }
 
       // Create new state if doesn't exist
-      const newState = await prisma.conversationState.create({
+      await prisma.conversationState.create({
         data: {
           conversationId,
           phase: "clarifying",
@@ -74,6 +76,7 @@ export class ConversationStateService {
         workingMemory: { accumulatedEntities: {} },
         confidence: 0.5,
         clarificationCount: 0,
+        pendingConfirmation: null,
       };
     } catch (error) {
       // If ConversationState table doesn't exist yet, return default state
@@ -87,6 +90,7 @@ export class ConversationStateService {
         workingMemory: { accumulatedEntities: {} },
         confidence: 0.5,
         clarificationCount: 0,
+        pendingConfirmation: null,
       };
     }
   }
@@ -99,29 +103,40 @@ export class ConversationStateService {
     state: Partial<ConversationStateData>
   ): Promise<void> {
     try {
+      const createData = {
+        conversationId,
+        phase: state.phase ?? "clarifying",
+        entities: state.entities ?? {},
+        workingMemory: state.workingMemory ?? {},
+        accumulatedEntities: state.workingMemory?.accumulatedEntities ?? {},
+        confidence: state.confidence ?? 0.5,
+        clarificationCount: state.clarificationCount ?? 0,
+        agentSessionId: state.agentSessionId,
+        pendingConfirmation:
+          state.pendingConfirmation === undefined
+            ? null
+            : (state.pendingConfirmation as PendingConfirmation | null),
+      } as any;
+
+      const updateData: Record<string, any> = {
+        phase: state.phase,
+        entities: state.entities,
+        workingMemory: state.workingMemory,
+        accumulatedEntities: state.workingMemory?.accumulatedEntities,
+        confidence: state.confidence,
+        clarificationCount: state.clarificationCount,
+        agentSessionId: state.agentSessionId,
+      };
+
+      if (state.pendingConfirmation !== undefined) {
+        updateData.pendingConfirmation =
+          state.pendingConfirmation as PendingConfirmation | null;
+      }
+
       await prisma.conversationState.upsert({
         where: { conversationId },
-        create: {
-          conversationId,
-          phase: state.phase || "clarifying",
-          entities: state.entities || {},
-          workingMemory: state.workingMemory || {},
-          accumulatedEntities: state.workingMemory?.accumulatedEntities || {},
-          confidence: state.confidence || 0.5,
-          clarificationCount: state.clarificationCount || 0,
-          agentSessionId: state.agentSessionId,
-          pendingConfirmation: state.pendingConfirmation as any,
-        },
-        update: {
-          phase: state.phase,
-          entities: state.entities,
-          workingMemory: state.workingMemory,
-          accumulatedEntities: state.workingMemory?.accumulatedEntities,
-          confidence: state.confidence,
-          clarificationCount: state.clarificationCount,
-          agentSessionId: state.agentSessionId,
-          pendingConfirmation: state.pendingConfirmation as any,
-        },
+        create: createData,
+        update: updateData,
       });
     } catch (error) {
       // If table doesn't exist, log but don't fail

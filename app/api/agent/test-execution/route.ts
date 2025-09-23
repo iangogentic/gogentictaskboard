@@ -47,7 +47,7 @@ export async function GET(req: NextRequest) {
         steps: result.steps?.map((s) => ({
           tool: s.tool,
           status: s.status,
-          result: s.result,
+          output: s.output,
         })),
       },
     });
