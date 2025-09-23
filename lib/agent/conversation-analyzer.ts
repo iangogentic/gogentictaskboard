@@ -20,11 +20,11 @@ export interface ConversationState {
   intent?: string;
   entities?: Record<string, any>;
   pendingConfirmation?: {
-    planId: string;  // Track plan ID instead of full plan
+    planId: string; // Track plan ID instead of full plan
     description: string;
   };
   clarificationCount: number;
-  confidence?: number;  // 0-1 scale
+  confidence?: number; // 0-1 scale
   workingMemory?: {
     partialIntent?: string;
     lastTopic?: string;
@@ -106,7 +106,7 @@ Current message: ${message}`,
       if (analysis.extractedEntities) {
         this.accumulatedEntities = {
           ...this.accumulatedEntities,
-          ...analysis.extractedEntities
+          ...analysis.extractedEntities,
         };
       }
 

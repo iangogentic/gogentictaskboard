@@ -12,7 +12,10 @@ export async function POST(req: NextRequest) {
     const idToken = body?.idToken as string | undefined;
 
     if (!idToken) {
-      return NextResponse.json({ error: "idToken is required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "idToken is required" },
+        { status: 400 }
+      );
     }
 
     const ticket = await client.verifyIdToken({
@@ -22,7 +25,10 @@ export async function POST(req: NextRequest) {
     const payload = ticket.getPayload();
 
     if (!payload?.email || !payload.sub) {
-      return NextResponse.json({ error: "Invalid Google token" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Invalid Google token" },
+        { status: 400 }
+      );
     }
 
     const email = payload.email.toLowerCase();

@@ -22,7 +22,10 @@ export class OAuthManager {
 
   async ensureSession(): Promise<StoredSession> {
     const existing = this.tokenStore.load();
-    if (existing && new Date(existing.tokenExpiresAt) > new Date(Date.now() + 60_000)) {
+    if (
+      existing &&
+      new Date(existing.tokenExpiresAt) > new Date(Date.now() + 60_000)
+    ) {
       return existing;
     }
     return await this.startFlow();
@@ -80,7 +83,9 @@ export class OAuthManager {
           const tokenSet = await client.callback(this.redirectUri, params, {
             code_verifier: codeVerifier,
           });
-          res.send("Google authentication successful. You can close this window and return to your IDE.");
+          res.send(
+            "Google authentication successful. You can close this window and return to your IDE."
+          );
           resolve(tokenSet);
         } catch (error: any) {
           console.error("OAuth callback error", error);

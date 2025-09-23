@@ -90,7 +90,9 @@ export async function POST(req: NextRequest) {
 
     // Restore accumulated entities from database state
     if (currentState.workingMemory?.accumulatedEntities) {
-      analyzer.setAccumulatedEntities(currentState.workingMemory.accumulatedEntities);
+      analyzer.setAccumulatedEntities(
+        currentState.workingMemory.accumulatedEntities
+      );
     }
 
     // Handle confirmation/rejection for proposals
@@ -100,11 +102,29 @@ export async function POST(req: NextRequest) {
     ) {
       if (analyzer.isConfirmation(message)) {
         // User confirmed - execute the plan
-        console.log("User confirmed, executing plan from session:", agentSessionId);
+        console.log(
+          "User confirmed, executing plan from session:",
+          agentSessionId
+        );
 
         // Check if plan exists in the session
-        const sessionCheck = await agentService.getSessionStatus(agentSessionId);
-        console.log("Session has plan?", !!sessionCheck?.plan);
+        const sessionCheck =
+          await agentService.getSessionStatus(agentSessionId);
+        console.log("Session check:", {
+          sessionId: agentSessionId,
+          hasPlan: !!sessionCheck?.plan,
+          planId: sessionCheck?.plan?.id,
+          planSteps: sessionCheck?.plan?.steps?.length,
+          sessionState: sessionCheck?.state,
+        });
+
+        if (!sessionCheck?.plan) {
+          // The plan hasn't been stored yet - this is the issue!
+          console.error("Plan not found in session, need to wait or re-fetch");
+          throw new Error(
+            "Plan not yet available in session. Please try again."
+          );
+        }
 
         // Approve the plan that's already in the session
         await agentService.approvePlan(agentSessionId, session.user.id);
@@ -170,7 +190,7 @@ export async function POST(req: NextRequest) {
           {
             phase: "clarifying",
             clarificationCount: 0,
-            pendingConfirmation: undefined
+            pendingConfirmation: undefined,
           }
         );
 
@@ -189,9 +209,10 @@ export async function POST(req: NextRequest) {
 
     // Use confidence-based clarification (only clarify if confidence < 0.7)
     const confidence = analysis.confidence || 0.5;
-    const shouldClarify = analysis.needsClarification &&
-                          confidence < 0.7 &&
-                          currentState.clarificationCount < 3;
+    const shouldClarify =
+      analysis.needsClarification &&
+      confidence < 0.7 &&
+      currentState.clarificationCount < 3;
 
     // If we need clarification
     if (shouldClarify) {
@@ -241,6 +262,16 @@ export async function POST(req: NextRequest) {
     const plan = await agentService.generatePlan(agentSessionId, message);
     console.log("Plan generated with ID:", plan.id);
 
+    // Verify plan was stored
+    const sessionAfterPlan =
+      await agentService.getSessionStatus(agentSessionId);
+    console.log("Session after plan generation:", {
+      sessionId: agentSessionId,
+      hasPlan: !!sessionAfterPlan?.plan,
+      planId: sessionAfterPlan?.plan?.id,
+      planSteps: sessionAfterPlan?.plan?.steps?.length,
+    });
+
     // Check if this should be auto-executed or proposed
     const isReadOnly = plan.steps.every((step) => {
       const tool = agentService.getToolByName(step.tool);
@@ -265,7 +296,7 @@ export async function POST(req: NextRequest) {
         phase: "proposing",
         pendingConfirmation: {
           planId: plan.id,
-          description: plan.description
+          description: plan.description,
         },
         workingMemory: {
           accumulatedEntities: analyzer.getAccumulatedEntities(),
@@ -281,13 +312,12 @@ export async function POST(req: NextRequest) {
         phase: "proposing",
         pendingConfirmation: {
           planId: plan.id,
-          description: plan.description
+          description: plan.description,
         },
       },
       functionCalled: false,
       requiresConfirmation: true,
     });
-
   } catch (error: any) {
     console.error("Chat error:", error);
 

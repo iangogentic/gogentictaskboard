@@ -19,7 +19,8 @@ export async function GET(req: NextRequest) {
     );
 
     // Generate a simple plan
-    const testRequest = "Create a project called 'Agent Test Project' for testing the agent system";
+    const testRequest =
+      "Create a project called 'Agent Test Project' for testing the agent system";
     const plan = await agentService.generatePlan(agentSession.id, testRequest);
 
     // Auto-approve the plan
@@ -34,30 +35,29 @@ export async function GET(req: NextRequest) {
       plan: {
         id: plan.id,
         title: plan.title,
-        steps: plan.steps?.map(s => ({
+        steps: plan.steps?.map((s) => ({
           tool: s.tool,
           title: s.title,
-          status: s.status
-        }))
+          status: s.status,
+        })),
       },
       result: {
         success: result.success,
         summary: result.summary,
-        steps: result.steps?.map(s => ({
+        steps: result.steps?.map((s) => ({
           tool: s.tool,
           status: s.status,
-          result: s.result
-        }))
-      }
+          result: s.result,
+        })),
+      },
     });
-
   } catch (error: any) {
     console.error("Test execution error:", error);
     return NextResponse.json(
       {
         success: false,
         error: error.message,
-        stack: process.env.NODE_ENV === "development" ? error.stack : undefined
+        stack: process.env.NODE_ENV === "development" ? error.stack : undefined,
       },
       { status: 500 }
     );

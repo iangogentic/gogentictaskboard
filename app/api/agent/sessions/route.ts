@@ -17,10 +17,7 @@ export async function POST(request: NextRequest) {
     const { projectId } = body;
 
     // Create agent session
-    const session = await agentService.createSession(
-      requestUser.id,
-      projectId
-    );
+    const session = await agentService.createSession(requestUser.id, projectId);
 
     return NextResponse.json({ session });
   } catch (error: any) {
@@ -44,10 +41,7 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get("limit") || "10");
 
     // Get user sessions
-    const sessions = await agentService.listUserSessions(
-      requestUser.id,
-      limit
-    );
+    const sessions = await agentService.listUserSessions(requestUser.id, limit);
 
     return NextResponse.json({ sessions });
   } catch (error: any) {

@@ -107,70 +107,100 @@ export class AgentPlanner {
       );
 
       // Only log in debug mode
-      if (process.env.AGENT_DEBUG === 'true' || process.env.NODE_ENV === 'development') {
-        console.log("Raw plan data from GPT:", JSON.stringify(planData, null, 2));
+      if (
+        process.env.AGENT_DEBUG === "true" ||
+        process.env.NODE_ENV === "development"
+      ) {
+        console.log(
+          "Raw plan data from GPT:",
+          JSON.stringify(planData, null, 2)
+        );
       }
 
       // Check if we have steps at all
-      if (!planData.steps || !Array.isArray(planData.steps) || planData.steps.length === 0) {
+      if (
+        !planData.steps ||
+        !Array.isArray(planData.steps) ||
+        planData.steps.length === 0
+      ) {
         console.error("GPT returned plan without steps:", planData);
         // Return a simple fallback plan
         return this.createSimplePlan(request);
       }
 
       // Validate and fix tool names
-      const validatedSteps = (planData.steps || []).map((s: any, index: number) => {
-        let toolName = s.tool;
+      const validatedSteps = (planData.steps || []).map(
+        (s: any, index: number) => {
+          let toolName = s.tool;
 
-        // Check if tool exists
-        const tools = toolRegistry.getAllTools();
-        const toolExists = tools.find((tool: any) => tool.name === toolName);
+          // Check if tool exists
+          const tools = toolRegistry.getAllTools();
+          const toolExists = tools.find((tool: any) => tool.name === toolName);
 
-        if (!toolExists) {
-          console.warn(`Invalid tool '${toolName}' in plan. Attempting to fix...`);
+          if (!toolExists) {
+            console.warn(
+              `Invalid tool '${toolName}' in plan. Attempting to fix...`
+            );
 
-          // Try to map common mistakes to actual tools
-          if (toolName === "user_input" || toolName === "ask_user" || toolName === "confirm") {
-            // These are not real tools - the plan should use actual action tools
-            // Default to rag_search tool as a safe fallback (search doesn't exist)
-            toolName = "rag_search";
-            // Ensure rag_search has basic parameters
-            if (!s.parameters || Object.keys(s.parameters).length === 0) {
-              s.parameters = { query: request.slice(0, 100) };
+            // Try to map common mistakes to actual tools
+            if (
+              toolName === "user_input" ||
+              toolName === "ask_user" ||
+              toolName === "confirm"
+            ) {
+              // These are not real tools - the plan should use actual action tools
+              // Default to rag_search tool as a safe fallback (search doesn't exist)
+              toolName = "rag_search";
+              // Ensure rag_search has basic parameters
+              if (!s.parameters || Object.keys(s.parameters).length === 0) {
+                s.parameters = { query: request.slice(0, 100) };
+              }
+            } else if (
+              toolName?.includes("create") &&
+              toolName?.includes("project")
+            ) {
+              toolName = "create_project";
+            } else if (
+              toolName?.includes("create") &&
+              toolName?.includes("task")
+            ) {
+              toolName = "create_task";
+            } else if (
+              toolName?.includes("update") &&
+              toolName?.includes("task")
+            ) {
+              toolName = "update_task";
+            } else if (
+              toolName?.includes("search") ||
+              toolName?.includes("get")
+            ) {
+              toolName = "rag_search";
+              // Ensure rag_search has basic parameters
+              if (!s.parameters || Object.keys(s.parameters).length === 0) {
+                s.parameters = { query: request.slice(0, 100) };
+              }
+            } else {
+              // Final fallback to rag_search (search tool doesn't exist)
+              toolName = "rag_search";
+              if (!s.parameters || Object.keys(s.parameters).length === 0) {
+                s.parameters = { query: request.slice(0, 100) };
+              }
             }
-          } else if (toolName?.includes("create") && toolName?.includes("project")) {
-            toolName = "create_project";
-          } else if (toolName?.includes("create") && toolName?.includes("task")) {
-            toolName = "create_task";
-          } else if (toolName?.includes("update") && toolName?.includes("task")) {
-            toolName = "update_task";
-          } else if (toolName?.includes("search") || toolName?.includes("get")) {
-            toolName = "rag_search";
-            // Ensure rag_search has basic parameters
-            if (!s.parameters || Object.keys(s.parameters).length === 0) {
-              s.parameters = { query: request.slice(0, 100) };
-            }
-          } else {
-            // Final fallback to rag_search (search tool doesn't exist)
-            toolName = "rag_search";
-            if (!s.parameters || Object.keys(s.parameters).length === 0) {
-              s.parameters = { query: request.slice(0, 100) };
-            }
+
+            console.log(`Replaced invalid tool with '${toolName}'`);
           }
 
-          console.log(`Replaced invalid tool with '${toolName}'`);
+          return {
+            id: uuidv4(),
+            order: s.order || index + 1,
+            title: s.title || `Step ${index + 1}`,
+            description: s.description || "",
+            tool: toolName,
+            parameters: s.parameters || {},
+            status: "pending" as const,
+          };
         }
-
-        return {
-          id: uuidv4(),
-          order: s.order || index + 1,
-          title: s.title || `Step ${index + 1}`,
-          description: s.description || "",
-          tool: toolName,
-          parameters: s.parameters || {},
-          status: "pending" as const,
-        };
-      });
+      );
 
       // Create plan object
       const plan: AgentPlan = {
@@ -263,8 +293,18 @@ export class AgentPlanner {
     // Sort steps by dependencies
     const optimizedSteps = [...plan.steps].sort((a, b) => {
       // Prioritize search and analysis tools first
-      if (a.tool.includes("rag_search") || a.tool.includes("search") || a.tool.includes("analyze")) return -1;
-      if (b.tool.includes("rag_search") || b.tool.includes("search") || b.tool.includes("analyze")) return 1;
+      if (
+        a.tool.includes("rag_search") ||
+        a.tool.includes("search") ||
+        a.tool.includes("analyze")
+      )
+        return -1;
+      if (
+        b.tool.includes("rag_search") ||
+        b.tool.includes("search") ||
+        b.tool.includes("analyze")
+      )
+        return 1;
 
       // Then creation tools
       if (a.tool.includes("create")) return -1;
@@ -302,7 +342,9 @@ export class AgentPlanner {
     plan.steps.forEach((step, index) => {
       // Auto-fix invalid tool names (for plans stored before the fix)
       if (step.tool === "get_projects" || step.tool === "search") {
-        console.log(`Auto-fixing invalid tool name: ${step.tool} -> rag_search`);
+        console.log(
+          `Auto-fixing invalid tool name: ${step.tool} -> rag_search`
+        );
         step.tool = "rag_search";
         if (!step.parameters || Object.keys(step.parameters).length === 0) {
           step.parameters = { query: "projects" };
@@ -317,7 +359,11 @@ export class AgentPlanner {
 
       // Only check required parameters for tools that actually need them
       // Most tools have defaults or can work without parameters
-      const toolsThatNeedParams = ["create_project", "create_task", "update_task"];
+      const toolsThatNeedParams = [
+        "create_project",
+        "create_task",
+        "update_task",
+      ];
       if (toolsThatNeedParams.includes(step.tool)) {
         if (!step.parameters || Object.keys(step.parameters).length === 0) {
           errors.push(

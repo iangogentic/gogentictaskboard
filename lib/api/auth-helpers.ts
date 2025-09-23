@@ -11,7 +11,9 @@ export interface RequestUser {
   source: "nextauth" | "mcp";
 }
 
-export async function resolveRequestUser(req: NextRequest): Promise<RequestUser | null> {
+export async function resolveRequestUser(
+  req: NextRequest
+): Promise<RequestUser | null> {
   const session = await auth();
   if (session?.user?.id) {
     const user = await prisma.user.findUnique({

@@ -13,6 +13,10 @@ export interface ConversationStateData {
   confidence: number;
   clarificationCount: number;
   agentSessionId?: string;
+  pendingConfirmation?: {
+    planId: string;
+    description: string;
+  };
 }
 
 /**
@@ -39,12 +43,15 @@ export class ConversationStateService {
           phase: existingState.phase as ConversationStateData["phase"],
           entities: (existingState.entities as Record<string, any>) || {},
           workingMemory: {
-            ...(existingState.workingMemory as any || {}),
-            accumulatedEntities: (existingState.accumulatedEntities as Record<string, any>) || {}
+            ...((existingState.workingMemory as any) || {}),
+            accumulatedEntities:
+              (existingState.accumulatedEntities as Record<string, any>) || {},
           },
           confidence: existingState.confidence,
           clarificationCount: existingState.clarificationCount,
           agentSessionId: existingState.agentSessionId || undefined,
+          pendingConfirmation:
+            (existingState as any).pendingConfirmation || undefined,
         };
       }
 
@@ -71,7 +78,9 @@ export class ConversationStateService {
     } catch (error) {
       // If ConversationState table doesn't exist yet, return default state
       // This is a temporary fallback until migration is complete
-      console.warn("ConversationState table not available, using default state");
+      console.warn(
+        "ConversationState table not available, using default state"
+      );
       return {
         phase: "clarifying",
         entities: {},
@@ -101,6 +110,7 @@ export class ConversationStateService {
           confidence: state.confidence || 0.5,
           clarificationCount: state.clarificationCount || 0,
           agentSessionId: state.agentSessionId,
+          pendingConfirmation: state.pendingConfirmation as any,
         },
         update: {
           phase: state.phase,
@@ -110,6 +120,7 @@ export class ConversationStateService {
           confidence: state.confidence,
           clarificationCount: state.clarificationCount,
           agentSessionId: state.agentSessionId,
+          pendingConfirmation: state.pendingConfirmation as any,
         },
       });
     } catch (error) {
@@ -134,13 +145,16 @@ export class ConversationStateService {
       this.analyzers.set(conversationId, analyzer);
 
       // Clean up old analyzers after 1 hour
-      setTimeout(() => {
-        this.analyzers.delete(conversationId);
-      }, 60 * 60 * 1000);
+      setTimeout(
+        () => {
+          this.analyzers.delete(conversationId);
+        },
+        60 * 60 * 1000
+      );
     } else {
       // Update history if provided
       if (history && history.length > 0) {
-        history.forEach(msg => {
+        history.forEach((msg) => {
           analyzer!.addToHistory(msg.role as "user" | "assistant", msg.content);
         });
       }

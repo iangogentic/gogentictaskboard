@@ -315,6 +315,7 @@ model ConversationState {
   phase               String       @default("clarifying")
   entities            Json?
   workingMemory       Json?
+  pendingConfirmation Json?
   accumulatedEntities Json?
   confidence          Float        @default(0.5)
   clarificationCount  Int          @default(0)

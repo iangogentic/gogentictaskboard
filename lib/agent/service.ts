@@ -151,7 +151,7 @@ export class AgentService {
     console.log("Approving plan for session:", {
       sessionId,
       hasPlan: !!session.plan,
-      planSteps: session.plan?.steps?.length || 0
+      planSteps: session.plan?.steps?.length || 0,
     });
 
     if (!session.plan) {
@@ -203,7 +203,7 @@ export class AgentService {
       hasSteps: !!session.plan.steps,
       stepsCount: session.plan.steps?.length || 0,
       planId: session.plan.id,
-      planTitle: session.plan.title
+      planTitle: session.plan.title,
     });
 
     // Check if plan has steps

@@ -16,7 +16,8 @@ export class AgentApiClient {
   }
 
   private async getSession(): Promise<StoredSession> {
-    const session = this.currentSession ?? (await this.oauthManager.ensureSession());
+    const session =
+      this.currentSession ?? (await this.oauthManager.ensureSession());
     this.currentSession = session;
     return session;
   }

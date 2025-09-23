@@ -7,10 +7,10 @@ import { prisma } from "@/lib/prisma";
 
 // Define allowed operations whitelist
 const ALLOWED_OPERATIONS = {
-  project: ['findMany', 'findUnique', 'findFirst', 'count'],
-  task: ['findMany', 'findUnique', 'findFirst', 'count'],
-  user: ['findMany', 'findUnique', 'count'],
-  update: ['findMany', 'findFirst', 'count'],
+  project: ["findMany", "findUnique", "findFirst", "count"],
+  task: ["findMany", "findUnique", "findFirst", "count"],
+  user: ["findMany", "findUnique", "count"],
+  update: ["findMany", "findFirst", "count"],
   // Explicitly block all mutations in production
   // Uncomment specific operations only after security review
   // project: ['create', 'update'],
@@ -19,9 +19,16 @@ const ALLOWED_OPERATIONS = {
 
 // Dangerous operations that should never be allowed
 const BLOCKED_OPERATIONS = [
-  'delete', 'deleteMany', 'updateMany', 'createMany',
-  '$executeRaw', '$executeRawUnsafe', '$queryRaw', '$queryRawUnsafe',
-  '$transaction', 'upsert'
+  "delete",
+  "deleteMany",
+  "updateMany",
+  "createMany",
+  "$executeRaw",
+  "$executeRawUnsafe",
+  "$queryRaw",
+  "$queryRawUnsafe",
+  "$transaction",
+  "upsert",
 ];
 
 export interface ExecutionResult {
