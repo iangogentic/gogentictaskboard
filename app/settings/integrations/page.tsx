@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/card";
 import { CheckCircle, XCircle, Loader2 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { toast } from "sonner";
+import { useToast } from "@/hooks/use-toast";
 
 interface Integration {
   id: string;
@@ -26,6 +26,7 @@ export default function IntegrationsPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { toast } = useToast();
   const [integrations, setIntegrations] = useState<Integration[]>([]);
   const [loading, setLoading] = useState(true);
   const [connecting, setConnecting] = useState<string | null>(null);
@@ -42,16 +43,22 @@ export default function IntegrationsPage() {
     const success = searchParams.get("success");
 
     if (error === "google_auth_denied") {
-      toast.error("Google Drive authorization was cancelled");
+      toast({
+        title: "Google Drive authorization was cancelled",
+        variant: "destructive",
+      });
     } else if (error === "slack_auth_denied") {
-      toast.error("Slack authorization was cancelled");
+      toast({
+        title: "Slack authorization was cancelled",
+        variant: "destructive",
+      });
     }
 
     if (success === "google") {
-      toast.success("Successfully connected Google Drive!");
+      toast({ title: "Successfully connected Google Drive!" });
       fetchIntegrations();
     } else if (success === "slack") {
-      toast.success("Successfully connected Slack!");
+      toast({ title: "Successfully connected Slack!" });
       fetchIntegrations();
     }
   }, [searchParams]);
@@ -71,7 +78,7 @@ export default function IntegrationsPage() {
       }
     } catch (error) {
       console.error("Failed to fetch integrations:", error);
-      toast.error("Failed to load integrations");
+      toast({ title: "Failed to load integrations", variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -88,11 +95,17 @@ export default function IntegrationsPage() {
         // Redirect to Google OAuth
         window.location.href = data.authUrl;
       } else {
-        toast.error("Failed to start Google Drive authorization");
+        toast({
+          title: "Failed to start Google Drive authorization",
+          variant: "destructive",
+        });
       }
     } catch (error) {
       console.error("Google Drive connection error:", error);
-      toast.error("Failed to connect Google Drive");
+      toast({
+        title: "Failed to connect Google Drive",
+        variant: "destructive",
+      });
       setConnecting(null);
     }
   };
@@ -108,11 +121,14 @@ export default function IntegrationsPage() {
         // Redirect to Slack OAuth
         window.location.href = data.authUrl;
       } else {
-        toast.error("Failed to start Slack authorization");
+        toast({
+          title: "Failed to start Slack authorization",
+          variant: "destructive",
+        });
       }
     } catch (error) {
       console.error("Slack connection error:", error);
-      toast.error("Failed to connect Slack");
+      toast({ title: "Failed to connect Slack", variant: "destructive" });
       setConnecting(null);
     }
   };
@@ -124,16 +140,22 @@ export default function IntegrationsPage() {
       });
 
       if (response.ok) {
-        toast.success(
-          `Disconnected ${type === "google_drive" ? "Google Drive" : "Slack"}`
-        );
+        toast({
+          title: `Disconnected ${type === "google_drive" ? "Google Drive" : "Slack"}`,
+        });
         fetchIntegrations();
       } else {
-        toast.error("Failed to disconnect integration");
+        toast({
+          title: "Failed to disconnect integration",
+          variant: "destructive",
+        });
       }
     } catch (error) {
       console.error("Disconnect error:", error);
-      toast.error("Failed to disconnect integration");
+      toast({
+        title: "Failed to disconnect integration",
+        variant: "destructive",
+      });
     }
   };
 
