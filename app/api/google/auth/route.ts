@@ -87,7 +87,7 @@ export async function GET(request: NextRequest) {
 
     // Redirect back to settings or integration page
     return NextResponse.redirect(
-      new URL("/settings/integrations?success=google_drive", request.url)
+      new URL("/settings/integrations?success=google", request.url)
     );
   } catch (error: any) {
     console.error("Google OAuth error:", error);

@@ -1,65 +1,71 @@
-'use client'
+"use client";
 
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import { 
-  LayoutDashboard, 
-  FolderOpen, 
-  Users, 
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import {
+  LayoutDashboard,
+  FolderOpen,
+  Users,
   Briefcase,
   BarChart3,
   Clock,
   FileText,
-  Settings
-} from 'lucide-react'
+  Settings,
+} from "lucide-react";
 
 const navItems = [
   {
-    href: '/',
-    label: 'Mission Control',
+    href: "/",
+    label: "Mission Control",
     icon: LayoutDashboard,
-    description: 'Portfolio overview'
+    description: "Portfolio overview",
   },
   {
-    href: '/projects',
-    label: 'Projects',
+    href: "/projects",
+    label: "Projects",
     icon: FolderOpen,
-    description: 'All projects'
+    description: "All projects",
   },
   {
-    href: '/my-work',
-    label: 'My Work',
+    href: "/my-work",
+    label: "My Work",
     icon: Briefcase,
-    description: 'Your tasks'
+    description: "Your tasks",
   },
   {
-    href: '/dashboard',
-    label: 'Dashboard',
+    href: "/dashboard",
+    label: "Dashboard",
     icon: BarChart3,
-    description: 'Analytics & metrics'
+    description: "Analytics & metrics",
   },
   {
-    href: '/reports',
-    label: 'Reports',
+    href: "/reports",
+    label: "Reports",
     icon: FileText,
-    description: 'Detailed reports'
+    description: "Detailed reports",
   },
   {
-    href: '/activity',
-    label: 'Activity',
+    href: "/activity",
+    label: "Activity",
     icon: Clock,
-    description: 'Recent updates'
+    description: "Recent updates",
   },
   {
-    href: '/team',
-    label: 'Team',
+    href: "/team",
+    label: "Team",
     icon: Users,
-    description: 'Team members'
-  }
-]
+    description: "Team members",
+  },
+  {
+    href: "/settings/integrations",
+    label: "Integrations",
+    icon: Settings,
+    description: "Connect services",
+  },
+];
 
 export default function MainNav() {
-  const pathname = usePathname()
+  const pathname = usePathname();
 
   return (
     <nav className="bg-bg border-b border-border">
@@ -67,35 +73,37 @@ export default function MainNav() {
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center">
             <Link href="/" className="flex items-center space-x-2">
-              <img 
-                src="/Gogentic.ai.png" 
-                alt="Gogentic.ai" 
+              <img
+                src="/Gogentic.ai.png"
+                alt="Gogentic.ai"
                 className="h-10 w-auto"
               />
             </Link>
-            
+
             <div className="hidden md:flex items-center space-x-1 ml-10">
               {navItems.map((item) => {
-                const Icon = item.icon
-                const isActive = pathname === item.href || 
-                  (item.href !== '/' && pathname.startsWith(item.href))
-                
+                const Icon = item.icon;
+                const isActive =
+                  pathname === item.href ||
+                  (item.href !== "/" && pathname.startsWith(item.href));
+
                 return (
                   <Link
                     key={item.href}
                     href={item.href}
                     className={`
                       flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200
-                      ${isActive 
-                        ? 'bg-brand/10 text-brand' 
-                        : 'text-muted hover:text-fg hover:bg-surface'
+                      ${
+                        isActive
+                          ? "bg-brand/10 text-brand"
+                          : "text-muted hover:text-fg hover:bg-surface"
                       }
                     `}
                   >
                     <Icon className="h-4 w-4" />
                     <span>{item.label}</span>
                   </Link>
-                )
+                );
               })}
             </div>
           </div>
@@ -116,29 +124,31 @@ export default function MainNav() {
       <div className="md:hidden border-t">
         <div className="grid grid-cols-3 gap-1 p-2">
           {navItems.slice(0, 6).map((item) => {
-            const Icon = item.icon
-            const isActive = pathname === item.href || 
-              (item.href !== '/' && pathname.startsWith(item.href))
-            
+            const Icon = item.icon;
+            const isActive =
+              pathname === item.href ||
+              (item.href !== "/" && pathname.startsWith(item.href));
+
             return (
               <Link
                 key={item.href}
                 href={item.href}
                 className={`
                   flex flex-col items-center justify-center p-3 rounded-md text-xs transition-all duration-200
-                  ${isActive 
-                    ? 'bg-brand/10 text-brand' 
-                    : 'text-muted hover:text-fg hover:bg-surface'
+                  ${
+                    isActive
+                      ? "bg-brand/10 text-brand"
+                      : "text-muted hover:text-fg hover:bg-surface"
                   }
                 `}
               >
                 <Icon className="h-5 w-5 mb-1" />
                 <span>{item.label}</span>
               </Link>
-            )
+            );
           })}
         </div>
       </div>
     </nav>
-  )
+  );
 }
