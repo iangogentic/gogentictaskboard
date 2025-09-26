@@ -140,8 +140,8 @@ export default function NewProjectPage() {
   };
 
   return (
-    <div className="min-h-screen bg-surface">
-      <div className="bg-white shadow-sm border-b">
+    <div className="min-h-screen bg-bg">
+      <div className="bg-surface border-b border-border">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-4">
@@ -152,8 +152,8 @@ export default function NewProjectPage() {
                 <ArrowLeft className="h-4 w-4 mr-1" />
                 Back
               </Link>
-              <div className="border-l pl-4">
-                <h1 className="text-xl font-semibold">New Project</h1>
+              <div className="border-l border-border pl-4">
+                <h1 className="text-xl font-semibold text-fg">New Project</h1>
               </div>
             </div>
           </div>
@@ -163,17 +163,17 @@ export default function NewProjectPage() {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <form
           onSubmit={handleSubmit}
-          className="bg-white rounded-lg shadow-sm border p-6 space-y-6"
+          className="bg-surface rounded-lg border border-border p-6 space-y-6"
         >
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+            <div className="bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-3 rounded">
               {error}
             </div>
           )}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-fg-muted mb-2">
+              <label className="block text-sm font-medium text-muted mb-2">
                 Project Title *
               </label>
               <input
@@ -183,13 +183,13 @@ export default function NewProjectPage() {
                 onChange={(e) =>
                   setFormData((prev) => ({ ...prev, title: e.target.value }))
                 }
-                className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-3 py-2 bg-bg border border-border text-fg rounded-md focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand"
                 placeholder="Enter project title"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-fg-muted mb-2">
+              <label className="block text-sm font-medium text-muted mb-2">
                 Branch *
               </label>
               <select
@@ -198,7 +198,7 @@ export default function NewProjectPage() {
                 onChange={(e) =>
                   setFormData((prev) => ({ ...prev, branch: e.target.value }))
                 }
-                className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-3 py-2 bg-bg border border-border text-fg rounded-md focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand"
               >
                 <option value="">Select branch</option>
                 {Object.values(BRANCHES).map((branch) => (
@@ -220,7 +220,7 @@ export default function NewProjectPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-fg-muted mb-2">
+              <label className="block text-sm font-medium text-muted mb-2">
                 Project Manager *
               </label>
               <select
@@ -229,7 +229,7 @@ export default function NewProjectPage() {
                 onChange={(e) =>
                   setFormData((prev) => ({ ...prev, pmId: e.target.value }))
                 }
-                className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-3 py-2 bg-bg border border-border text-fg rounded-md focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand"
               >
                 <option value="">Select PM</option>
                 {users.map((user) => (
@@ -241,7 +241,7 @@ export default function NewProjectPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-fg-muted mb-2">
+              <label className="block text-sm font-medium text-muted mb-2">
                 Status
               </label>
               <select
@@ -253,7 +253,7 @@ export default function NewProjectPage() {
                       .value as (typeof PROJECT_STATUS)[keyof typeof PROJECT_STATUS],
                   }))
                 }
-                className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-3 py-2 bg-bg border border-border text-fg rounded-md focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand"
               >
                 {Object.values(PROJECT_STATUS).map((status) => (
                   <option key={status} value={status}>
@@ -264,7 +264,7 @@ export default function NewProjectPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-fg-muted mb-2">
+              <label className="block text-sm font-medium text-muted mb-2">
                 Client Name *
               </label>
               <input
@@ -277,13 +277,13 @@ export default function NewProjectPage() {
                     clientName: e.target.value,
                   }))
                 }
-                className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-3 py-2 bg-bg border border-border text-fg rounded-md focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand"
                 placeholder="Client or company name"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-fg-muted mb-2">
+              <label className="block text-sm font-medium text-muted mb-2">
                 Client Email *
               </label>
               <input
@@ -296,13 +296,13 @@ export default function NewProjectPage() {
                     clientEmail: e.target.value,
                   }))
                 }
-                className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-3 py-2 bg-bg border border-border text-fg rounded-md focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand"
                 placeholder="client@example.com"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-fg-muted mb-2">
+              <label className="block text-sm font-medium text-muted mb-2">
                 Start Date
               </label>
               <input
@@ -314,12 +314,12 @@ export default function NewProjectPage() {
                     startDate: e.target.value,
                   }))
                 }
-                className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-3 py-2 bg-bg border border-border text-fg rounded-md focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-fg-muted mb-2">
+              <label className="block text-sm font-medium text-muted mb-2">
                 Target Delivery
               </label>
               <input
@@ -331,13 +331,13 @@ export default function NewProjectPage() {
                     targetDelivery: e.target.value,
                   }))
                 }
-                className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full px-3 py-2 bg-bg border border-border text-fg rounded-md focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-fg-muted mb-2">
+            <label className="block text-sm font-medium text-muted mb-2">
               Developers
             </label>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
@@ -347,16 +347,16 @@ export default function NewProjectPage() {
                     type="checkbox"
                     checked={formData.developerIds.includes(user.id)}
                     onChange={() => toggleDeveloper(user.id)}
-                    className="rounded text-indigo-600 focus:ring-indigo-500"
+                    className="rounded text-brand focus:ring-brand bg-bg border-border"
                   />
-                  <span className="text-sm">{user.name}</span>
+                  <span className="text-sm text-fg">{user.name}</span>
                 </label>
               ))}
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-fg-muted mb-2">
+            <label className="block text-sm font-medium text-muted mb-2">
               Notes
             </label>
             <textarea
@@ -365,7 +365,7 @@ export default function NewProjectPage() {
                 setFormData((prev) => ({ ...prev, notes: e.target.value }))
               }
               rows={4}
-              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-3 py-2 bg-bg border border-border text-fg rounded-md focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand"
               placeholder="Additional project notes..."
             />
           </div>
@@ -373,14 +373,14 @@ export default function NewProjectPage() {
           <div className="flex justify-end space-x-3 pt-4 border-t">
             <Link
               href="/"
-              className="px-4 py-2 border border-border text-fg-muted rounded-md hover:bg-surface"
+              className="px-4 py-2 border border-border text-muted rounded-md hover:bg-surface hover:text-fg"
             >
               Cancel
             </Link>
             <button
               type="submit"
               disabled={loading}
-              className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-4 py-2 bg-brand text-white rounded-md hover:bg-brand/80 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? "Creating..." : "Create Project"}
             </button>
