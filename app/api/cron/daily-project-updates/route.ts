@@ -24,7 +24,10 @@ export async function GET(request: NextRequest) {
     }
 
     const slackService = SlackService.getInstance();
-    const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3002";
+    const baseUrl =
+      process.env.NEXT_PUBLIC_APP_URL ||
+      process.env.NEXTAUTH_URL ||
+      "http://localhost:3002";
 
     // Get all users with Slack integration
     const integrations = await prisma.integrationCredential.findMany({
