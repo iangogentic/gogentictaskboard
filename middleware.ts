@@ -19,7 +19,8 @@ export default auth((req) => {
     nextUrl.pathname.startsWith("/test-error") ||
     nextUrl.pathname.startsWith("/api/test-sentry") ||
     nextUrl.pathname.startsWith("/api/test-slack") ||
-    nextUrl.pathname.startsWith("/api/google/test");
+    nextUrl.pathname.startsWith("/api/google/test") ||
+    nextUrl.pathname.startsWith("/api/google/debug");
 
   // Create response that will be used for all paths
   const response = NextResponse.next();
