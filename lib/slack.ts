@@ -440,6 +440,216 @@ export class SlackService {
       return false;
     }
   }
+
+  // Send daily project update request to user
+  async sendProjectUpdateRequest(
+    userId: string,
+    projects: Array<{
+      id: string;
+      title: string;
+      description: string | null;
+      status: string;
+      updatedAt: Date;
+    }>,
+    baseUrl: string
+  ): Promise<void> {
+    try {
+      // Get user's Slack ID from integration credentials
+      const userIntegration = await prisma.integrationCredential.findFirst({
+        where: {
+          userId,
+          type: "slack",
+        },
+      });
+
+      if (!userIntegration) {
+        console.log(`No Slack integration found for user ${userId}`);
+        return;
+      }
+
+      // Get Slack user ID - try multiple possible locations
+      const metadata = userIntegration.metadata as any;
+      const data = userIntegration.data as any;
+
+      const slackUserId =
+        metadata?.slackUserId ||
+        data?.authedUser?.id ||
+        data?.user?.id ||
+        data?.user_id;
+
+      if (!slackUserId) {
+        console.log(`No Slack user ID found for user ${userId}`);
+        return;
+      }
+
+      // Build the message blocks with clickable project links
+      const blocks = this.buildProjectUpdateBlocks(projects, baseUrl);
+
+      // Open a DM channel with the user
+      const dmChannel = await this.client.conversations.open({
+        users: slackUserId,
+      });
+
+      if (!dmChannel.channel?.id) {
+        throw new Error("Failed to open DM channel");
+      }
+
+      // Send the message
+      await this.sendMessage({
+        channel: dmChannel.channel.id,
+        text: `Daily Project Update Request - ${projects.length} projects need updates`,
+        blocks,
+      });
+
+      console.log(
+        `Sent project update request to user ${userId} for ${projects.length} projects`
+      );
+    } catch (error: any) {
+      console.error(
+        `Failed to send project update request to user ${userId}:`,
+        error
+      );
+      throw error;
+    }
+  }
+
+  // Build message blocks for project update request
+  private buildProjectUpdateBlocks(
+    projects: Array<{
+      id: string;
+      title: string;
+      description: string | null;
+      status: string;
+      updatedAt: Date;
+    }>,
+    baseUrl: string
+  ): any[] {
+    const blocks: any[] = [
+      {
+        type: "header",
+        text: {
+          type: "plain_text",
+          text: "📋 Daily Project Update Request",
+          emoji: true,
+        },
+      },
+      {
+        type: "section",
+        text: {
+          type: "mrkdwn",
+          text: `Good morning! Please provide status updates for your ${projects.length} active project${projects.length > 1 ? "s" : ""}:`,
+        },
+      },
+      {
+        type: "divider",
+      },
+    ];
+
+    // Add each project as a clickable link
+    projects.forEach((project, index) => {
+      const daysSinceUpdate = Math.floor(
+        (Date.now() - project.updatedAt.getTime()) / (1000 * 60 * 60 * 24)
+      );
+
+      const statusEmoji = this.getStatusEmoji(project.status);
+      const updateIndicator =
+        daysSinceUpdate > 3 ? "🔴" : daysSinceUpdate > 1 ? "🟡" : "🟢";
+
+      blocks.push({
+        type: "section",
+        text: {
+          type: "mrkdwn",
+          text: `${index + 1}. ${statusEmoji} *<${baseUrl}/projects/${project.id}|${project.title}>*\n   Status: _${project.status}_ | Last updated: _${daysSinceUpdate} day${daysSinceUpdate !== 1 ? "s" : ""} ago_ ${updateIndicator}`,
+        },
+        accessory: {
+          type: "button",
+          text: {
+            type: "plain_text",
+            text: "Update",
+            emoji: true,
+          },
+          url: `${baseUrl}/projects/${project.id}#update`,
+          action_id: `update_project_${project.id}`,
+        },
+      });
+
+      // Add description if available
+      if (project.description) {
+        blocks.push({
+          type: "context",
+          elements: [
+            {
+              type: "plain_text",
+              text:
+                project.description.substring(0, 150) +
+                (project.description.length > 150 ? "..." : ""),
+              emoji: false,
+            },
+          ],
+        });
+      }
+    });
+
+    // Add footer with action buttons
+    blocks.push({
+      type: "divider",
+    });
+
+    blocks.push({
+      type: "section",
+      text: {
+        type: "mrkdwn",
+        text: "_Click on any project name to view details or use the Update button to add a status update._",
+      },
+    });
+
+    blocks.push({
+      type: "actions",
+      elements: [
+        {
+          type: "button",
+          text: {
+            type: "plain_text",
+            text: "📊 View All Projects",
+            emoji: true,
+          },
+          url: `${baseUrl}/projects`,
+          action_id: "view_all_projects",
+        },
+        {
+          type: "button",
+          text: {
+            type: "plain_text",
+            text: "➕ Create New Project",
+            emoji: true,
+          },
+          url: `${baseUrl}/projects/new`,
+          action_id: "create_project",
+        },
+      ],
+    });
+
+    return blocks;
+  }
+
+  // Helper to get status emoji
+  private getStatusEmoji(status: string): string {
+    switch (status.toLowerCase()) {
+      case "planning":
+        return "📝";
+      case "in_progress":
+        return "🚀";
+      case "review":
+        return "👀";
+      case "blocked":
+        return "🚧";
+      case "completed":
+      case "done":
+        return "✅";
+      default:
+        return "📌";
+    }
+  }
 }
 
 // Export singleton instance as slackService
