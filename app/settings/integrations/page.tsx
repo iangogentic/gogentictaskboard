@@ -179,8 +179,10 @@ function IntegrationsContent() {
   return (
     <div className="container mx-auto py-8 px-4">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold">Integrations</h1>
-        <p className="text-gray-600 mt-2">
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+          Integrations
+        </h1>
+        <p className="text-gray-600 dark:text-gray-400 mt-2">
           Connect your external services to enhance your project management
           experience
         </p>
@@ -236,7 +238,7 @@ function IntegrationsContent() {
           <CardContent>
             {googleIntegration?.connected ? (
               <div className="space-y-3">
-                <div className="text-sm text-gray-600">
+                <div className="text-sm text-gray-600 dark:text-gray-400">
                   Connected on{" "}
                   {new Date(
                     googleIntegration.connectedAt!
@@ -310,7 +312,7 @@ function IntegrationsContent() {
           <CardContent>
             {slackIntegration?.connected ? (
               <div className="space-y-3">
-                <div className="text-sm text-gray-600">
+                <div className="text-sm text-gray-600 dark:text-gray-400">
                   Connected on{" "}
                   {new Date(slackIntegration.connectedAt!).toLocaleDateString()}
                 </div>
@@ -342,9 +344,11 @@ function IntegrationsContent() {
         </Card>
       </div>
 
-      <div className="mt-8 p-4 bg-blue-50 rounded-lg">
-        <h3 className="font-semibold mb-2">How it works:</h3>
-        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700">
+      <div className="mt-8 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+        <h3 className="font-semibold mb-2 text-gray-900 dark:text-gray-100">
+          How it works:
+        </h3>
+        <ol className="list-decimal list-inside space-y-1 text-sm text-gray-700 dark:text-gray-300">
           <li>Click "Connect" on the integration you want to enable</li>
           <li>You'll be redirected to authorize access</li>
           <li>Once approved, you'll return here with the integration active</li>
