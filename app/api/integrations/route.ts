@@ -25,11 +25,22 @@ export async function GET(req: NextRequest) {
     // Transform to check if they have valid tokens (not dummy)
     const integrations = credentials.map((cred) => {
       const data = cred.data as any;
-      const hasValidToken =
-        data?.token &&
-        data.token !== "dummy-google-token" &&
-        data.token !== "dummy-slack-token" &&
-        !data.token.startsWith("dummy");
+
+      // Check for valid tokens based on integration type
+      let hasValidToken = false;
+      if (cred.type === "google_drive") {
+        // Google Drive uses accessToken
+        hasValidToken = !!(
+          data?.accessToken && data.accessToken !== "dummy-google-token"
+        );
+      } else {
+        // Slack and others use token
+        hasValidToken =
+          data?.token &&
+          data.token !== "dummy-google-token" &&
+          data.token !== "dummy-slack-token" &&
+          !data.token.startsWith("dummy");
+      }
 
       return {
         id: cred.id,
