@@ -107,13 +107,21 @@ export async function GET(request: NextRequest) {
     );
 
     // Redirect back to settings or integration page
+    const baseUrl =
+      process.env.NEXT_PUBLIC_APP_URL ||
+      process.env.NEXTAUTH_URL ||
+      request.url;
     return NextResponse.redirect(
-      new URL("/settings/integrations?success=slack", request.url)
+      new URL("/settings/integrations?success=slack", baseUrl)
     );
   } catch (error: any) {
     console.error("Slack OAuth error:", error);
+    const baseUrl =
+      process.env.NEXT_PUBLIC_APP_URL ||
+      process.env.NEXTAUTH_URL ||
+      request.url;
     return NextResponse.redirect(
-      new URL("/settings/integrations?error=slack_auth_failed", request.url)
+      new URL("/settings/integrations?error=slack_auth_failed", baseUrl)
     );
   }
 }
