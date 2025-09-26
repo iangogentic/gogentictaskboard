@@ -57,10 +57,10 @@ const navItems = [
     description: "Team members",
   },
   {
-    href: "/settings/integrations",
-    label: "Integrations",
+    href: "/settings",
+    label: "Settings",
     icon: Settings,
-    description: "Connect services",
+    description: "App settings",
   },
 ];
 
