@@ -20,8 +20,8 @@ export function GlassTopBar({ onAIToggle }: { onAIToggle?: () => void }) {
     <div
       className={`sticky top-0 z-20 backdrop-blur-xl ${clarity ? "bg-black/55" : "bg-black/25"} border-b border-white/15`}
     >
-      <div className="max-w-7xl mx-auto px-6 py-2 flex items-center justify-between">
-        {/* LEFT: Logo */}
+      <div className="max-w-7xl mx-auto px-6 py-2 flex items-center justify-between relative">
+        {/* LEFT: Logo & User */}
         <div className="flex items-center gap-4">
           <Link
             href="/glass-home"
@@ -32,9 +32,13 @@ export function GlassTopBar({ onAIToggle }: { onAIToggle?: () => void }) {
           {session?.user?.name && <Badge>{session.user.name}</Badge>}
         </div>
 
-        {/* RIGHT: Theme, AI & Sign Out */}
-        <div className="flex items-center gap-2">
+        {/* CENTER: Theme Menu */}
+        <div className="absolute left-1/2 -translate-x-1/2">
           <ThemeMenu />
+        </div>
+
+        {/* RIGHT: AI & Sign Out */}
+        <div className="flex items-center gap-2">
           {onAIToggle && (
             <button
               onClick={onAIToggle}
