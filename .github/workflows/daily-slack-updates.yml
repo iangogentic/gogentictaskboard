@@ -1,0 +1,31 @@
+name: Daily Slack Project Updates
+
+on:
+  schedule:
+    # Runs at 9 AM UTC every day (adjust for your timezone)
+    - cron: '0 9 * * *'
+  workflow_dispatch: # Allows manual triggering from GitHub UI
+
+jobs:
+  send-slack-updates:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Send Daily Project Updates
+        run: |
+          curl -X GET "${{ secrets.APP_URL }}/api/cron/daily-project-updates" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            -H "Content-Type: application/json" \
+            --fail \
+            --show-error \
+            --max-time 60
+
+      - name: Log Result
+        if: always()
+        run: |
+          if [ $? -eq 0 ]; then
+            echo "✅ Daily Slack updates sent successfully"
+          else
+            echo "❌ Failed to send daily Slack updates"
+            exit 1
+          fi
