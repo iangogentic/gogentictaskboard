@@ -99,7 +99,7 @@ export function ThemeMenu() {
       {menuOpen && (
         <div
           role="menu"
-          className="absolute left-1/2 -translate-x-1/2 mt-3 w-72 rounded-2xl border border-white/25 bg-black/60 backdrop-blur-xl p-2 shadow-[0_12px_40px_rgba(0,0,0,.35)] z-30"
+          className="absolute left-1/2 -translate-x-1/2 mt-3 w-72 rounded-2xl border border-white/25 bg-black/90 backdrop-blur-xl p-2 shadow-[0_12px_40px_rgba(0,0,0,.35)] z-30"
         >
           {/* Navigation Links */}
           <div className="px-3 py-2 text-xs uppercase tracking-wide text-white/70">
