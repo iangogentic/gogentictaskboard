@@ -100,24 +100,43 @@ export default function ClientWrapper({
       setLoadingCalendar(true);
       try {
         const response = await fetch("/api/calendar/events?type=today");
+
         if (response.ok) {
           const data = await response.json();
-          const formattedEvents: Meeting[] = data.events.map((event: any) => ({
-            id: event.id,
-            title: event.summary,
-            time: event.start
-              ? new Date(event.start).toLocaleTimeString("en-US", {
-                  hour: "numeric",
-                  minute: "2-digit",
-                  hour12: true,
-                })
-              : "All day",
-            location:
-              event.location ||
-              (event.hangoutLink ? "Google Meet" : "No location"),
-            link: event.hangoutLink || event.htmlLink || "",
-          }));
-          setCalendarEvents(formattedEvents);
+          console.log("Calendar API response:", data);
+
+          if (data.events && data.events.length > 0) {
+            const formattedEvents: Meeting[] = data.events.map(
+              (event: any) => ({
+                id: event.id,
+                title: event.summary,
+                time: event.start
+                  ? new Date(event.start).toLocaleTimeString("en-US", {
+                      hour: "numeric",
+                      minute: "2-digit",
+                      hour12: true,
+                    })
+                  : "All day",
+                location:
+                  event.location ||
+                  (event.hangoutLink ? "Google Meet" : "No location"),
+                link: event.hangoutLink || event.htmlLink || "",
+              })
+            );
+            setCalendarEvents(formattedEvents);
+          } else {
+            console.log("No calendar events found for today");
+            setCalendarEvents([]);
+          }
+        } else {
+          const errorData = await response.json();
+          console.error("Calendar API error:", response.status, errorData);
+
+          if (response.status === 403) {
+            console.log(
+              "Google Calendar not connected. Please reconnect Google Workspace in Settings → Integrations"
+            );
+          }
         }
       } catch (error) {
         console.error("Failed to fetch calendar events:", error);

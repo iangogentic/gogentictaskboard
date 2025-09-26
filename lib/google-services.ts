@@ -615,16 +615,31 @@ export class GoogleServices {
       const calendar = await this.getCalendarClient(userId);
 
       const now = new Date();
+      // Set to local timezone midnight
       const startOfDay = new Date(
         now.getFullYear(),
         now.getMonth(),
-        now.getDate()
+        now.getDate(),
+        0,
+        0,
+        0,
+        0
       );
       const endOfDay = new Date(
         now.getFullYear(),
         now.getMonth(),
-        now.getDate() + 1
+        now.getDate() + 1,
+        0,
+        0,
+        0,
+        0
       );
+
+      console.log("Fetching events for today:", {
+        startOfDay: startOfDay.toISOString(),
+        endOfDay: endOfDay.toISOString(),
+        now: now.toISOString(),
+      });
 
       const response = await calendar.events.list({
         calendarId: "primary",
@@ -632,8 +647,10 @@ export class GoogleServices {
         timeMax: endOfDay.toISOString(),
         singleEvents: true,
         orderBy: "startTime",
+        maxResults: 10,
       });
 
+      console.log(`Found ${response.data.items?.length || 0} events for today`);
       return response.data.items || [];
     } catch (error) {
       console.error("Failed to fetch today's meetings:", error);
