@@ -143,7 +143,7 @@ function IntegrationsContent() {
 
       if (response.ok) {
         toast({
-          title: `Disconnected ${type === "google_drive" ? "Google Drive" : "Slack"}`,
+          title: `Disconnected ${type === "google_drive" ? "Google Workspace" : "Slack"}`,
         });
         fetchIntegrations();
       } else {
