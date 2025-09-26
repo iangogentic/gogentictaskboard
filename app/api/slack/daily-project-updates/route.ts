@@ -111,32 +111,42 @@ export async function GET(request: NextRequest) {
     }
 
     // Get all users with Slack integration
-    const usersWithSlack = await prisma.integrationCredential.findMany({
+    const integrations = await prisma.integrationCredential.findMany({
       where: {
         type: "slack",
       },
       select: {
         userId: true,
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
         metadata: true,
       },
     });
 
-    const users = usersWithSlack.map((integration) => ({
-      id: integration.userId,
-      name: integration.user.name,
-      email: integration.user.email,
-      lastUpdateRequest:
-        (integration.metadata as any)?.lastProjectUpdateRequest || null,
-    }));
+    // Get user details for each integration
+    const users = await Promise.all(
+      integrations.map(async (integration) => {
+        if (!integration.userId) {
+          return null;
+        }
+        const user = await prisma.user.findUnique({
+          where: { id: integration.userId },
+          select: { id: true, name: true, email: true },
+        });
+        return user
+          ? {
+              id: integration.userId,
+              name: user.name,
+              email: user.email,
+              lastUpdateRequest:
+                (integration.metadata as any)?.lastProjectUpdateRequest || null,
+            }
+          : null;
+      })
+    );
 
-    return NextResponse.json({ users });
+    // Filter out null users
+    const validUsers = users.filter((user) => user !== null);
+
+    return NextResponse.json({ users: validUsers });
   } catch (error: any) {
     console.error("Failed to get users with Slack:", error);
     return NextResponse.json({ error: "Failed to get users" }, { status: 500 });
