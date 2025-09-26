@@ -87,12 +87,12 @@ export async function GET(request: NextRequest) {
           select: {
             id: true,
             title: true,
-            description: true,
+            notes: true,
             status: true,
-            updatedAt: true,
+            lastUpdatedAt: true,
           },
           orderBy: {
-            updatedAt: "asc", // Oldest first (need updates most)
+            lastUpdatedAt: "asc", // Oldest first (need updates most)
           },
           take: 10, // Limit to 10 projects per user
         });

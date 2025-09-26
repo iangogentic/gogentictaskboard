@@ -447,9 +447,9 @@ export class SlackService {
     projects: Array<{
       id: string;
       title: string;
-      description: string | null;
+      notes: string | null;
       status: string;
-      updatedAt: Date;
+      lastUpdatedAt: Date;
     }>,
     baseUrl: string
   ): Promise<void> {
@@ -518,9 +518,9 @@ export class SlackService {
     projects: Array<{
       id: string;
       title: string;
-      description: string | null;
+      notes: string | null;
       status: string;
-      updatedAt: Date;
+      lastUpdatedAt: Date;
     }>,
     baseUrl: string
   ): any[] {
@@ -548,7 +548,7 @@ export class SlackService {
     // Add each project as a clickable link
     projects.forEach((project, index) => {
       const daysSinceUpdate = Math.floor(
-        (Date.now() - project.updatedAt.getTime()) / (1000 * 60 * 60 * 24)
+        (Date.now() - project.lastUpdatedAt.getTime()) / (1000 * 60 * 60 * 24)
       );
 
       const statusEmoji = this.getStatusEmoji(project.status);
@@ -573,16 +573,16 @@ export class SlackService {
         },
       });
 
-      // Add description if available
-      if (project.description) {
+      // Add notes if available
+      if (project.notes) {
         blocks.push({
           type: "context",
           elements: [
             {
               type: "plain_text",
               text:
-                project.description.substring(0, 150) +
-                (project.description.length > 150 ? "..." : ""),
+                project.notes.substring(0, 150) +
+                (project.notes.length > 150 ? "..." : ""),
               emoji: false,
             },
           ],

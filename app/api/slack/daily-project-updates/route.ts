@@ -52,12 +52,12 @@ export async function POST(request: NextRequest) {
       select: {
         id: true,
         title: true,
-        description: true,
+        notes: true,
         status: true,
-        updatedAt: true,
+        lastUpdatedAt: true,
       },
       orderBy: {
-        updatedAt: "desc",
+        lastUpdatedAt: "desc",
       },
     });
 
