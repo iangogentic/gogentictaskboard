@@ -39,6 +39,9 @@ export async function GET(request: NextRequest) {
     // Get user details for each integration
     const usersWithSlack = await Promise.all(
       integrations.map(async (integration) => {
+        if (!integration.userId) {
+          return { ...integration, user: null };
+        }
         const user = await prisma.user.findUnique({
           where: { id: integration.userId },
           select: { id: true, name: true },
@@ -56,6 +59,12 @@ export async function GET(request: NextRequest) {
     // Send updates to each user
     for (const integration of usersWithSlack) {
       try {
+        // Skip if no userId
+        if (!integration.userId || !integration.user) {
+          console.log("Skipping integration with missing user data");
+          continue;
+        }
+
         // Get user's active projects
         const projects = await prisma.project.findMany({
           where: {
