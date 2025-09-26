@@ -55,7 +55,9 @@ function IntegrationsContent() {
     }
 
     if (success === "google") {
-      toast({ title: "Successfully connected Google Drive!" });
+      toast({
+        title: "Successfully connected Google Workspace (Drive + Calendar)!",
+      });
       fetchIntegrations();
     } else if (success === "slack") {
       toast({ title: "Successfully connected Slack!" });
@@ -220,15 +222,15 @@ function IntegrationsContent() {
                     fill="#ffba00"
                   />
                 </svg>
-                <CardTitle>Google Drive</CardTitle>
+                <CardTitle>Google Workspace</CardTitle>
               </div>
               {googleIntegration?.connected && (
                 <CheckCircle className="h-5 w-5 text-green-500" />
               )}
             </div>
             <CardDescription>
-              Create folders, upload files, and manage documents directly from
-              your projects
+              Access Google Drive for file management and Google Calendar for
+              meeting integration in your dashboard
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -245,7 +247,7 @@ function IntegrationsContent() {
                   onClick={() => disconnectIntegration("google_drive")}
                   className="w-full"
                 >
-                  Disconnect Google Drive
+                  Disconnect Google Workspace
                 </Button>
               </div>
             ) : (
@@ -260,7 +262,7 @@ function IntegrationsContent() {
                     Connecting...
                   </>
                 ) : (
-                  "Connect Google Drive"
+                  "Connect Google Workspace"
                 )}
               </Button>
             )}
