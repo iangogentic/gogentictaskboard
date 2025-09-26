@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { type: string } }
+  { params }: { params: Promise<{ type: string }> }
 ) {
   try {
     const session = await getServerSession();
@@ -12,7 +12,7 @@ export async function DELETE(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { type } = params;
+    const { type } = await params;
 
     // Find and delete the integration credential
     const deleted = await prisma.integrationCredential.deleteMany({
