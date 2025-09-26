@@ -16,6 +16,11 @@ export async function GET(request: NextRequest) {
   try {
     // Verify cron secret if configured
     const authHeader = request.headers.get("authorization");
+
+    // Debug logging (remove after fixing)
+    console.log("CRON_SECRET exists:", !!process.env.CRON_SECRET);
+    console.log("Auth header:", authHeader?.substring(0, 20) + "...");
+
     if (
       process.env.CRON_SECRET &&
       authHeader !== `Bearer ${process.env.CRON_SECRET}`
