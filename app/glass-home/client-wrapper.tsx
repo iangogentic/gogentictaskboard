@@ -120,7 +120,7 @@ export default function ClientWrapper({
                 location:
                   event.location ||
                   (event.hangoutLink ? "Google Meet" : "No location"),
-                link: event.hangoutLink || event.htmlLink || "",
+                link: event.htmlLink || event.hangoutLink || "",
               })
             );
             setCalendarEvents(formattedEvents);
@@ -470,9 +470,17 @@ export default function ClientWrapper({
                 </div>
               ) : (
                 calendarEvents.map((ev) => (
-                  <div
+                  <a
                     key={ev.id}
-                    className={`p-3 rounded-xl border ${clarity ? "border-white/28 bg-white/18" : "border-white/12 bg-white/10"}`}
+                    href={ev.link || "#"}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={`block p-3 rounded-xl border transition-all cursor-pointer ${
+                      clarity
+                        ? "border-white/28 bg-white/18 hover:bg-white/25 hover:border-white/35"
+                        : "border-white/12 bg-white/10 hover:bg-white/15 hover:border-white/20"
+                    }`}
+                    title="Open in Google Calendar"
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex-1 min-w-0">
@@ -484,19 +492,14 @@ export default function ClientWrapper({
                           {ev.location}
                         </div>
                       </div>
-                      {ev.link && ev.location?.includes("Google Meet") && (
-                        <a
-                          href={ev.link}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="ml-2 p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors"
-                          title="Join Google Meet"
-                        >
+                      <div className="flex flex-col gap-2">
+                        <CalendarDays className="w-4 h-4 text-white/50" />
+                        {ev.location?.includes("Google Meet") && (
                           <Video className="w-4 h-4 text-white/70" />
-                        </a>
-                      )}
+                        )}
+                      </div>
                     </div>
-                  </div>
+                  </a>
                 ))
               )}
             </div>
