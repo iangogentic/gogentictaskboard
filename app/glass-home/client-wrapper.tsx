@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useTransition } from "react";
+import React, { useState, useTransition, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
   CalendarDays,
@@ -13,6 +13,7 @@ import {
   Bell,
   Link as LinkIcon,
   LogOut,
+  Video,
 } from "lucide-react";
 import { GlassCard, Badge, ProgressRing, ThemeMenu } from "@/components/glass";
 
@@ -83,11 +84,51 @@ export default function ClientWrapper({
   const [tasks, setTasks] = useState(initialData.tasks);
   const [newTaskTitle, setNewTaskTitle] = useState("");
   const [isPending, startTransition] = useTransition();
+  const [calendarEvents, setCalendarEvents] = useState<Meeting[]>(
+    initialData.meetings
+  );
+  const [loadingCalendar, setLoadingCalendar] = useState(false);
   const { clarity } = useTheme();
   const router = useRouter();
 
   const completed = tasks.filter((t) => t.done).length;
   const pct = Math.round((completed / Math.max(tasks.length, 1)) * 100);
+
+  // Fetch real calendar events
+  useEffect(() => {
+    const fetchCalendarEvents = async () => {
+      setLoadingCalendar(true);
+      try {
+        const response = await fetch("/api/calendar/events?type=today");
+        if (response.ok) {
+          const data = await response.json();
+          const formattedEvents: Meeting[] = data.events.map((event: any) => ({
+            id: event.id,
+            title: event.summary,
+            time: event.start
+              ? new Date(event.start).toLocaleTimeString("en-US", {
+                  hour: "numeric",
+                  minute: "2-digit",
+                  hour12: true,
+                })
+              : "All day",
+            location:
+              event.location ||
+              (event.hangoutLink ? "Google Meet" : "No location"),
+            link: event.hangoutLink || event.htmlLink || "",
+          }));
+          setCalendarEvents(formattedEvents);
+        }
+      } catch (error) {
+        console.error("Failed to fetch calendar events:", error);
+      } finally {
+        setLoadingCalendar(false);
+      }
+    };
+
+    fetchCalendarEvents();
+  }, []);
+
   const today = new Date().toLocaleDateString(undefined, {
     weekday: "long",
     month: "long",
@@ -402,22 +443,39 @@ export default function ClientWrapper({
             </div>
 
             <div className="space-y-3">
-              {initialData.meetings.length === 0 ? (
+              {loadingCalendar ? (
+                <div className="text-sm text-white/50">Loading calendar...</div>
+              ) : calendarEvents.length === 0 ? (
                 <div className="text-sm text-white/75">
-                  No upcoming meetings or tasks.
+                  No upcoming meetings today.
                 </div>
               ) : (
-                initialData.meetings.map((ev) => (
+                calendarEvents.map((ev) => (
                   <div
                     key={ev.id}
                     className={`p-3 rounded-xl border ${clarity ? "border-white/28 bg-white/18" : "border-white/12 bg-white/10"}`}
                   >
-                    <div className="font-medium truncate text-white">
-                      {ev.title}
-                    </div>
-                    <div className="text-sm text-white/85">{ev.time}</div>
-                    <div className="text-xs text-white/75 mt-0.5">
-                      {ev.location}
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1 min-w-0">
+                        <div className="font-medium truncate text-white">
+                          {ev.title}
+                        </div>
+                        <div className="text-sm text-white/85">{ev.time}</div>
+                        <div className="text-xs text-white/75 mt-0.5">
+                          {ev.location}
+                        </div>
+                      </div>
+                      {ev.link && ev.location?.includes("Google Meet") && (
+                        <a
+                          href={ev.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="ml-2 p-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors"
+                          title="Join Google Meet"
+                        >
+                          <Video className="w-4 h-4 text-white/70" />
+                        </a>
+                      )}
                     </div>
                   </div>
                 ))

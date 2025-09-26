@@ -1,0 +1,644 @@
+import { google, drive_v3, calendar_v3 } from "googleapis";
+import { OAuth2Client } from "google-auth-library";
+import { prisma } from "@/lib/prisma";
+import { auditService } from "@/lib/audit";
+
+export interface GoogleDriveConfig {
+  clientId?: string;
+  clientSecret?: string;
+  redirectUri?: string;
+}
+
+export interface DriveFile {
+  id: string;
+  name: string;
+  mimeType: string;
+  webViewLink?: string;
+  webContentLink?: string;
+  parents?: string[];
+  createdTime?: string;
+  modifiedTime?: string;
+  size?: string;
+}
+
+export interface DriveFolder {
+  id: string;
+  name: string;
+  webViewLink?: string;
+  parents?: string[];
+}
+
+export class GoogleServices {
+  private static instance: GoogleServices;
+  private oauth2Client: OAuth2Client | null = null;
+
+  private constructor() {
+    // Initialize lazily to ensure env vars are available
+  }
+
+  private getOAuth2Client(): OAuth2Client {
+    if (!this.oauth2Client) {
+      const clientId = process.env.GOOGLE_CLIENT_ID;
+      const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+      const redirectUri = process.env.GOOGLE_REDIRECT_URI;
+
+      if (!clientId || !clientSecret || !redirectUri) {
+        throw new Error(
+          `Missing Google OAuth configuration. ClientId: ${!!clientId}, Secret: ${!!clientSecret}, RedirectUri: ${!!redirectUri}`
+        );
+      }
+
+      this.oauth2Client = new google.auth.OAuth2(
+        clientId,
+        clientSecret,
+        redirectUri
+      );
+    }
+    return this.oauth2Client;
+  }
+
+  static getInstance(): GoogleServices {
+    if (!GoogleServices.instance) {
+      GoogleServices.instance = new GoogleServices();
+    }
+    return GoogleServices.instance;
+  }
+
+  // Get OAuth URL for user authorization
+  getAuthUrl(state?: string): string {
+    const scopes = [
+      "https://www.googleapis.com/auth/drive.file",
+      "https://www.googleapis.com/auth/drive.metadata.readonly",
+      "https://www.googleapis.com/auth/drive.readonly",
+      "https://www.googleapis.com/auth/calendar.readonly",
+      "https://www.googleapis.com/auth/calendar.events.readonly",
+    ];
+
+    return this.getOAuth2Client().generateAuthUrl({
+      access_type: "offline",
+      scope: scopes,
+      state: state,
+      prompt: "consent", // Force consent to get refresh token
+    });
+  }
+
+  // Exchange authorization code for tokens
+  async getTokens(code: string): Promise<{
+    access_token: string;
+    refresh_token?: string;
+    expiry_date?: number;
+  }> {
+    const { tokens } = await this.getOAuth2Client().getToken(code);
+    return {
+      access_token: tokens.access_token!,
+      refresh_token: tokens.refresh_token || undefined,
+      expiry_date: tokens.expiry_date || undefined,
+    };
+  }
+
+  // Get Drive client for a user
+  private async getDriveClient(userId: string): Promise<drive_v3.Drive> {
+    // Get user's Google Drive credentials
+    const credential = await prisma.integrationCredential.findFirst({
+      where: {
+        userId,
+        type: "google_drive",
+      },
+    });
+
+    if (!credential || !credential.data) {
+      throw new Error("Google Drive not connected for this user");
+    }
+
+    const tokens = credential.data as any;
+
+    // Set credentials (handle both field names for compatibility)
+    this.getOAuth2Client().setCredentials({
+      access_token: tokens.accessToken || tokens.token,
+      refresh_token: tokens.refreshToken,
+    });
+
+    // Handle token refresh if needed
+    this.getOAuth2Client().on("tokens", async (newTokens) => {
+      // Update stored tokens
+      await prisma.integrationCredential.update({
+        where: { id: credential.id },
+        data: {
+          data: {
+            ...tokens,
+            accessToken: newTokens.access_token,
+            expiryDate: newTokens.expiry_date,
+          },
+        },
+      });
+    });
+
+    return google.drive({ version: "v3", auth: this.getOAuth2Client() });
+  }
+
+  // Create a folder in Google Drive
+  async createFolder(
+    userId: string,
+    folderName: string,
+    parentFolderId?: string
+  ): Promise<DriveFolder> {
+    try {
+      const drive = await this.getDriveClient(userId);
+
+      const fileMetadata: drive_v3.Schema$File = {
+        name: folderName,
+        mimeType: "application/vnd.google-apps.folder",
+        parents: parentFolderId ? [parentFolderId] : undefined,
+      };
+
+      const response = await drive.files.create({
+        requestBody: fileMetadata,
+        fields: "id, name, webViewLink, parents",
+      });
+
+      const folder: DriveFolder = {
+        id: response.data.id!,
+        name: response.data.name!,
+        webViewLink: response.data.webViewLink || undefined,
+        parents: response.data.parents || undefined,
+      };
+
+      // Log the operation
+      await auditService.log({
+        actorId: userId,
+        action: "create_drive_folder",
+        entity: "integration",
+        entityId: folder.id,
+        metadata: {
+          folderName,
+          parentFolderId,
+        },
+      });
+
+      return folder;
+    } catch (error: any) {
+      await auditService.log({
+        actorId: userId,
+        action: "create_drive_folder_failed",
+        entity: "integration",
+        metadata: { error: error.message, folderName, parentFolderId },
+      });
+      throw error;
+    }
+  }
+
+  // Create a project folder structure
+  async createProjectFolderStructure(
+    userId: string,
+    projectId: string,
+    projectName: string
+  ): Promise<{
+    rootFolder: DriveFolder;
+    subFolders: Record<string, DriveFolder>;
+  }> {
+    try {
+      // Create root project folder
+      const rootFolder = await this.createFolder(userId, projectName);
+
+      // Create standard subfolders
+      const subFolderNames = [
+        "Documents",
+        "Deliverables",
+        "Meeting Notes",
+        "Resources",
+        "Archive",
+      ];
+
+      const subFolders: Record<string, DriveFolder> = {};
+
+      for (const name of subFolderNames) {
+        const folder = await this.createFolder(userId, name, rootFolder.id);
+        subFolders[name.toLowerCase().replace(" ", "_")] = folder;
+      }
+
+      // Store the folder ID in project integrations
+      await prisma.projectIntegration.upsert({
+        where: {
+          projectId_key: {
+            projectId,
+            key: "gdriveFolderId",
+          },
+        },
+        create: {
+          id: `${projectId}_gdriveFolderId_${Date.now()}`,
+          projectId,
+          key: "gdriveFolderId",
+          value: rootFolder.id,
+          metadata: {
+            folderName: projectName,
+            webViewLink: rootFolder.webViewLink,
+            subFolders: JSON.parse(JSON.stringify(subFolders)),
+            createdAt: new Date().toISOString(),
+          },
+          updatedAt: new Date(),
+        },
+        update: {
+          value: rootFolder.id,
+          metadata: {
+            folderName: projectName,
+            webViewLink: rootFolder.webViewLink,
+            subFolders: JSON.parse(JSON.stringify(subFolders)),
+            updatedAt: new Date().toISOString(),
+          },
+        },
+      });
+
+      return { rootFolder, subFolders };
+    } catch (error: any) {
+      console.error("Failed to create project folder structure:", error);
+      throw error;
+    }
+  }
+
+  // List files in a folder
+  async listFiles(
+    userId: string,
+    folderId?: string,
+    mimeType?: string
+  ): Promise<DriveFile[]> {
+    try {
+      const drive = await this.getDriveClient(userId);
+
+      let query = "";
+      if (folderId) {
+        query = `'${folderId}' in parents`;
+      }
+      if (mimeType) {
+        query += query ? " and " : "";
+        query += `mimeType='${mimeType}'`;
+      }
+      if (!query) {
+        query = "'root' in parents";
+      }
+      query += " and trashed=false";
+
+      const response = await drive.files.list({
+        q: query,
+        fields:
+          "files(id, name, mimeType, webViewLink, webContentLink, parents, createdTime, modifiedTime, size)",
+        orderBy: "modifiedTime desc",
+        pageSize: 100,
+      });
+
+      return (
+        response.data.files?.map((file) => ({
+          id: file.id!,
+          name: file.name!,
+          mimeType: file.mimeType!,
+          webViewLink: file.webViewLink || undefined,
+          webContentLink: file.webContentLink || undefined,
+          parents: file.parents || undefined,
+          createdTime: file.createdTime || undefined,
+          modifiedTime: file.modifiedTime || undefined,
+          size: file.size || undefined,
+        })) || []
+      );
+    } catch (error: any) {
+      console.error("Failed to list files:", error);
+      throw error;
+    }
+  }
+
+  // Upload a file to Google Drive
+  async uploadFile(
+    userId: string,
+    fileName: string,
+    mimeType: string,
+    content: Buffer | string,
+    folderId?: string
+  ): Promise<DriveFile> {
+    try {
+      const drive = await this.getDriveClient(userId);
+
+      const fileMetadata: drive_v3.Schema$File = {
+        name: fileName,
+        parents: folderId ? [folderId] : undefined,
+      };
+
+      const media = {
+        mimeType,
+        body: typeof content === "string" ? content : content.toString(),
+      };
+
+      const response = await drive.files.create({
+        requestBody: fileMetadata,
+        media,
+        fields:
+          "id, name, mimeType, webViewLink, webContentLink, parents, createdTime, modifiedTime, size",
+      });
+
+      const file: DriveFile = {
+        id: response.data.id!,
+        name: response.data.name!,
+        mimeType: response.data.mimeType!,
+        webViewLink: response.data.webViewLink || undefined,
+        webContentLink: response.data.webContentLink || undefined,
+        parents: response.data.parents || undefined,
+        createdTime: response.data.createdTime || undefined,
+        modifiedTime: response.data.modifiedTime || undefined,
+        size: response.data.size || undefined,
+      };
+
+      // Log the operation
+      await auditService.log({
+        actorId: userId,
+        action: "upload_drive_file",
+        entity: "integration",
+        entityId: file.id,
+        metadata: {
+          fileName,
+          mimeType,
+          folderId,
+        },
+      });
+
+      return file;
+    } catch (error: any) {
+      await auditService.log({
+        actorId: userId,
+        action: "upload_drive_file_failed",
+        entity: "integration",
+        metadata: { error: error.message, fileName, mimeType, folderId },
+      });
+      throw error;
+    }
+  }
+
+  // Download a file from Google Drive
+  async downloadFile(
+    userId: string,
+    fileId: string
+  ): Promise<{ data: Buffer; metadata: DriveFile }> {
+    try {
+      const drive = await this.getDriveClient(userId);
+
+      // Get file metadata
+      const metadataResponse = await drive.files.get({
+        fileId,
+        fields:
+          "id, name, mimeType, webViewLink, webContentLink, parents, createdTime, modifiedTime, size",
+      });
+
+      // Download file content
+      const response = await drive.files.get(
+        {
+          fileId,
+          alt: "media",
+        },
+        { responseType: "arraybuffer" }
+      );
+
+      const metadata: DriveFile = {
+        id: metadataResponse.data.id!,
+        name: metadataResponse.data.name!,
+        mimeType: metadataResponse.data.mimeType!,
+        webViewLink: metadataResponse.data.webViewLink || undefined,
+        webContentLink: metadataResponse.data.webContentLink || undefined,
+        parents: metadataResponse.data.parents || undefined,
+        createdTime: metadataResponse.data.createdTime || undefined,
+        modifiedTime: metadataResponse.data.modifiedTime || undefined,
+        size: metadataResponse.data.size || undefined,
+      };
+
+      return {
+        data: Buffer.from(response.data as ArrayBuffer),
+        metadata,
+      };
+    } catch (error: any) {
+      console.error("Failed to download file:", error);
+      throw error;
+    }
+  }
+
+  // Delete a file or folder
+  async deleteFile(userId: string, fileId: string): Promise<void> {
+    try {
+      const drive = await this.getDriveClient(userId);
+      await drive.files.delete({ fileId });
+
+      await auditService.log({
+        actorId: userId,
+        action: "delete_drive_file",
+        entity: "integration",
+        entityId: fileId,
+      });
+    } catch (error: any) {
+      await auditService.log({
+        actorId: userId,
+        action: "delete_drive_file_failed",
+        entity: "integration",
+        entityId: fileId,
+        metadata: { error: error.message },
+      });
+      throw error;
+    }
+  }
+
+  // Share a file or folder
+  async shareFile(
+    userId: string,
+    fileId: string,
+    email: string,
+    role: "reader" | "writer" | "commenter" = "reader"
+  ): Promise<void> {
+    try {
+      const drive = await this.getDriveClient(userId);
+
+      await drive.permissions.create({
+        fileId,
+        requestBody: {
+          type: "user",
+          role,
+          emailAddress: email,
+        },
+        sendNotificationEmail: true,
+      });
+
+      await auditService.log({
+        actorId: userId,
+        action: "share_drive_file",
+        entity: "integration",
+        entityId: fileId,
+        metadata: { email, role },
+      });
+    } catch (error: any) {
+      await auditService.log({
+        actorId: userId,
+        action: "share_drive_file_failed",
+        entity: "integration",
+        entityId: fileId,
+        metadata: { error: error.message, email, role },
+      });
+      throw error;
+    }
+  }
+
+  // Search for files
+  async searchFiles(
+    userId: string,
+    query: string,
+    mimeType?: string
+  ): Promise<DriveFile[]> {
+    try {
+      const drive = await this.getDriveClient(userId);
+
+      let searchQuery = `fullText contains '${query}' and trashed=false`;
+      if (mimeType) {
+        searchQuery += ` and mimeType='${mimeType}'`;
+      }
+
+      const response = await drive.files.list({
+        q: searchQuery,
+        fields:
+          "files(id, name, mimeType, webViewLink, webContentLink, parents, createdTime, modifiedTime, size)",
+        orderBy: "modifiedTime desc",
+        pageSize: 50,
+      });
+
+      return (
+        response.data.files?.map((file) => ({
+          id: file.id!,
+          name: file.name!,
+          mimeType: file.mimeType!,
+          webViewLink: file.webViewLink || undefined,
+          webContentLink: file.webContentLink || undefined,
+          parents: file.parents || undefined,
+          createdTime: file.createdTime || undefined,
+          modifiedTime: file.modifiedTime || undefined,
+          size: file.size || undefined,
+        })) || []
+      );
+    } catch (error: any) {
+      console.error("Failed to search files:", error);
+      throw error;
+    }
+  }
+
+  // Get storage quota
+  async getStorageQuota(userId: string): Promise<{
+    limit: string;
+    usage: string;
+    usageInDrive: string;
+    usageInTrash: string;
+  }> {
+    try {
+      const drive = await this.getDriveClient(userId);
+
+      const response = await drive.about.get({
+        fields: "storageQuota",
+      });
+
+      return {
+        limit: response.data.storageQuota?.limit || "0",
+        usage: response.data.storageQuota?.usage || "0",
+        usageInDrive: response.data.storageQuota?.usageInDrive || "0",
+        usageInTrash: response.data.storageQuota?.usageInDriveTrash || "0",
+      };
+    } catch (error: any) {
+      console.error("Failed to get storage quota:", error);
+      throw error;
+    }
+  }
+
+  // Test connection
+  async testConnection(userId: string): Promise<boolean> {
+    try {
+      const drive = await this.getDriveClient(userId);
+      await drive.about.get({ fields: "user" });
+      return true;
+    } catch (error) {
+      console.error("Google Drive connection test failed:", error);
+      return false;
+    }
+  }
+
+  // ==================== CALENDAR METHODS ====================
+
+  // Get Calendar client for a user
+  private async getCalendarClient(
+    userId: string
+  ): Promise<calendar_v3.Calendar> {
+    // Get user's Google credentials (same as Drive)
+    const credential = await prisma.integrationCredential.findFirst({
+      where: {
+        userId,
+        type: "google_drive", // Using same credential for both Drive and Calendar
+      },
+    });
+
+    if (!credential || !credential.data) {
+      throw new Error("Google services not connected for this user");
+    }
+
+    const tokens = credential.data as any;
+
+    // Set credentials
+    this.getOAuth2Client().setCredentials({
+      access_token: tokens.accessToken || tokens.token,
+      refresh_token: tokens.refreshToken,
+    });
+
+    return google.calendar({ version: "v3", auth: this.getOAuth2Client() });
+  }
+
+  // Get upcoming calendar events
+  async getUpcomingEvents(
+    userId: string,
+    maxResults: number = 10
+  ): Promise<calendar_v3.Schema$Event[]> {
+    try {
+      const calendar = await this.getCalendarClient(userId);
+
+      const response = await calendar.events.list({
+        calendarId: "primary",
+        timeMin: new Date().toISOString(),
+        maxResults,
+        singleEvents: true,
+        orderBy: "startTime",
+      });
+
+      return response.data.items || [];
+    } catch (error) {
+      console.error("Failed to fetch calendar events:", error);
+      throw error;
+    }
+  }
+
+  // Get today's meetings
+  async getTodaysMeetings(userId: string): Promise<calendar_v3.Schema$Event[]> {
+    try {
+      const calendar = await this.getCalendarClient(userId);
+
+      const now = new Date();
+      const startOfDay = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate()
+      );
+      const endOfDay = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate() + 1
+      );
+
+      const response = await calendar.events.list({
+        calendarId: "primary",
+        timeMin: startOfDay.toISOString(),
+        timeMax: endOfDay.toISOString(),
+        singleEvents: true,
+        orderBy: "startTime",
+      });
+
+      return response.data.items || [];
+    } catch (error) {
+      console.error("Failed to fetch today's meetings:", error);
+      throw error;
+    }
+  }
+}
+// Trigger recompile
