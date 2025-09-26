@@ -9,11 +9,5 @@
   "github": {
     "enabled": true,
     "autoAlias": true
-  },
-  "crons": [
-    {
-      "path": "/api/cron/daily-project-updates",
-      "schedule": "0 9 * * *"
-    }
-  ]
+  }
 }
