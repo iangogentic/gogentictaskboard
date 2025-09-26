@@ -69,7 +69,7 @@ export async function GET(request: NextRequest) {
         const projects = await prisma.project.findMany({
           where: {
             OR: [
-              { ownerId: integration.userId },
+              { pmId: integration.userId },
               {
                 members: {
                   some: {
