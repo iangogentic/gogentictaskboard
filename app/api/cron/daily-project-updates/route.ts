@@ -27,20 +27,25 @@ export async function GET(request: NextRequest) {
     const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3002";
 
     // Get all users with Slack integration
-    const usersWithSlack = await prisma.integrationCredential.findMany({
+    const integrations = await prisma.integrationCredential.findMany({
       where: {
         type: "slack",
       },
       select: {
         userId: true,
-        user: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
       },
     });
+
+    // Get user details for each integration
+    const usersWithSlack = await Promise.all(
+      integrations.map(async (integration) => {
+        const user = await prisma.user.findUnique({
+          where: { id: integration.userId },
+          select: { id: true, name: true },
+        });
+        return { ...integration, user };
+      })
+    );
 
     console.log(`Found ${usersWithSlack.length} users with Slack integration`);
 
@@ -84,7 +89,9 @@ export async function GET(request: NextRequest) {
         });
 
         if (projects.length === 0) {
-          console.log(`No active projects for user ${integration.user.name}`);
+          console.log(
+            `No active projects for user ${integration.user?.name || integration.userId}`
+          );
           continue;
         }
 
@@ -96,15 +103,17 @@ export async function GET(request: NextRequest) {
         );
 
         console.log(
-          `Sent update request to ${integration.user.name} for ${projects.length} projects`
+          `Sent update request to ${integration.user?.name || integration.userId} for ${projects.length} projects`
         );
         successCount++;
       } catch (error: any) {
         console.error(
-          `Failed to send to user ${integration.user.name}:`,
+          `Failed to send to user ${integration.user?.name || integration.userId}:`,
           error.message
         );
-        errors.push(`${integration.user.name}: ${error.message}`);
+        errors.push(
+          `${integration.user?.name || integration.userId}: ${error.message}`
+        );
         errorCount++;
       }
     }
