@@ -71,7 +71,7 @@ export async function GET(request: NextRequest) {
             OR: [
               { pmId: integration.userId },
               {
-                members: {
+                ProjectMember: {
                   some: {
                     userId: integration.userId,
                     role: { in: ["owner", "member"] },

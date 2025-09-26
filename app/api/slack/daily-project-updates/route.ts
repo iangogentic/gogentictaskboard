@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
         OR: [
           { pmId: userId },
           {
-            members: {
+            ProjectMember: {
               some: {
                 userId: userId,
                 role: { in: ["owner", "member"] },
