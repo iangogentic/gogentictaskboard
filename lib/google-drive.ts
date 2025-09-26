@@ -30,14 +30,31 @@ export interface DriveFolder {
 
 export class GoogleDriveService {
   private static instance: GoogleDriveService;
-  private oauth2Client: OAuth2Client;
+  private oauth2Client: OAuth2Client | null = null;
 
   private constructor() {
-    this.oauth2Client = new google.auth.OAuth2(
-      process.env.GOOGLE_CLIENT_ID,
-      process.env.GOOGLE_CLIENT_SECRET,
-      process.env.GOOGLE_REDIRECT_URI
-    );
+    // Initialize lazily to ensure env vars are available
+  }
+
+  private getOAuth2Client(): OAuth2Client {
+    if (!this.oauth2Client) {
+      const clientId = process.env.GOOGLE_CLIENT_ID;
+      const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+      const redirectUri = process.env.GOOGLE_REDIRECT_URI;
+
+      if (!clientId || !clientSecret || !redirectUri) {
+        throw new Error(
+          `Missing Google OAuth configuration. ClientId: ${!!clientId}, Secret: ${!!clientSecret}, RedirectUri: ${!!redirectUri}`
+        );
+      }
+
+      this.oauth2Client = new google.auth.OAuth2(
+        clientId,
+        clientSecret,
+        redirectUri
+      );
+    }
+    return this.oauth2Client;
   }
 
   static getInstance(): GoogleDriveService {
@@ -55,7 +72,7 @@ export class GoogleDriveService {
       "https://www.googleapis.com/auth/drive.readonly",
     ];
 
-    return this.oauth2Client.generateAuthUrl({
+    return this.getOAuth2Client().generateAuthUrl({
       access_type: "offline",
       scope: scopes,
       state: state,
@@ -69,7 +86,7 @@ export class GoogleDriveService {
     refresh_token?: string;
     expiry_date?: number;
   }> {
-    const { tokens } = await this.oauth2Client.getToken(code);
+    const { tokens } = await this.getOAuth2Client().getToken(code);
     return {
       access_token: tokens.access_token!,
       refresh_token: tokens.refresh_token || undefined,
@@ -94,13 +111,13 @@ export class GoogleDriveService {
     const tokens = credential.data as any;
 
     // Set credentials (handle both field names for compatibility)
-    this.oauth2Client.setCredentials({
+    this.getOAuth2Client().setCredentials({
       access_token: tokens.accessToken || tokens.token,
       refresh_token: tokens.refreshToken,
     });
 
     // Handle token refresh if needed
-    this.oauth2Client.on("tokens", async (newTokens) => {
+    this.getOAuth2Client().on("tokens", async (newTokens) => {
       // Update stored tokens
       await prisma.integrationCredential.update({
         where: { id: credential.id },
@@ -114,7 +131,7 @@ export class GoogleDriveService {
       });
     });
 
-    return google.drive({ version: "v3", auth: this.oauth2Client });
+    return google.drive({ version: "v3", auth: this.getOAuth2Client() });
   }
 
   // Create a folder in Google Drive
