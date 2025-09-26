@@ -15,6 +15,7 @@ import {
   Moon,
   Sun,
   Shield,
+  Settings,
 } from "lucide-react";
 import { useTheme } from "@/lib/themes/provider";
 import { THEMES, ThemeName } from "@/lib/themes/constants";
@@ -74,7 +75,7 @@ export function ThemeMenu() {
     "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/80";
 
   const navItems = [
-    { href: "/", label: "Home", icon: Home },
+    { href: "/glass-home", label: "Home", icon: Home },
     { href: "/dashboard", label: "Dashboard", icon: BarChart3 },
     { href: "/projects", label: "Projects", icon: FolderOpen },
     ...(userRole === "admin" || userRole === "pm"
@@ -82,6 +83,7 @@ export function ThemeMenu() {
       : []),
     { href: "/reports", label: "Reports", icon: FileText },
     { href: "/activity", label: "Activity", icon: Activity },
+    { href: "/settings", label: "Settings", icon: Settings },
   ];
 
   return (
