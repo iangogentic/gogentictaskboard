@@ -1,123 +1,135 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { Plus, FileText, Download, Trash2, Edit2, Check, X, ExternalLink } from 'lucide-react'
-import { format } from 'date-fns'
-import type { Deliverable } from '@prisma/client'
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import {
+  Plus,
+  FileText,
+  Download,
+  Trash2,
+  Edit2,
+  Check,
+  X,
+  ExternalLink,
+} from "lucide-react";
+import { format } from "date-fns";
+import type { Deliverable } from "@prisma/client";
 
 interface DeliverablesListProps {
-  projectId: string
-  deliverables: Deliverable[]
+  projectId: string;
+  deliverables: Deliverable[];
 }
 
-export default function DeliverablesList({ projectId, deliverables: initialDeliverables }: DeliverablesListProps) {
-  const router = useRouter()
-  const [deliverables, setDeliverables] = useState(initialDeliverables)
-  const [addingDeliverable, setAddingDeliverable] = useState(false)
-  const [editingId, setEditingId] = useState<string | null>(null)
-  
+export default function DeliverablesList({
+  projectId,
+  deliverables: initialDeliverables,
+}: DeliverablesListProps) {
+  const router = useRouter();
+  const [deliverables, setDeliverables] = useState(initialDeliverables);
+  const [addingDeliverable, setAddingDeliverable] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+
   // Form state for new deliverable
   const [newDeliverable, setNewDeliverable] = useState({
-    title: '',
-    url: '',
-    status: 'Draft',
-  })
-  
+    title: "",
+    url: "",
+    status: "Draft",
+  });
+
   // Form state for editing
   const [editForm, setEditForm] = useState({
-    title: '',
-    url: '',
-    status: 'Draft',
-  })
+    title: "",
+    url: "",
+    status: "Draft",
+  });
 
   const statusOptions = [
-    { value: 'Draft', label: 'Draft' },
-    { value: 'Submitted', label: 'Submitted' },
-    { value: 'Approved', label: 'Approved' },
-    { value: 'Delivered', label: 'Delivered' },
-  ]
+    { value: "Draft", label: "Draft" },
+    { value: "Submitted", label: "Submitted" },
+    { value: "Approved", label: "Approved" },
+    { value: "Delivered", label: "Delivered" },
+  ];
 
   const handleAddDeliverable = async () => {
-    if (!newDeliverable.title.trim()) return
+    if (!newDeliverable.title.trim()) return;
 
     try {
-      const response = await fetch('/api/deliverables', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/deliverables", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           projectId,
           ...newDeliverable,
         }),
-      })
+      });
 
       if (response.ok) {
         setNewDeliverable({
-          title: '',
-          url: '',
-          status: 'Draft',
-        })
-        setAddingDeliverable(false)
-        router.refresh()
+          title: "",
+          url: "",
+          status: "Draft",
+        });
+        setAddingDeliverable(false);
+        router.refresh();
       }
     } catch (error) {
-      console.error('Failed to add deliverable:', error)
+      console.error("Failed to add deliverable:", error);
     }
-  }
+  };
 
   const handleEditDeliverable = async (id: string) => {
-    if (!editForm.title.trim()) return
+    if (!editForm.title.trim()) return;
 
     try {
       const response = await fetch(`/api/deliverables/${id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(editForm),
-      })
+      });
 
       if (response.ok) {
-        setEditingId(null)
-        router.refresh()
+        setEditingId(null);
+        router.refresh();
       }
     } catch (error) {
-      console.error('Failed to update deliverable:', error)
+      console.error("Failed to update deliverable:", error);
     }
-  }
+  };
 
   const handleDeleteDeliverable = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this deliverable?')) return
+    if (!confirm("Are you sure you want to delete this deliverable?")) return;
 
     try {
       const response = await fetch(`/api/deliverables/${id}`, {
-        method: 'DELETE',
-      })
+        method: "DELETE",
+      });
 
       if (response.ok) {
-        router.refresh()
+        router.refresh();
       }
     } catch (error) {
-      console.error('Failed to delete deliverable:', error)
+      console.error("Failed to delete deliverable:", error);
     }
-  }
+  };
 
   const startEdit = (deliverable: Deliverable) => {
-    setEditingId(deliverable.id)
+    setEditingId(deliverable.id);
     setEditForm({
       title: deliverable.title,
-      url: deliverable.fileUrl || '',
+      url: deliverable.fileUrl || "",
       status: deliverable.status,
-    })
-  }
+    });
+  };
 
   const getStatusColor = (status: string) => {
     const colors: Record<string, string> = {
-      'Draft': 'bg-surface text-fg',
-      'Submitted': 'bg-info-bg text-info',
-      'Approved': 'bg-success-bg text-success',
-      'Delivered': 'bg-indigo-100 text-indigo-800',
-    }
-    return colors[status] || 'bg-surface text-fg'
-  }
+      Draft: "bg-surface text-fg",
+      Submitted: "bg-info-bg text-info",
+      Approved: "bg-success-bg text-success",
+      Delivered: "bg-indigo-100 text-indigo-800",
+    };
+    return colors[status] || "bg-surface text-fg";
+  };
 
   return (
     <div className="space-y-4">
@@ -133,29 +145,39 @@ export default function DeliverablesList({ projectId, deliverables: initialDeliv
       </div>
 
       {addingDeliverable && (
-        <div className="bg-bg rounded-lg p-4 space-y-3">
+        <div className="bg-surface rounded-lg p-4 space-y-3 border border-border">
           <input
             type="text"
             placeholder="Deliverable title"
             value={newDeliverable.title}
-            onChange={(e) => setNewDeliverable({ ...newDeliverable, title: e.target.value })}
-            className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-brand"
+            onChange={(e) =>
+              setNewDeliverable({ ...newDeliverable, title: e.target.value })
+            }
+            className="w-full px-3 py-2 bg-bg text-fg border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-brand placeholder-muted"
             autoFocus
           />
           <input
             type="url"
             placeholder="URL or link (optional)"
             value={newDeliverable.url}
-            onChange={(e) => setNewDeliverable({ ...newDeliverable, url: e.target.value })}
-            className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-brand"
+            onChange={(e) =>
+              setNewDeliverable({ ...newDeliverable, url: e.target.value })
+            }
+            className="w-full px-3 py-2 bg-bg text-fg border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-brand placeholder-muted"
           />
           <select
             value={newDeliverable.status}
-            onChange={(e) => setNewDeliverable({ ...newDeliverable, status: e.target.value })}
-            className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-brand"
+            onChange={(e) =>
+              setNewDeliverable({ ...newDeliverable, status: e.target.value })
+            }
+            className="w-full px-3 py-2 bg-bg text-fg border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-brand"
           >
-            {statusOptions.map(option => (
-              <option key={option.value} value={option.value}>
+            {statusOptions.map((option) => (
+              <option
+                key={option.value}
+                value={option.value}
+                className="bg-bg text-fg"
+              >
                 {option.label}
               </option>
             ))}
@@ -163,12 +185,12 @@ export default function DeliverablesList({ projectId, deliverables: initialDeliv
           <div className="flex justify-end space-x-2">
             <button
               onClick={() => {
-                setAddingDeliverable(false)
+                setAddingDeliverable(false);
                 setNewDeliverable({
-                  title: '',
-                  url: '',
-                  status: 'Draft',
-                })
+                  title: "",
+                  url: "",
+                  status: "Draft",
+                });
               }}
               className="px-3 py-1.5 text-sm text-muted hover:text-fg"
             >
@@ -188,7 +210,9 @@ export default function DeliverablesList({ projectId, deliverables: initialDeliv
         <div className="text-center py-8 text-muted">
           <FileText className="h-12 w-12 mx-auto mb-3 text-border" />
           <p>No deliverables yet</p>
-          <p className="text-sm mt-1">Add deliverables to track project outputs</p>
+          <p className="text-sm mt-1">
+            Add deliverables to track project outputs
+          </p>
         </div>
       )}
 
@@ -196,27 +220,37 @@ export default function DeliverablesList({ projectId, deliverables: initialDeliv
         {deliverables.map((deliverable) => (
           <div key={deliverable.id}>
             {editingId === deliverable.id ? (
-              <div className="bg-bg rounded-lg p-4 space-y-3">
+              <div className="bg-surface rounded-lg p-4 space-y-3 border border-border">
                 <input
                   type="text"
                   value={editForm.title}
-                  onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
-                  className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-brand"
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, title: e.target.value })
+                  }
+                  className="w-full px-3 py-2 bg-bg text-fg border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-brand placeholder-muted"
                   autoFocus
                 />
                 <input
                   type="url"
                   value={editForm.url}
-                  onChange={(e) => setEditForm({ ...editForm, url: e.target.value })}
-                  className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-brand"
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, url: e.target.value })
+                  }
+                  className="w-full px-3 py-2 bg-bg text-fg border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-brand placeholder-muted"
                 />
                 <select
                   value={editForm.status}
-                  onChange={(e) => setEditForm({ ...editForm, status: e.target.value })}
-                  className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-brand"
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, status: e.target.value })
+                  }
+                  className="w-full px-3 py-2 bg-bg text-fg border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-brand"
                 >
-                  {statusOptions.map(option => (
-                    <option key={option.value} value={option.value}>
+                  {statusOptions.map((option) => (
+                    <option
+                      key={option.value}
+                      value={option.value}
+                      className="bg-bg text-fg"
+                    >
                       {option.label}
                     </option>
                   ))}
@@ -237,17 +271,24 @@ export default function DeliverablesList({ projectId, deliverables: initialDeliv
                 </div>
               </div>
             ) : (
-              <div className="bg-bg rounded-lg border p-4 hover:shadow-sm transition-shadow group">
+              <div className="bg-surface rounded-lg border border-border p-4 hover:shadow-sm transition-shadow group">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center space-x-3">
-                      <h4 className="font-medium text-fg">{deliverable.title}</h4>
-                      <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(deliverable.status)}`}>
+                      <h4 className="font-medium text-fg">
+                        {deliverable.title}
+                      </h4>
+                      <span
+                        className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(deliverable.status)}`}
+                      >
                         {deliverable.status}
                       </span>
                     </div>
                     <div className="flex items-center space-x-4 mt-2 text-xs text-muted">
-                      <span>Updated {format(new Date(deliverable.updatedAt), 'MMM d, yyyy')}</span>
+                      <span>
+                        Updated{" "}
+                        {format(new Date(deliverable.updatedAt), "MMM d, yyyy")}
+                      </span>
                       {deliverable.fileUrl && (
                         <a
                           href={deliverable.fileUrl}
@@ -282,5 +323,5 @@ export default function DeliverablesList({ projectId, deliverables: initialDeliv
         ))}
       </div>
     </div>
-  )
+  );
 }
