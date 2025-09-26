@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import {
   Plus,
   FileText,
@@ -24,7 +23,6 @@ export default function DeliverablesList({
   projectId,
   deliverables: initialDeliverables,
 }: DeliverablesListProps) {
-  const router = useRouter();
   const [deliverables, setDeliverables] = useState(initialDeliverables);
   const [addingDeliverable, setAddingDeliverable] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -64,13 +62,14 @@ export default function DeliverablesList({
       });
 
       if (response.ok) {
+        const addedDeliverable = await response.json();
+        setDeliverables([...deliverables, addedDeliverable]);
         setNewDeliverable({
           title: "",
           url: "",
           status: "Draft",
         });
         setAddingDeliverable(false);
-        router.refresh();
       }
     } catch (error) {
       console.error("Failed to add deliverable:", error);
@@ -88,8 +87,11 @@ export default function DeliverablesList({
       });
 
       if (response.ok) {
+        const updatedDeliverable = await response.json();
+        setDeliverables(
+          deliverables.map((d) => (d.id === id ? updatedDeliverable : d))
+        );
         setEditingId(null);
-        router.refresh();
       }
     } catch (error) {
       console.error("Failed to update deliverable:", error);
@@ -105,7 +107,7 @@ export default function DeliverablesList({
       });
 
       if (response.ok) {
-        router.refresh();
+        setDeliverables(deliverables.filter((d) => d.id !== id));
       }
     } catch (error) {
       console.error("Failed to delete deliverable:", error);
