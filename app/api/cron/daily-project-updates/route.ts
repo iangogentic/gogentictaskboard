@@ -131,7 +131,7 @@ export async function GET(request: NextRequest) {
         );
 
         console.log(
-          `Sent update request to ${integration.user?.name || integration.userId} for ${projects.length} projects`
+          `✅ Sent to: ${integration.user?.name} (${integration.user?.email}) - ${projects.length} projects`
         );
         successCount++;
       } catch (error: any) {
