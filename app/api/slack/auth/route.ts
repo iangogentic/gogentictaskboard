@@ -34,12 +34,20 @@ export async function GET(request: NextRequest) {
         client_id: process.env.SLACK_CLIENT_ID!,
         client_secret: process.env.SLACK_CLIENT_SECRET!,
         code,
+        redirect_uri: process.env.SLACK_REDIRECT_URI!,
       }),
     });
 
     const tokenData = await tokenResponse.json();
 
     if (!tokenData.ok) {
+      console.error("Slack OAuth token exchange failed:", {
+        error: tokenData.error,
+        error_description: tokenData.error_description,
+        needed: tokenData.needed,
+        provided: tokenData.provided,
+        response: tokenData,
+      });
       throw new Error(tokenData.error || "Failed to exchange code for token");
     }
 
