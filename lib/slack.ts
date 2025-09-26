@@ -471,11 +471,18 @@ export class SlackService {
       const metadata = userIntegration.metadata as any;
       const data = userIntegration.data as any;
 
+      // Try to get the Slack user ID from various possible locations
+      // Priority: metadata.slackUserId (correct location) > data fields (legacy)
       const slackUserId =
         metadata?.slackUserId ||
         data?.authedUser?.id ||
         data?.user?.id ||
-        data?.user_id;
+        data?.user_id ||
+        data?.userId;
+
+      // Also update the bot token if needed
+      const botToken =
+        data?.token || data?.accessToken || process.env.SLACK_BOT_TOKEN;
 
       if (!slackUserId) {
         console.log(`No Slack user ID found for user ${userId}`);

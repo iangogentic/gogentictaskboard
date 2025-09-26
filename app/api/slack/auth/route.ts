@@ -43,7 +43,17 @@ export async function GET(request: NextRequest) {
       throw new Error(tokenData.error || "Failed to exchange code for token");
     }
 
+    // Log the OAuth response for debugging
+    console.log("Slack OAuth response:", {
+      ok: tokenData.ok,
+      access_token: tokenData.access_token?.substring(0, 10) + "...",
+      bot_user_id: tokenData.bot_user_id,
+      authed_user: tokenData.authed_user,
+      team: tokenData.team,
+    });
+
     // Store the integration credentials
+    // Note: We store bot token in data.token and user who installed in metadata.slackUserId
     await prisma.integrationCredential.upsert({
       where: {
         userId_type: {
@@ -56,26 +66,28 @@ export async function GET(request: NextRequest) {
         userId: session.user.id,
         type: "slack",
         data: {
-          accessToken: tokenData.access_token,
-          scope: tokenData.scope,
+          token: tokenData.access_token, // Bot token (xoxb-)
+          botUserId: tokenData.bot_user_id, // Bot's user ID
           teamId: tokenData.team?.id,
           teamName: tokenData.team?.name,
+          scope: tokenData.scope,
         },
         metadata: {
-          slackUserId: tokenData.authed_user?.id,
+          slackUserId: tokenData.authed_user?.id, // Installing user's ID
           installedAt: new Date().toISOString(),
         },
         updatedAt: new Date(),
       },
       update: {
         data: {
-          accessToken: tokenData.access_token,
-          scope: tokenData.scope,
+          token: tokenData.access_token, // Bot token (xoxb-)
+          botUserId: tokenData.bot_user_id, // Bot's user ID
           teamId: tokenData.team?.id,
           teamName: tokenData.team?.name,
+          scope: tokenData.scope,
         },
         metadata: {
-          slackUserId: tokenData.authed_user?.id,
+          slackUserId: tokenData.authed_user?.id, // Installing user's ID
           installedAt: new Date().toISOString(),
         },
         updatedAt: new Date(),
