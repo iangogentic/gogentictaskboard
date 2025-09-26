@@ -634,17 +634,16 @@ export class SlackService {
 
   // Helper to get status emoji
   private getStatusEmoji(status: string): string {
-    switch (status.toLowerCase()) {
-      case "planning":
+    switch (status) {
+      case "Not Started":
         return "📝";
-      case "in_progress":
+      case "In Progress":
         return "🚀";
-      case "review":
+      case "Review":
         return "👀";
-      case "blocked":
+      case "Blocked":
         return "🚧";
-      case "completed":
-      case "done":
+      case "Done":
         return "✅";
       default:
         return "📌";

@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
             },
           },
         ],
-        status: { in: ["in_progress", "planning", "review"] },
+        status: { in: ["In Progress", "Not Started", "Blocked"] },
       },
       select: {
         id: true,

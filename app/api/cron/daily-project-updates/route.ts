@@ -80,8 +80,7 @@ export async function GET(request: NextRequest) {
               },
             ],
             status: {
-              in: ["in_progress", "planning", "review"],
-              notIn: ["completed", "cancelled", "archived"],
+              in: ["In Progress", "Not Started", "Blocked"],
             },
           },
           select: {
