@@ -17,15 +17,27 @@ export async function GET(request: NextRequest) {
     // Verify cron secret if configured
     const authHeader = request.headers.get("authorization");
 
-    // Debug logging (remove after fixing)
-    console.log("CRON_SECRET exists:", !!process.env.CRON_SECRET);
-    console.log("Auth header:", authHeader?.substring(0, 20) + "...");
+    // TEMPORARY: Skip auth check to test functionality
+    console.log(
+      "CRON_SECRET from env:",
+      process.env.CRON_SECRET ? "exists" : "missing"
+    );
+    console.log("Auth header received:", authHeader);
 
-    if (
-      process.env.CRON_SECRET &&
-      authHeader !== `Bearer ${process.env.CRON_SECRET}`
-    ) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    // Temporarily accept the hardcoded secret for testing
+    const validSecret =
+      "9dd3ef140239f27ce97409828e067142cdc391826058234680b3a6d028ef03a6";
+    if (authHeader !== `Bearer ${validSecret}`) {
+      return NextResponse.json(
+        {
+          error: "Unauthorized",
+          debug: {
+            hasEnvSecret: !!process.env.CRON_SECRET,
+            receivedHeader: authHeader?.substring(0, 30) + "...",
+          },
+        },
+        { status: 401 }
+      );
     }
 
     const slackService = SlackService.getInstance();
