@@ -130,8 +130,8 @@ export async function GET(request: NextRequest) {
     // Log summary
     const summary = {
       total: usersWithSlack.length,
-      success: successCount,
-      errors: errorCount,
+      successCount: successCount,
+      errorCount: errorCount,
       timestamp: new Date().toISOString(),
       ...(errors.length > 0 && { errorDetails: errors }),
     };
